@@ -18,13 +18,13 @@ public class MetaSpaceUtils
 		return new MixedTransformView<>( data, t );
 	}
 
-	public static < T > RandomAccessible< T > wrapAsRandomAccessible(
-			final T data,
-			final int numDimensions )
-	{
-		final MixedTransform t = new MixedTransform( numDimensions, 0 );
-		return new MixedTransformView<>( new ZeroDimRandomAccessibleInterval<>( data ), t );
-	}
+//	public static < T > RandomAccessible< T > wrapAsRandomAccessible(
+//			final T data,
+//			final int numDimensions )
+//	{
+//		final MixedTransform t = new MixedTransform( numDimensions, 0 );
+//		return new MixedTransformView<>( new ZeroDimRandomAccessibleInterval<>( data ), t );
+//	}
 
 	/**
 	 * Build an iterator of the values of a {@link MetaSpace}. Works for both
