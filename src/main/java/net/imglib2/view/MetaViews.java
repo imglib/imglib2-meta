@@ -1,8 +1,6 @@
 package net.imglib2.view;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 import net.imglib2.Localizable;
 import net.imglib2.Point;
@@ -13,6 +11,8 @@ import net.imglib2.iterator.IntervalIterator;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Localizables;
 import net.imglib2.util.Util;
 import net.imglib2.view.meta.InvertibleAxisMap;
 import net.imglib2.view.meta.MixedTransforms;
@@ -114,7 +114,57 @@ public class MetaViews
 		}
 	}
 
+	// TODO: Make this an interface
+	public static class MetaData {
 
+		private List<MetaDataItem<?>> items;
+		private MixedTransformView<?> view;
+
+		public MetaData() {
+			this(new ArrayList<>(), null);
+		}
+
+		public MetaData(List<MetaDataItem<?>> items, MixedTransformView view) {
+			this.items = items;
+			this.view = view;
+		}
+
+		public List<MetaDataItem<?>> items() {
+			return items;
+		}
+
+		/**
+		 *
+		 * @param key the metadata key
+		 */
+		public Optional<MetaDataItem<?>> get(String key) {
+			return items.stream() //
+					.filter(item -> item.name().equals(key))
+					.filter(item -> !item.isAttachedToAxes())
+					.findFirst();
+		}
+
+		/**
+		 *
+		 * @param key the metadata key
+		 * @param d the axis
+		 */
+		public Optional<MetaDataItem<?>> get(String key, int d) {
+			final int dd = view == null ? d : view.getTransformToSource().getComponentMapping(d);
+			return items.stream() //
+					.filter(item -> item.name().equals(key))
+					.filter(item -> item.isAttachedTo(dd)) //
+					.map(item -> view == null ? item : item.view(view))
+					.findFirst();
+		}
+
+		public MetaData view(MixedTransformView<DoubleType> v) {
+			// TODO: Can we chain them? That'd be a cool trick
+			if(this.view != null)
+				throw new UnsupportedOperationException("You must call view() on the original MetaData");
+			return new MetaData(this.items, v);
+		}
+	}
 
 
 
@@ -122,7 +172,17 @@ public class MetaViews
 
 	public static interface MetaDataItem< T >
 	{
+
+		public String name();
+		public boolean isAttachedToAxes();
+		public boolean isAttachedTo(final int d);
+		public T get();
 		public T getAt( Localizable pos );
+		default T getAt( long... pos ) {
+			return getAt(new Point(pos));
+		}
+
+		MetaDataItem<?> view(MixedTransformView<?> view);
 	}
 
 	public static class SimpleItem< T > implements MetaDataItem< T >
@@ -151,9 +211,29 @@ public class MetaViews
 		}
 
 		@Override
+		public String name() {
+			return name;
+		}
+
+		@Override
+		public boolean isAttachedTo(int d) {
+			return attachedToAxes != null && attachedToAxes[d];
+		}
+
+		@Override
+		public T get() {
+			return data;
+		}
+
+		@Override
 		public T getAt( final Localizable pos )
 		{
-			return data;
+			return get();
+		}
+
+		@Override
+		public MetaDataItem<?> view(MixedTransformView<?> view) {
+			return this;
 		}
 
 		@Override
@@ -186,6 +266,7 @@ public class MetaViews
 		final String name;
 
 		final RandomAccessible< T > data;
+		final MixedTransformView<?> view;
 
 		final boolean[] variesWithAxes;
 
@@ -198,8 +279,14 @@ public class MetaViews
 
 		public VaryingItem( final String name, final RandomAccessible< T > data, final boolean[] variesWithAxes, final boolean[] attachedToAxes )
 		{
+			this(name, data, null, variesWithAxes, attachedToAxes);
+		}
+
+		private VaryingItem( final String name, final RandomAccessible< T > data, final MixedTransformView<?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes )
+		{
 			this.name = name;
 			this.data = data;
+			this.view = view;
 			this.variesWithAxes = variesWithAxes;
 			this.attachedToAxes = attachedToAxes;
 		}
@@ -212,11 +299,48 @@ public class MetaViews
 		@Override
 		public T getAt( final Localizable pos )
 		{
+			Localizable src;
+			if (view != null) {
+				// FIXME: Yuckkkkkkk
+				final MixedTransform tform = view.getTransformToSource();
+				final Point dest = new Point(tform.numSourceDimensions());
+				view.getTransformToSource().apply(pos, dest);
+				src = dest;
+			}
+			else {
+				src = pos;
+			}
 			final RandomAccess< T > access = data.randomAccess();
 			for ( int d = 0, i = 0; d < variesWithAxes.length; ++d )
 				if ( variesWithAxes[ d ] )
-					access.setPosition( pos.getLongPosition( d ), i++ );
+					access.setPosition( src.getLongPosition( d ), i++ );
 			return access.get();
+		}
+
+		@Override
+		public MetaDataItem<?> view(MixedTransformView<?> view) {
+			return new VaryingItem<>(
+					this.name,
+					this.data,
+					view,
+					this.variesWithAxes,
+					this.attachedToAxes
+			);
+		}
+
+		@Override
+		public String name() {
+			return name;
+		}
+
+		@Override
+		public boolean isAttachedTo(int d) {
+			return attachedToAxes != null && attachedToAxes[d];
+		}
+
+		@Override
+		public T get() {
+			throw new UnsupportedOperationException("Varying item does not support get()");
 		}
 
 		@Override
