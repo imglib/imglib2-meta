@@ -41,8 +41,8 @@ public class MetaSpaceUtils
 			return ( ( MetaSpaceContainer< ?, T > ) space ).elements.values().iterator();
 		else if ( space instanceof MetaSpaceView )
 		{
-			final MetaSpaceView< ?, T > view = ( MetaSpaceView< ?, T > ) space;
-			final Iterator< T > sourceIt = iterator( view.getSource() );
+			final MetaSpaceView< S, T > view = ( MetaSpaceView< S, T > ) space;
+			final Iterator< T > sourceIt = iterator( (S) view.getSource() );
 			return new Iterator< T >()
 			{
 				private final OrderedAxisSet viewAxes;
