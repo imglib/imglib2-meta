@@ -9,59 +9,65 @@
 		<relativePath />
 	</parent>
 
-	<artifactId>janelia-hackathon-2016</artifactId>
+	<groupId>imglib2-meta</groupId>
+	<artifactId>imglib2-meta</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
-	<name>Janelia Hackathon 2016</name>
-	<description>Hacking at Janelia Research Campus, June 19 - 27, 2016</description>
-	<url>https://github.com/imagej/janelia-hackathon-2016</url>
+	<name>ImgLib2 Meta</name>
+	<description>Metadata for ImgLib2</description>
+	<url>https://github.com/imglib/imglib2-meta</url>
 	<inceptionYear>2016</inceptionYear>
 
 	<developers>
 		<developer>
-			<id>axtimwalde</id>
-			<name>Stephan Saalfeld</name>
-			<url>http://imagej.net/User:Saalfeld</url>
-		</developer>
-		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>http://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/people/ctrueden</url>
 		</developer>
 		<developer>
-			<id>tpietzsch</id>
-			<name>Tobias Pietzsch</name>
-			<url>http://imagej.net/User:Pietzsch</url>
+			<id>gselzer</id>
+			<name>Gabriel Selzer</name>
+			<url>https://imagej.net/people/gselzer</url>
 		</developer>
 		<developer>
-			<id>dietzc</id>
-			<name>Christian Dietz</name>
-			<url>http://imagej.net/User:Dietzc</url>
+			<id>elevans</id>
+			<name>Edward Evans</name>
+			<url>https://imagej.net/people/elevans</url>
 		</developer>
 	</developers>
 	<contributors>
 		<contributor>
-			<name>None</name>
+			<properties><id>axtimwalde</id></properties>
+			<name>Stephan Saalfeld</name>
+			<url>https://imagej.net/people/axtimwalde</url>
+		</contributor>
+		<contributor>
+			<properties><id>tpietzsch</id></properties>
+			<name>Tobias Pietzsch</name>
+			<url>https://imagej.net/people/tpietzsch</url>
+		</contributor>
+		<contributor>
+			<properties><id>dietzc</id></properties>
+			<name>Christian Dietz</name>
+			<url>https://imagej.net/people/dietzc</url>
 		</contributor>
 	</contributors>
 
 	<scm>
-		<connection>scm:git:git@github.com:imagej/janelia-hackathon-2016</connection>
-		<developerConnection>scm:git:git@github.com:imagej/janelia-hackathon-2016</developerConnection>
+		<connection>scm:git:https://github.com/imglib/imglib2-meta</connection>
+		<developerConnection>scm:git:git@github.com:imglib/imglib2-meta</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/imagej/janelia-hackathon-2016</url>
+		<url>https://github.com/imglib/imglib2-meta</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/imagej/janelia-hackathon-2016/issues</url>
+		<url>https://github.com/imglib/imglib2-meta/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
 	</ciManagement>
 
 	<properties>
-		<scijava.jvm.version>1.8</scijava.jvm.version>
-		<main-class>net.imagej.Main</main-class>
 	</properties>
 
 	<repositories>
