@@ -1,5 +1,6 @@
 package net.imglib2.meta;
 
+import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
 
@@ -38,6 +39,19 @@ public class MetaData {
 
 	/**
 	 * @param key the metadata key
+	 */
+	public <T> Optional<MetaDataItem<T>> get(String key, Class<T> ofType) {
+		//noinspection unchecked
+		return items.stream() //
+			.filter(item -> item.name().equals(key))
+			.filter(item -> !item.isAttachedToAxes())
+			.filter(item -> ofType.isInstance(item.get()))
+			.map(item -> (MetaDataItem<T>) item)
+			.findFirst();
+	}
+
+	/**
+	 * @param key the metadata key
 	 * @param d   the axis
 	 */
 	public Optional<MetaDataItem<?>> get(String key, int d) {
@@ -54,5 +68,10 @@ public class MetaData {
 		if (this.view != null)
 			throw new UnsupportedOperationException("You must call view() on the original MetaData");
 		return new MetaData(this.items, v);
+	}
+
+	public <T> T info(Class<T> infoClass) {
+		// FIXME
+		return null;
 	}
 }

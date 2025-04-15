@@ -2,6 +2,7 @@ package net.imglib2.meta;
 
 import net.imglib2.Localizable;
 import net.imglib2.img.list.ListImg;
+import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
@@ -32,6 +33,8 @@ public class Experiment {
 //        v = Views.permute(image, 0, 1);
 //        System.out.println(v.getAt(1, 2, 3, 4, 5));
 
+        // Populate some metadata.
+
         MetaData d = new MetaData();
         d.items().add(new SimpleItem<>("author", "foo Selzer"));
         d.items().add(new SimpleItem<>("type", "x", new boolean[] {true, false, false, false, false}));
@@ -48,7 +51,25 @@ public class Experiment {
                 new boolean[] {false, false, false, true, false}
         ));
 
-        System.out.println(d.get("author").get().get());
+        // Query metadata type-unsafely (using key strings).
+        Object authorObject = d.get("author").get().get();
+        System.out.println(authorObject);
+
+        // Query metadata type-safely (but still using a key string).
+        String authorString = d.get("author", String.class).get().get();
+        System.out.println(authorString);
+
+        // An actually nice window into groups of metadata.
+        Attribution attribution = d.info(Attribution.class);
+        String author = attribution.author();
+        String citation = attribution.citation();
+        System.out.println(author);
+        System.out.println(citation);
+
+        //Calibration calibration = d.info(Calibration.class);
+        //AxisType axis0Type = calibration.axis(0).type();
+        //AxisType axis2Type = calibration.axis(2).type();
+
         System.out.println(d.get("type", 0).get().getAt());
         System.out.println(d.get("type", 2).get().getAt());
 
