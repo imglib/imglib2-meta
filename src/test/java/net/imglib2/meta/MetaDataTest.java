@@ -7,14 +7,17 @@ import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-public class Experiment {
+/** Tests {@link MetaData} functionality. */
+public class MetaDataTest {
 
-    public static void main(String[] args) {
+    @Test
+    public void testEverything() {
         // create an image on the fly
         Supplier<DoubleType> s = DoubleType::new;
         BiConsumer<Localizable, ? super DoubleType> f = (l, t) -> {
