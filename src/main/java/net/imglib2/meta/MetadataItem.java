@@ -10,13 +10,13 @@ public interface MetadataItem<T> {
 
 	String name();
 
-	boolean isAttachedToAxes();
+	default boolean isAttachedToAxes() { return false; }
 
-	boolean isAttachedTo(final int d);
+	default boolean isAttachedTo(final int d) { return false; }
 
 	T get();
 
-	T getAt(RealLocalizable pos);
+	default T getAt(RealLocalizable pos) { return get(); }
 
 	default T getAt(long... pos) {
 		return getAt(new Point(pos));
@@ -25,7 +25,5 @@ public interface MetadataItem<T> {
 	default T getAt(double... pos) {
 		return getAt(new RealPoint(pos));
 	}
-
-	MetadataItem<T> view(MixedTransformView<?> view);
 
 }

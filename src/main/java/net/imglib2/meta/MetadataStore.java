@@ -15,30 +15,19 @@ import java.util.Optional;
 
 public interface MetadataStore extends EuclideanSpace {
 
-	/**
-	 * @param key the metadata key
-	 */
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String key) {
-		return (Optional) get(key, null);
+	default Optional<MetadataItem<?>> get(String name) {
+		return (Optional) get(name, null);
 	}
 
-	<T> Optional<MetadataItem<T>> get(String key, Class<T> ofType);
+	<T> Optional<MetadataItem<T>> get(String name, Class<T> ofType);
 
-	/**
-	 * @param key the metadata key
-	 * @param d   the axis
-	 */
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String key, int d) {
-		return (Optional) get(key, d, null);
+	default Optional<MetadataItem<?>> get(String name, int d) {
+		return (Optional) get(name, d, null);
 	}
 
-	<T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType);
-
-	MetadataStore view(MixedTransformView<?> v);
-
-	MetadataStore realView(RealTransformRealRandomAccessible<?, ?> v);
+	<T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);

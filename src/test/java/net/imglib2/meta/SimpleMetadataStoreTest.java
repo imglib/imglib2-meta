@@ -91,7 +91,7 @@ public class SimpleMetadataStoreTest {
         System.out.println(lutItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore storeView = store.view(v);
+        MetadataStore storeView = new MetadataStoreView(store, v);
         lutItem = storeView.get("lut", 2).get();
         System.out.println(lutItem.getAt(0, 0, 0, 0, 0));
         System.out.println(lutItem.getAt(0, 0, 1, 0, 0));
@@ -167,11 +167,11 @@ public class SimpleMetadataStoreTest {
         System.out.println(coordsItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore storeRealView = store.realView(v);
+        MetadataStore storeRealView = new MetadataStoreRealView(store, v);
         coordsItem = storeRealView.get("coords", 2).get();
-        System.out.println(coordsItem.getAt(0, 0, 0, 0, 0));
-        System.out.println(coordsItem.getAt(0, 0, 1, 0, 0));
-        System.out.println(coordsItem.getAt(0, 0, 2, 0, 0));
+        System.out.println(coordsItem.getAt(1, 2, 3, 4, 5));
+        System.out.println(coordsItem.getAt(5, 6, 7, 8, 9));
+        System.out.println(coordsItem.getAt(-10, -11, -12, -13, -14));
     }
 
     private RealRandomAccessible<StringBuilder> makeCoordStrings() {
