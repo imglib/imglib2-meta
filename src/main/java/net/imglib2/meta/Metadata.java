@@ -31,14 +31,14 @@ public final class Metadata {
 		return new SimpleItem<>(name, data, axes);
 	}
 
-	public static <T> MetadataItem<T> item(String name, RandomAccessible<T> data, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(data.numDimensions(), dims);
+	public static <T> MetadataItem<T> item(String name, RandomAccessible<T> data, int numDims, int... dims) {
+		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingItem<>(name, data, axes, axes);
 	}
 
-	public static <T> MetadataItem<T> item(String name, RealRandomAccessible<T> data, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(data.numDimensions(), dims);
+	public static <T> MetadataItem<T> item(String name, RealRandomAccessible<T> data, int numDims, int... dims) {
+		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes, axes);
 	}
@@ -56,7 +56,7 @@ public final class Metadata {
 	}
 
 	public static MetadataStore view(MetadataStore source, RealTransform transform) {
-		return view(source, transform);
+		return new MetadataStoreRealView(source, transform);
 	}
 
 	private static boolean[] makeAxisAttachmentArray(int numDims, int... dims) {

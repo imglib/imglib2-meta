@@ -71,12 +71,12 @@ public class SimpleMetadataStore implements MetadataStore {
 
 	@Override
 	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
-		items.add(Metadata.item(name, data, dims));
+		items.add(Metadata.item(name, data, numDims, dims));
 	}
 
 	@Override
 	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
-		items.add(Metadata.item(name, data, dims));
+		items.add(Metadata.item(name, data, numDims, dims));
 	}
 
 	@Override
