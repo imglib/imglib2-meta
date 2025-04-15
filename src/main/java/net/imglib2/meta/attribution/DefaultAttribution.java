@@ -7,7 +7,7 @@ public class DefaultAttribution implements Attribution {
 	private MetadataStore metaData;
 
 	@Override
-	public void setMetaData(MetadataStore metaData) {
+	public void setStore(MetadataStore metaData) {
 		this.metaData = metaData;
 	}
 

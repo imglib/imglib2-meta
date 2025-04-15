@@ -5,7 +5,6 @@ import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.transform.integer.MixedTransform;
-import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.ArrayList;
@@ -34,15 +33,6 @@ public class SimpleMetadataStore implements MetadataStore {
 	 * @param key the metadata key
 	 */
 	@Override
-	@SuppressWarnings({"raw", "unchecked"})
-	public Optional<MetadataItem<?>> get(String key) {
-		return (Optional) get(key, null);
-	}
-
-	/**
-	 * @param key the metadata key
-	 */
-	@Override
 	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
@@ -51,16 +41,6 @@ public class SimpleMetadataStore implements MetadataStore {
 			.filter(item -> ofType == null || ofType.isInstance(item.get()))
 			.map(item -> (MetadataItem<T>) item)
 			.findFirst();
-	}
-
-	/**
-	 * @param key the metadata key
-	 * @param d   the axis
-	 */
-	@Override
-	@SuppressWarnings({"raw", "unchecked"})
-	public Optional<MetadataItem<?>> get(String key, int d) {
-		return (Optional) get(key, d, null);
 	}
 
 	@Override
@@ -77,7 +57,7 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public MetadataStore view(MixedTransformView<DoubleType> v) {
+	public MetadataStore view(MixedTransformView<?> v) {
 		// TODO: Can we chain them? That'd be a cool trick
 		if (view != null)
 			throw new UnsupportedOperationException("You must call view() on the original MetaData");
@@ -85,18 +65,15 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T extends HasMetaData> T info(Class<T> infoClass) {
+	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
 		ServiceLoader<T> loader = ServiceLoader.load(infoClass);
 		T instance = loader.iterator().next();
-		instance.setMetaData(this);
+		instance.setStore(this);
 		return instance;
 	}
 
 	@Override
 	public <T> void add(String name, T data, int... dims) {
-		if (dims.length == 1 && dims[0] == 2) {
-			System.out.println("We should stop here");
-		}
 		boolean[] axes = makeAxisAttachmentArray(dims);
 		items.add(new SimpleItem<>(name, data, axes));
 	}

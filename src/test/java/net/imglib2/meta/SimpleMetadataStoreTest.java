@@ -18,7 +18,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /** Tests {@link SimpleMetadataStore} functionality. */
-public class MetaDataTest {
+public class SimpleMetadataStoreTest {
 
     @Test
     public void testEverything() {
@@ -42,10 +42,10 @@ public class MetaDataTest {
 
         // Populate some metadata.
 
-        MetadataStore d = new SimpleMetadataStore(5);
-        d.add("author", "foo Selzer");
+        MetadataStore store = new SimpleMetadataStore(5);
+        store.add("author", "foo Selzer");
 
-        Calibration calibration = d.info(Calibration.class);
+        Calibration calibration = Metadata.calibration(store);
         calibration.setAxis(new DefaultLinearAxis(Axes.X), 0);
         calibration.setAxis(new DefaultLinearAxis(Axes.Y), 1);
         calibration.setAxis(new DefaultLinearAxis(Axes.Z), 2);
@@ -53,39 +53,38 @@ public class MetaDataTest {
         calibration.setAxis(new DefaultLinearAxis(Axes.TIME), 4);
 
         ListImg<String> tables = new ListImg<>(Arrays.asList("red", "green", "blue"), 3);
-        d.add("lut", tables, 3);
+        store.add("lut", tables, 3);
 
         // Query metadata type-unsafely (using key strings).
-        Object authorObject = d.get("author").get().get();
+        Object authorObject = store.get("author").get().get();
         System.out.println(authorObject);
 
         // Query metadata type-safely (but still using a key string).
-        String authorString = d.get("author", String.class).get().get();
+        String authorString = store.get("author", String.class).get().get();
         System.out.println(authorString);
 
         // An actually nice window into groups of metadata.
-        Attribution attribution = d.attribution(); // d.info(Attribution.class);
+        Attribution attribution = Metadata.attribution(store);
         String author = attribution.author();
         String citation = attribution.citation();
         System.out.println(author);
         System.out.println(citation);
 
-        //Calibration calibration = d.calibration(); // d.info(Calibration.class);
         AxisType axis0Type = calibration.axis(0).type();
         AxisType axis2Type = calibration.axis(2).type();
         System.out.println("Axis 0 type: " + axis0Type);
         System.out.println("Axis 2 type: " + axis2Type);
 
-        System.out.println(d.get("axis", 0).get().get());
-        System.out.println(d.get("axis", 2).get().get());
+        System.out.println(store.get("axis", 0).get().get());
+        System.out.println(store.get("axis", 2).get().get());
 
-        MetadataItem<?> lutItem = d.get("lut", 3).get();
+        MetadataItem<?> lutItem = store.get("lut", 3).get();
         System.out.println(lutItem.getAt(0, 0, 0, 0, 0));
         System.out.println(lutItem.getAt(0, 0, 0, 1, 0));
         System.out.println(lutItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore dView = d.view(v);
+        MetadataStore dView = store.view(v);
         lutItem = dView.get("lut", 2).get();
         System.out.println(lutItem.getAt(0, 0, 0, 0, 0));
         System.out.println(lutItem.getAt(0, 0, 1, 0, 0));

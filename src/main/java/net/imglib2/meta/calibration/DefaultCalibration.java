@@ -7,7 +7,7 @@ public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
 
 	@Override
-	public void setMetaData(MetadataStore store) {
+	public void setStore(MetadataStore store) {
 		this.metaData = store;
 	}
 
