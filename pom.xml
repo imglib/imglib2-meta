@@ -81,10 +81,6 @@
 		<!-- ImageJ dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
 			<artifactId>imagej-common</artifactId>
 		</dependency>
 
@@ -93,27 +89,11 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-realtransform</artifactId>
-		</dependency>
-
-		<!-- Other dependencies -->
-		<dependency>
-			<groupId>visad</groupId>
-			<artifactId>visad-lite</artifactId>
-			<version>2.0.20070828</version>
-		</dependency>
 
 		<!-- Test scope dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
