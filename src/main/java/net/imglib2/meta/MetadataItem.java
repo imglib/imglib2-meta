@@ -4,7 +4,7 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.view.MixedTransformView;
 
-public interface MetaDataItem<T> {
+public interface MetadataItem<T> {
 
 	String name();
 
@@ -20,6 +20,6 @@ public interface MetaDataItem<T> {
 		return getAt(new Point(pos));
 	}
 
-	MetaDataItem<?> view(MixedTransformView<?> view);
+	MetadataItem<T> view(MixedTransformView<?> view);
 
 }
