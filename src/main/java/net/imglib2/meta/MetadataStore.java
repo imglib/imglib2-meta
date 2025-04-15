@@ -2,8 +2,12 @@ package net.imglib2.meta;
 
 import net.imglib2.EuclideanSpace;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RealRandomAccessible;
 import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.realtransform.AffineGet;
+import net.imglib2.realtransform.AffineRealRandomAccessible;
+import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
 
@@ -34,12 +38,17 @@ public interface MetadataStore extends EuclideanSpace {
 
 	MetadataStore view(MixedTransformView<?> v);
 
+	MetadataStore realView(RealTransformRealRandomAccessible<?, ?> v);
+
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);
 
 	/** TODO Simple */
 	<T> void add(String name, T data, int... dims);
 
-	/** TODO Varying */
+	/** TODO Varying in integer space */
 	<T> void add(String name, RandomAccessible<T> data, int... dims);
+
+	/** TODO Varying in real space */
+	<T> void add(String name, RealRandomAccessible<T> data, int... dims);
 }

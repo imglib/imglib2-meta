@@ -4,6 +4,12 @@ import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
+import net.imglib2.RealRandomAccess;
+import net.imglib2.RealRandomAccessible;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
@@ -17,15 +23,27 @@ public class SimpleMetadataStore implements MetadataStore {
 
 	private final List<MetadataItem<?>> items;
 	private final MixedTransformView<?> view;
+	private final RealTransformRealRandomAccessible<?,?> realView;
 	private final int numDims;
 
 	public SimpleMetadataStore(int n) {
-		this(new ArrayList<>(), null, n);
+		this.items = new ArrayList<>();
+		this.view = null;
+		this.realView = null;
+		this.numDims = n;
 	}
 
 	public SimpleMetadataStore(List<MetadataItem<?>> items, MixedTransformView<?> view, int n) {
 		this.items = items;
 		this.view = view;
+		this.realView = null;
+		this.numDims = n;
+	}
+
+	public SimpleMetadataStore(List<MetadataItem<?>> items, RealTransformRealRandomAccessible<?, ?> realView, int n) {
+		this.items = items;
+		this.view = null;
+		this.realView = realView;
 		this.numDims = n;
 	}
 
@@ -59,8 +77,16 @@ public class SimpleMetadataStore implements MetadataStore {
 	@Override
 	public MetadataStore view(MixedTransformView<?> v) {
 		// TODO: Can we chain them? That'd be a cool trick
-		if (view != null)
+		if (view != null || realView != null)
 			throw new UnsupportedOperationException("You must call view() on the original MetaData");
+		return new SimpleMetadataStore(items, v, numDims);
+	}
+
+	@Override
+	public MetadataStore realView(RealTransformRealRandomAccessible<?, ?> v) {
+		// TODO: Can we chain them? That'd be a cool trick
+		if (view != null || realView != null)
+			throw new UnsupportedOperationException("You must call realView() on the original MetaData");
 		return new SimpleMetadataStore(items, v, numDims);
 	}
 
@@ -83,6 +109,13 @@ public class SimpleMetadataStore implements MetadataStore {
 		boolean[] axes = makeAxisAttachmentArray(dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		items.add(new VaryingItem<>(name, data, axes, axes));
+	}
+
+	@Override
+	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
+		boolean[] axes = makeAxisAttachmentArray(dims);
+		// TODO: What if varying axes and attached axes are not the same?
+		items.add(new VaryingRealItem<>(name, data, axes, axes));
 	}
 
 	@Override
@@ -134,7 +167,7 @@ public class SimpleMetadataStore implements MetadataStore {
 		}
 
 		@Override
-		public T getAt(final Localizable pos) {
+		public T getAt(final RealLocalizable pos) {
 			return get();
 		}
 
@@ -160,6 +193,91 @@ public class SimpleMetadataStore implements MetadataStore {
 				sb.append("not attached to any axis; ");
 
 			sb.append("value = " + data);
+
+			return sb.toString();
+		}
+	}
+
+	private static class VaryingRealItem<T> implements MetadataItem<T> {
+		final String name;
+
+		final RealRandomAccessible<T> data;
+		final RealTransformRealRandomAccessible<?, ?> view;
+
+		final boolean[] variesWithAxes;
+
+		final boolean[] attachedToAxes;
+
+		public VaryingRealItem(final String name, final RealRandomAccessible<T> data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+			this(name, data, null, variesWithAxes, attachedToAxes);
+		}
+
+		private VaryingRealItem(final String name, final RealRandomAccessible<T> data, final RealTransformRealRandomAccessible<?, ?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+			this.name = name;
+			this.data = data;
+			this.view = view;
+			this.variesWithAxes = variesWithAxes;
+			this.attachedToAxes = attachedToAxes;
+		}
+
+		public boolean isAttachedToAxes() {
+			return attachedToAxes != null;
+		}
+
+		@Override
+		public T getAt(final RealLocalizable pos) {
+			RealLocalizable src;
+			if (view != null) {
+				// FIXME: Yuckkkkkkk
+				RealTransform tform = view.getTransformToSource();
+				final RealPoint dest = new RealPoint(tform.numSourceDimensions());
+				view.getTransformToSource().apply(pos, dest);
+				src = dest;
+			} else {
+				src = pos;
+			}
+			final RealRandomAccess<T> access = data.realRandomAccess();
+			for (int d = 0, i = 0; d < variesWithAxes.length; ++d)
+				if (variesWithAxes[d])
+					access.setPosition(src.getDoublePosition(d), i++);
+			return access.get();
+		}
+
+		@Override
+		public MetadataItem<T> view(MixedTransformView<?> view) {
+			throw new UnsupportedOperationException("Aghgh");
+		}
+
+		@Override
+		public String name() {
+			return name;
+		}
+
+		@Override
+		public boolean isAttachedTo(int d) {
+			return attachedToAxes != null && attachedToAxes[d];
+		}
+
+		@Override
+		public T get() {
+			throw new UnsupportedOperationException("Varying real item does not support get()");
+		}
+
+		@Override
+		public String toString() {
+			final StringBuilder sb = new StringBuilder("VaryingRealItem \"");
+			sb.append(name);
+			sb.append("\"; ");
+
+			if (isAttachedToAxes()) {
+				sb.append("attached to axes {");
+				final int[] axes = flagsToAxisList(attachedToAxes);
+				sb.append(axes[0]);
+				for (int i = 1; i < axes.length; ++i)
+					sb.append(", " + axes[i]);
+				sb.append("}; ");
+			} else
+				sb.append("not attached to any axis; ");
 
 			return sb.toString();
 		}
@@ -192,13 +310,13 @@ public class SimpleMetadataStore implements MetadataStore {
 		}
 
 		@Override
-		public T getAt(final Localizable pos) {
-			Localizable src;
-			if (view != null) {
+		public T getAt(final RealLocalizable pos) {
+			RealLocalizable src;
+			if (view != null && pos instanceof Localizable) {
 				// FIXME: Yuckkkkkkk
 				final MixedTransform tform = view.getTransformToSource();
 				final Point dest = new Point(tform.numSourceDimensions());
-				view.getTransformToSource().apply(pos, dest);
+				view.getTransformToSource().apply((Localizable) pos, dest);
 				src = dest;
 			} else {
 				src = pos;
@@ -206,7 +324,7 @@ public class SimpleMetadataStore implements MetadataStore {
 			final RandomAccess<T> access = data.randomAccess();
 			for (int d = 0, i = 0; d < variesWithAxes.length; ++d)
 				if (variesWithAxes[d])
-					access.setPosition(src.getLongPosition(d), i++);
+					access.setPosition((long) src.getDoublePosition(d), i++);
 			return access.get();
 		}
 
