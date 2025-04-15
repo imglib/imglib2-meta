@@ -10,6 +10,7 @@ import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.meta.general.General;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
@@ -24,6 +25,10 @@ public final class Metadata {
 
 	public static Calibration calibration(MetadataStore store) {
 		return store.info(Calibration.class);
+	}
+
+	public static General general(MetadataStore store) {
+		return store.info(General.class);
 	}
 
 	public static <T> MetadataItem<T> item(String name, T data, int numDims, int... dims) {
