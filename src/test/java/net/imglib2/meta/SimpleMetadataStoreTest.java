@@ -91,7 +91,7 @@ public class SimpleMetadataStoreTest {
         System.out.println(lutItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore storeView = new MetadataStoreView(store, v);
+        MetadataStore storeView = Metadata.view(store, v);
         lutItem = storeView.get("lut", 2).get();
         System.out.println(lutItem.getAt(0, 0, 0, 0, 0));
         System.out.println(lutItem.getAt(0, 0, 1, 0, 0));
@@ -167,7 +167,7 @@ public class SimpleMetadataStoreTest {
         System.out.println(coordsItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore storeRealView = new MetadataStoreRealView(store, v);
+        MetadataStore storeRealView = Metadata.view(store, v);
         coordsItem = storeRealView.get("coords", 2).get();
         System.out.println(coordsItem.getAt(1, 2, 3, 4, 5));
         System.out.println(coordsItem.getAt(5, 6, 7, 8, 9));

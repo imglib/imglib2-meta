@@ -7,6 +7,9 @@ import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformRealRandomAccessible;
+import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
@@ -38,6 +41,22 @@ public final class Metadata {
 		boolean[] axes = makeAxisAttachmentArray(data.numDimensions(), dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes, axes);
+	}
+
+	public static MetadataStore view(MetadataStore source, MixedTransformView<?> view) {
+		return view(source, view.getTransformToSource());
+	}
+
+	public static MetadataStore view(MetadataStore source, MixedTransform transform) {
+		return new MetadataStoreView(source, transform);
+	}
+
+	public static MetadataStore view(MetadataStore source, RealTransformRealRandomAccessible<?,?> view) {
+		return view(source, view.getTransformToSource());
+	}
+
+	public static MetadataStore view(MetadataStore source, RealTransform transform) {
+		return view(source, transform);
 	}
 
 	private static boolean[] makeAxisAttachmentArray(int numDims, int... dims) {

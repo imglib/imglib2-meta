@@ -9,14 +9,10 @@ import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 
 import java.util.Optional;
 
-public class MetadataStoreRealView implements MetadataStore {
+class MetadataStoreRealView implements MetadataStore {
 
 	private final MetadataStore source;
 	private final RealTransform transform;
-
-	public MetadataStoreRealView(MetadataStore source, RealTransformRealRandomAccessible<?,?> view) {
-		this(source, view.getTransformToSource());
-	}
 
 	public MetadataStoreRealView(MetadataStore source, RealTransform transform) {
 		this.source = source;

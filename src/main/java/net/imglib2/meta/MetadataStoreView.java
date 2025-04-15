@@ -10,14 +10,10 @@ import net.imglib2.view.MixedTransformView;
 
 import java.util.Optional;
 
-public class MetadataStoreView implements MetadataStore {
+class MetadataStoreView implements MetadataStore {
 
 	private final MetadataStore source;
 	private final MixedTransform transform;
-
-	public MetadataStoreView(MetadataStore source, MixedTransformView<?> view) {
-		this(source, view.getTransformToSource());
-	}
 
 	public MetadataStoreView(MetadataStore source, MixedTransform transform) {
 		this.source = source;
