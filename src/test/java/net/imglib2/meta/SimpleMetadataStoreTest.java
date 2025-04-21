@@ -6,6 +6,7 @@ import net.imagej.axis.CalibratedAxis;
 import net.imagej.axis.DefaultLinearAxis;
 import net.imagej.axis.TypedAxis;
 import net.imglib2.Localizable;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.list.ListImg;
@@ -33,16 +34,7 @@ public class SimpleMetadataStoreTest {
 
     @Test
     public void testInteger() {
-        // create an image on the fly
-        Supplier<DoubleType> s = DoubleType::new;
-        BiConsumer<Localizable, ? super DoubleType> f = (l, t) -> {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < l.numDimensions(); i++) {
-                sb.append(Math.abs(l.getLongPosition(i)));
-            }
-            t.set(Long.parseLong(sb.toString()));
-        };
-        FunctionRandomAccessible<DoubleType> image = new FunctionRandomAccessible<>(5, f, s);
+        RandomAccessible<DoubleType> image = Data.image();
         assertEquals(12345.0, image.getAt(1,2,3,4,5).get(), 0.0);
         // rotate
         MixedTransformView<DoubleType> v = Views.rotate(image, 3, 2);
@@ -106,18 +98,7 @@ public class SimpleMetadataStoreTest {
 
     @Test
     public void testReal() {
-        // create an image on the fly
-        Supplier<DoubleType> s = DoubleType::new;
-        BiConsumer<RealLocalizable, ? super DoubleType> f = (l, t) -> {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < l.numDimensions(); i++) {
-                sb.append(Math.abs(l.getDoublePosition(i)));
-            }
-            String digits = sb.toString().replaceAll("\\D", "");
-            if (digits.length() > 18) digits = digits.substring(0, 18);
-            t.set(Long.parseLong(digits));
-        };
-        FunctionRealRandomAccessible<DoubleType> image = new FunctionRealRandomAccessible<>(5, f, s);
+        RealRandomAccessible<DoubleType> image = Data.realImage();
         assertEquals(1.02030405E9, image.getAt(1,2,3,4,5).get(), 0.0);
         // rotate
         double[] scales = {1.1, 2.2, 3.3, 4.4, 5.5};
