@@ -44,7 +44,9 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> slice(int d, long pos) {
-		return wrap(Views.hyperSlice(this.delegate(), d, pos), store());
+		MixedTransformView<T> raView = Views.hyperSlice(this.delegate(), d, pos);
+		MetadataStore storeView = new MetadataStoreView(store(), raView.getTransformToSource());
+		return wrap(raView, storeView);
 	}
 
 	@Override
