@@ -33,7 +33,9 @@ class MetadataStoreView implements MetadataStore {
 
 	@Override
 	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
-		return source.info(infoClass);
+		T srcStore = source.info(infoClass);
+		srcStore.setStore(this);
+		return srcStore;
 	}
 
 	@Override

@@ -5,14 +5,8 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.interpolation.InterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.ClampingNLinearInterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.LanczosInterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
-import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Util;
+import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleIntervalView;
 import net.imglib2.view.fluent.RandomAccessibleView;
@@ -21,7 +15,7 @@ import net.imglib2.view.fluent.RealRandomAccessibleView;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Dataset<T, V extends RandomAccessibleView<T, V>> extends RandomAccessibleView<T, V> {
+public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 	RandomAccessible<T> data();
 	MetadataStore store();
 
@@ -30,9 +24,17 @@ public interface Dataset<T, V extends RandomAccessibleView<T, V>> extends Random
 		return data();
 	}
 
-	static <T, V extends RandomAccessibleView<T, V>> RandomAccessibleView<T, V> wrap(RandomAccessible<T> delegate) {
-		return () -> {
-			return delegate;
+	static <T> Dataset<T> wrap(RandomAccessible<T> delegate, MetadataStore store) {
+		return new Dataset<T>() {
+			@Override
+			public RandomAccessible<T> data() {
+				return delegate;
+			}
+
+			@Override
+			public MetadataStore store() {
+				return store;
+			}
 		};
 	}
 
@@ -40,59 +42,71 @@ public interface Dataset<T, V extends RandomAccessibleView<T, V>> extends Random
 		return RandomAccessibleIntervalView.wrap(Views.interval(this.delegate(), interval));
 	}
 
-	default RandomAccessibleView<T, ?> slice(int d, long pos) {
-		return wrap(Views.hyperSlice(this.delegate(), d, pos));
+	@Override
+	default Dataset<T> slice(int d, long pos) {
+		return wrap(Views.hyperSlice(this.delegate(), d, pos), store());
 	}
 
-	default RandomAccessibleView<T, ?> addDimension() {
-		return wrap(Views.addDimension(this.delegate()));
+	@Override
+	default Dataset<T> addDimension() {
+		return wrap(Views.addDimension(this.delegate()), store());
 	}
 
-	default RandomAccessibleView<T, ?> translate(long... translation) {
-		return wrap(Views.translate(this.delegate(), translation));
+	@Override
+	default Dataset<T> translate(long... translation) {
+		return wrap(Views.translate(this.delegate(), translation), store());
 	}
 
-	default RandomAccessibleView<T, ?> translateInverse(long... translation) {
-		return wrap(Views.translateInverse(this.delegate(), translation));
+	@Override
+	default Dataset<T> translateInverse(long... translation) {
+		return wrap(Views.translateInverse(this.delegate(), translation), store());
 	}
 
-	default RandomAccessibleView<T, ?> subsample(long... steps) {
-		return wrap(Views.subsample(this.delegate(), Util.expandArray(steps, this.numDimensions())));
+	@Override
+	default Dataset<T> subsample(long... steps) {
+		return wrap(Views.subsample(this.delegate(), Util.expandArray(steps, this.numDimensions())), store());
 	}
 
-	default RandomAccessibleView<T, ?> rotate(int fromAxis, int toAxis) {
-		return wrap(Views.rotate(this.delegate(), fromAxis, toAxis));
+	@Override
+	default Dataset<T> rotate(int fromAxis, int toAxis) {
+		MixedTransformView<T> raView = Views.rotate(this.delegate(), fromAxis, toAxis);
+		MetadataStore storeView = new MetadataStoreView(store(), raView.getTransformToSource());
+		return wrap(raView, storeView);
 	}
 
-	default RandomAccessibleView<T, ?> permute(int fromAxis, int toAxis) {
-		return wrap(Views.permute(this.delegate(), fromAxis, toAxis));
+	@Override
+	default Dataset<T> permute(int fromAxis, int toAxis) {
+		return wrap(Views.permute(this.delegate(), fromAxis, toAxis), store());
 	}
 
-	default RandomAccessibleView<T, ?> moveAxis(int fromAxis, int toAxis) {
-		return wrap(Views.moveAxis(this.delegate(), fromAxis, toAxis));
+	@Override
+	default Dataset<T> moveAxis(int fromAxis, int toAxis) {
+		return wrap(Views.moveAxis(this.delegate(), fromAxis, toAxis), store());
 	}
 
-	default RandomAccessibleView<T, ?> invertAxis(int axis) {
-		return wrap(Views.invertAxis(this.delegate(), axis));
+	@Override
+	default Dataset<T> invertAxis(int axis) {
+		return wrap(Views.invertAxis(this.delegate(), axis), store());
 	}
 
 	default RealRandomAccessibleView<T> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
-		return RealRandomAccessibleView.wrap(Views.interpolate(this.delegate(), interpolation.factory));
+		throw new UnsupportedOperationException("TODO");
+//		return wrap(RandomAccessibleView.super.interpolate(interpolation));
 	}
 
 	default <U> RandomAccessibleView<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
-		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier));
+		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
 	}
 
 	default <U> RandomAccessibleView<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
-		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier));
+		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}
 
-	default <U> U use(Function<? super V, U> function) {
+	default <U> U use(Function<? super Dataset<T>, U> function) {
 		return function.apply(this);
 	}
 
-	default RandomAccessibleView<T, ?> view() {
+	default Dataset<T> view() {
 		return this;
 	}
 
@@ -112,27 +126,4 @@ public interface Dataset<T, V extends RandomAccessibleView<T, V>> extends Random
 		return this.delegate().randomAccess(interval);
 	}
 
-	public static class Interpolation<T> {
-		final InterpolatorFactory<T, ? super RandomAccessible<T>> factory;
-
-		private Interpolation(InterpolatorFactory<T, ? super RandomAccessible<T>> factory) {
-			this.factory = factory;
-		}
-
-		public static <T> RandomAccessibleView.Interpolation<T> nearestNeighbor() {
-			return new RandomAccessibleView.Interpolation(new NearestNeighborInterpolatorFactory());
-		}
-
-		public static <T extends NumericType<T>> RandomAccessibleView.Interpolation<T> nLinear() {
-			return new RandomAccessibleView.Interpolation(new NLinearInterpolatorFactory());
-		}
-
-		public static <T extends NumericType<T>> RandomAccessibleView.Interpolation<T> clampingNLinear() {
-			return new RandomAccessibleView.Interpolation(new ClampingNLinearInterpolatorFactory());
-		}
-
-		public static <T extends RealType<T>> RandomAccessibleView.Interpolation<T> lanczos() {
-			return new RandomAccessibleView.Interpolation(new LanczosInterpolatorFactory());
-		}
-	}
 }

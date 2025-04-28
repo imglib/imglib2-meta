@@ -8,6 +8,7 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.fluent.RandomAccessibleView;
+import org.junit.Assert;
 import org.junit.Test;
 
 /** Tests {@link DefaultDataset}. */
@@ -24,14 +25,16 @@ public class DefaultDatasetTest {
 		calibration.setAxis(axis(Axes.CHANNEL), 3);
 		calibration.setAxis(axis(Axes.TIME), 4);
 
-		Dataset<DoubleType, ?> dataset = new DefaultDataset<>(data, store);
+		Dataset<DoubleType> dataset = new DefaultDataset<>(data, store);
 
-		Dataset<DoubleType, ?> rotated = dataset.rotate(3, 2);
+		Dataset<DoubleType> rotated = dataset.view().rotate(3, 2);
 
 		Calibration calView = rotated.store().info(Calibration.class);
-		for (int d=0; d<rotated.numDimensions(); d++) {
-			System.out.println(calView.axis(d).type());
-		}
+		Assert.assertEquals(calView.axis(0).type(), Axes.X);
+		Assert.assertEquals(calView.axis(1).type(), Axes.Y);
+		Assert.assertEquals(calView.axis(2).type(), Axes.CHANNEL);
+		Assert.assertEquals(calView.axis(3).type(), Axes.Z);
+		Assert.assertEquals(calView.axis(4).type(), Axes.TIME);
 	}
 
 	private CalibratedAxis axis(AxisType axisType) {

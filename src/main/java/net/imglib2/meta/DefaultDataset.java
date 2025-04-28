@@ -3,7 +3,7 @@ package net.imglib2.meta;
 import net.imglib2.RandomAccessible;
 import net.imglib2.view.fluent.RandomAccessibleView;
 
-public class DefaultDataset<T, V extends RandomAccessibleView<T, V>> implements Dataset<T, V> {
+public class DefaultDataset<T> implements Dataset<T> {
 
 	private final RandomAccessible<T> data;
 	private final MetadataStore store;
