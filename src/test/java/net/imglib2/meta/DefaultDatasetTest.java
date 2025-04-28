@@ -47,6 +47,18 @@ public class DefaultDatasetTest {
 	}
 
 	@Test
+	public void testFluentPermutation() {
+		Dataset<DoubleType> sliced = dataset().view().permute(3, 2);
+
+		Calibration calView = sliced.store().info(Calibration.class);
+		Assert.assertEquals(Axes.X, calView.axis(0).type());
+		Assert.assertEquals(Axes.Y, calView.axis(1).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
+		Assert.assertEquals(Axes.Z, calView.axis(3).type());
+		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
+	}
+
+	@Test
 	public void testFluentSlicing() {
 		// Take a Z-slice
 		Dataset<DoubleType> sliced = dataset().view().slice(2, 9);
@@ -59,7 +71,22 @@ public class DefaultDatasetTest {
 		Assert.assertThrows(NoSuchElementException.class, () -> calView.axis(4));
 	}
 
+	@Test
+	public void testFluentConcatenation() {
+		// Take a slice after rotating
+		Dataset<DoubleType> sliced = dataset().view().rotate(4, 2).slice(2, 9);
+
+		Calibration calView = sliced.store().info(Calibration.class);
+		Assert.assertEquals(Axes.X, calView.axis(0).type());
+		Assert.assertEquals(Axes.Y, calView.axis(1).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
+		Assert.assertEquals(Axes.Z, calView.axis(3).type());
+		Assert.assertThrows(NoSuchElementException.class, () -> calView.axis(4));
+	}
+
 	private CalibratedAxis axis(AxisType axisType) {
-		return new DefaultLinearAxis(axisType);
+		CalibratedAxis ax = new DefaultLinearAxis(axisType);
+		ax.setUnit(axisType.getLabel());
+		return ax;
 	}
 }

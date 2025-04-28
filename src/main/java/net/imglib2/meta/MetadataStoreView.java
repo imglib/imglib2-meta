@@ -1,22 +1,18 @@
 package net.imglib2.meta;
 
-import net.imglib2.Localizable;
-import net.imglib2.Point;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealRandomAccessible;
-import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.*;
+import net.imglib2.transform.integer.Mixed;
 
 import java.util.Optional;
 
 class MetadataStoreView implements MetadataStore {
 
 	private final MetadataStore source;
-	private final MixedTransform transform;
+	private final Mixed transform;
 	// We want the inverse of transform.component for slicing
 	private final int[] dim_map;
 
-	public MetadataStoreView(MetadataStore source, MixedTransform transform) {
+	public MetadataStoreView(MetadataStore source, Mixed transform) {
 		this.source = source;
 		this.transform = transform;
 		this.dim_map = new int[ transform.numSourceDimensions() ];
@@ -82,9 +78,9 @@ class MetadataStoreView implements MetadataStore {
 
 	private static class MetadataItemView<T> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
-		private final MixedTransform transform;
+		private final Mixed transform;
 
-		public MetadataItemView(MetadataItem<T> source, MixedTransform transform) {
+		public MetadataItemView(MetadataItem<T> source, Mixed transform) {
 			this.source = source;
 			this.transform = transform;
 		}
