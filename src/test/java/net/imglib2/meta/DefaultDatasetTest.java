@@ -46,9 +46,9 @@ public class DefaultDatasetTest {
 
 	@Test
 	public void testFluentPermutation() {
-		Dataset<DoubleType> sliced = dataset().view().permute(3, 2);
+		Dataset<DoubleType> permuted = dataset().view().permute(3, 2);
 
-		Calibration calView = sliced.store().info(Calibration.class);
+		Calibration calView = permuted.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
 		Assert.assertEquals(Axes.Y, calView.axis(1).type());
 		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
@@ -72,9 +72,9 @@ public class DefaultDatasetTest {
 	@Test
 	public void testFluentConcatenation() {
 		// Take a slice after rotating
-		Dataset<DoubleType> sliced = dataset().view().rotate(4, 2).slice(2, 9);
+		Dataset<DoubleType> rotated = dataset().view().rotate(4, 2).slice(2, 9);
 
-		Calibration calView = sliced.store().info(Calibration.class);
+		Calibration calView = rotated.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
 		Assert.assertEquals(Axes.Y, calView.axis(1).type());
 		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
@@ -84,29 +84,21 @@ public class DefaultDatasetTest {
 
 	@Test
 	public void testFluentTranslation() {
-		// Take a slice after rotating
-		Dataset<DoubleType> sliced = dataset().view().translate(1, 2, 3, 4, 5);
-
-		Calibration calView = sliced.store().info(Calibration.class);
-		LinearAxis axis = calView.axis(0);
-		Assert.assertEquals(1.0, axis.getAt(0));
-//		calView.axis(0).type();
-//		Assert.assertEquals(Axes.X, calView.axis(0).type());
-//		Assert.assertEquals(Axes.Y, calView.axis(1).type());
-//		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
-//		Assert.assertEquals(Axes.Z, calView.axis(3).type());
-//		Assert.assertThrows(NoSuchElementException.class, () -> calView.axis(4));
+		// Translate
+		Dataset<DoubleType> translated = dataset().view().translate(1, 0, 0, 0, 0);
+		Calibration calView = translated.store().info(Calibration.class);
+		Assert.assertEquals(1.0, calView.calibrated(0, 0), 1e-6);
+		// Translate
+		translated = dataset().view().translate(1, 0, 0, 0, 0).permute(0, 2);
+		calView = translated.store().info(Calibration.class);
+		Assert.assertEquals(1.0, calView.calibrated(2, 0), 1e-6);
 	}
 
 	@Test
 	public void testFluentSubsampling() {
-		// Take a slice after rotating
-		Dataset<DoubleType> sliced = dataset().view().subsample(2, 1, 1, 1, 1);
-
-		Calibration calView = sliced.store().info(Calibration.class);
-		LinearAxis axis = calView.axis(0);
-		Assert.assertEquals(0.0, axis.getAt(0));
-		Assert.assertEquals(2.0, axis.getAt(1));
+		Dataset<DoubleType> translated = dataset().view().subsample(2, 1, 1, 1, 1);
+		Calibration calView = translated.store().info(Calibration.class);
+		Assert.assertEquals(2.0, calView.calibrated(0, 1), 1e-6);
 	}
 
 	private LinearAxis axis(AxisType axisType) {

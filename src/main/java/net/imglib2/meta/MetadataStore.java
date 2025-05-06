@@ -3,17 +3,17 @@ package net.imglib2.meta;
 import net.imglib2.EuclideanSpace;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
-import net.imglib2.meta.attribution.Attribution;
-import net.imglib2.meta.calibration.Calibration;
-import net.imglib2.realtransform.AffineGet;
-import net.imglib2.realtransform.AffineRealRandomAccessible;
-import net.imglib2.realtransform.RealTransformRealRandomAccessible;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.MixedTransformView;
+import net.imglib2.transform.integer.Mixed;
+import net.imglib2.transform.integer.MixedTransform;
 
 import java.util.Optional;
 
 public interface MetadataStore extends EuclideanSpace {
+
+	default MixedTransform transform() {
+		//Identity transform
+		return new MixedTransform(numDimensions(), numDimensions());
+	}
 
 	/**
 	 * Find a {@link MetadataItem} matching {@code key}

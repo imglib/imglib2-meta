@@ -8,7 +8,7 @@ import net.imglib2.type.numeric.real.DoubleType;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class LinearAxis extends FunctionRandomAccessible<DoubleType> {
+public class LinearAxis extends FunctionRandomAccessible<DoubleType>{
 
     private final LinearAxisFunction function;
     private final AxisType type;
