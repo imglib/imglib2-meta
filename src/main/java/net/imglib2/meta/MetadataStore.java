@@ -15,19 +15,24 @@ import java.util.Optional;
 
 public interface MetadataStore extends EuclideanSpace {
 
+	/**
+	 * Find a {@link MetadataItem} matching {@code key}
+	 * @param name
+	 * @return a {@link MetadataItem} matching {@code key}
+	 */
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String name) {
+	default Optional<MetadataItem<?, ?>> get(String name) {
 		return (Optional) get(name, null);
 	}
 
-	<T> Optional<MetadataItem<T>> get(String name, Class<T> ofType);
+	<T> Optional<MetadataItem<T, T>> get(String name, Class<T> ofType);
 
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String name, int d) {
+	default Optional<MetadataItem<?, ?>> get(String name, int d) {
 		return (Optional) get(name, d, null);
 	}
 
-	<T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType);
+	<T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String name, int d, Class<T> ofType);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);
@@ -36,8 +41,8 @@ public interface MetadataStore extends EuclideanSpace {
 	<T> void add(String name, T data, int... dims);
 
 	/** TODO Varying in integer space */
-	<T> void add(String name, RandomAccessible<T> data, int... dims);
+	<T, U extends RandomAccessible<T>> void add(String name, U data, int... dims);
 
 	/** TODO Varying in real space */
-	<T> void add(String name, RealRandomAccessible<T> data, int... dims);
+	<T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims);
 }

@@ -6,7 +6,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.view.MixedTransformView;
 
-public interface MetadataItem<T> {
+public interface MetadataItem<T, U> {
 
 	String name();
 
@@ -16,13 +16,13 @@ public interface MetadataItem<T> {
 
 	T get();
 
-	default T getAt(RealLocalizable pos) { return get(); }
+	U getAt(RealLocalizable pos);
 
-	default T getAt(long... pos) {
+	default U getAt(long... pos) {
 		return getAt(new Point(pos));
 	}
 
-	default T getAt(double... pos) {
+	default U getAt(double... pos) {
 		return getAt(new RealPoint(pos));
 	}
 

@@ -27,12 +27,12 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T, T>> get(String key, Class<T> ofType) {
 		return itemView(source.get(key, ofType));
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
 		if (dim_map.length <= d) {
 			return Optional.empty();
 		}
@@ -53,12 +53,12 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
+	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
 	@Override
-	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
+	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
@@ -67,20 +67,20 @@ class MetadataStoreView implements MetadataStore {
 		return source.numDimensions();
 	}
 
-	private <T> Optional<MetadataItem<T>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
+	private <T, U> Optional<MetadataItem<T, U>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T, U>> result
 	) {
 		if (!result.isPresent()) return result;
-		MetadataItem<T> sourceItem = result.get();
+		MetadataItem<T, U> sourceItem = result.get();
 		if (!sourceItem.isAttachedToAxes()) return result;
 		return Optional.of(new MetadataItemView<>(sourceItem, transform));
 	}
 
-	private static class MetadataItemView<T> implements MetadataItem<T> {
-		private final MetadataItem<T> source;
+	private static class MetadataItemView<T, U> implements MetadataItem<T, U> {
+		private final MetadataItem<T, U> source;
 		private final Mixed transform;
 
-		public MetadataItemView(MetadataItem<T> source, Mixed transform) {
+		public MetadataItemView(MetadataItem<T, U> source, Mixed transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -106,7 +106,7 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public T getAt(RealLocalizable pos) {
+		public U getAt(RealLocalizable pos) {
 			if (!(pos instanceof Localizable)) {
 				throw new UnsupportedOperationException("Cannot use non-Localizable with metadata store view. YET!");
 			}

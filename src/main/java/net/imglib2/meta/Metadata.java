@@ -26,18 +26,18 @@ public final class Metadata {
 		return store.info(Calibration.class);
 	}
 
-	public static <T> MetadataItem<T> item(String name, T data, int numDims, int... dims) {
+	public static <T> MetadataItem<T, T> item(String name, T data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		return new SimpleItem<>(name, data, axes);
 	}
 
-	public static <T> MetadataItem<T> item(String name, RandomAccessible<T> data, int numDims, int... dims) {
+	public static <T, U extends RandomAccessible<T>> MetadataItem<U, T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingItem<>(name, data, axes, axes);
 	}
 
-	public static <T> MetadataItem<T> item(String name, RealRandomAccessible<T> data, int numDims, int... dims) {
+	public static <T, U extends RealRandomAccessible<T>> MetadataItem<U, T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes, axes);
@@ -75,7 +75,7 @@ public final class Metadata {
 		return Arrays.copyOfRange( tmp, 0, i );
 	}
 
-	private static class SimpleItem<T> implements MetadataItem<T> {
+	private static class SimpleItem<T> implements MetadataItem<T, T> {
 		final String name;
 
 		final T data;
@@ -134,21 +134,21 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingItem<T> implements MetadataItem<T> {
+	private static class VaryingItem<T, U extends RandomAccessible<T>> implements MetadataItem<U, T> {
 		final String name;
 
-		final RandomAccessible<T> data;
+		final U data;
 		final MixedTransformView<?> view;
 
 		final boolean[] variesWithAxes;
 
 		final boolean[] attachedToAxes;
 
-		public VaryingItem(final String name, final RandomAccessible<T> data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+		public VaryingItem(final String name, final U data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
 			this(name, data, null, variesWithAxes, attachedToAxes);
 		}
 
-		private VaryingItem(final String name, final RandomAccessible<T> data, final MixedTransformView<?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+		private VaryingItem(final String name, final U data, final MixedTransformView<?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
 			this.name = name;
 			this.data = data;
 			this.view = view;
@@ -180,8 +180,8 @@ public final class Metadata {
 		}
 
 		@Override
-		public T get() {
-			throw new UnsupportedOperationException("Varying item does not support get()");
+		public U get() {
+			return data;
 		}
 
 		@Override
@@ -204,16 +204,16 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingRealItem<T> implements MetadataItem<T> {
+	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> implements MetadataItem<U, T> {
 		final String name;
 
-		final RealRandomAccessible<T> data;
+		final U data;
 
 		final boolean[] variesWithAxes;
 
 		final boolean[] attachedToAxes;
 
-		public VaryingRealItem(final String name, final RealRandomAccessible<T> data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+		public VaryingRealItem(final String name, final U data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
 			this.name = name;
 			this.data = data;
 			this.variesWithAxes = variesWithAxes;
@@ -244,8 +244,8 @@ public final class Metadata {
 		}
 
 		@Override
-		public T get() {
-			throw new UnsupportedOperationException("Varying real item does not support get()");
+		public U get() {
+			return data;
 		}
 
 		@Override

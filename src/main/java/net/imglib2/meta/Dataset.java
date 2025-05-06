@@ -63,7 +63,10 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 	@Override
 	default Dataset<T> translate(long... translation) {
 		MixedTransformView<T> raView = Views.translate(this.delegate(), translation);
-		MetadataStore storeView = new MetadataStoreView(store(), raView.getTransformToSource());
+		MetadataStore storeView = new MetadataStoreView(
+				store(),
+				ViewTransforms.translate(translation)
+		);
 		return wrap(raView, storeView);
 	}
 

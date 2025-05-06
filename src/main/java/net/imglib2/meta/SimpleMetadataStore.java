@@ -12,7 +12,7 @@ import java.util.ServiceLoader;
 
 public class SimpleMetadataStore implements MetadataStore {
 
-	private final List<MetadataItem<?>> items;
+	private final List<MetadataItem<?, ?>> items;
 	private final RealTransformRealRandomAccessible<?,?> realView;
 	private final int numDims;
 
@@ -22,37 +22,37 @@ public class SimpleMetadataStore implements MetadataStore {
 		this.numDims = n;
 	}
 
-	public SimpleMetadataStore(List<MetadataItem<?>> items, MixedTransformView<?> view, int n) {
+	public SimpleMetadataStore(List<MetadataItem<?, ?>> items, MixedTransformView<?> view, int n) {
 		this.items = items;
 		this.realView = null;
 		this.numDims = n;
 	}
 
-	public SimpleMetadataStore(List<MetadataItem<?>> items, RealTransformRealRandomAccessible<?, ?> realView, int n) {
+	public SimpleMetadataStore(List<MetadataItem<?, ?>> items, RealTransformRealRandomAccessible<?, ?> realView, int n) {
 		this.items = items;
 		this.realView = realView;
 		this.numDims = n;
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String name, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T, T>> get(String name, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
 			.filter(item -> !item.isAttachedToAxes())
 			.filter(item -> ofType == null || ofType.isInstance(item.get()))
-			.map(item -> (MetadataItem<T>) item)
+			.map(item -> (MetadataItem<T, T>) item)
 			.findFirst();
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String name, int d, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
 			.filter(item -> item.isAttachedTo(d)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.get()))
-			.map(item -> (MetadataItem<T>) item)
+			.map(item -> (MetadataItem<T, RandomAccessible<T>>) item)
 			.findFirst();
 	}
 
@@ -70,12 +70,12 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
+	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
 		items.add(Metadata.item(name, data, numDims, dims));
 	}
 
 	@Override
-	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
+	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
 		items.add(Metadata.item(name, data, numDims, dims));
 	}
 

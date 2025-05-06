@@ -20,13 +20,13 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
-		Optional<MetadataItem<T>> result = source.get(key, ofType);
+	public <T> Optional<MetadataItem<T, T>> get(String key, Class<T> ofType) {
+		Optional<MetadataItem<T, T>> result = source.get(key, ofType);
 		return itemView(result);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
 		return itemView(source.get(key, d, ofType)); // FIXME: Dimensional index might have shifted meaning here.
 	}
@@ -42,12 +42,12 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
+	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
 		throw new UnsupportedOperationException("RealView of metadata store is read-only");
 	}
 
 	@Override
-	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
+	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
 		throw new UnsupportedOperationException("RealView of metadata store is read-only");
 	}
 
@@ -56,20 +56,20 @@ class MetadataStoreRealView implements MetadataStore {
 		return source.numDimensions();
 	}
 
-	private <T> Optional<MetadataItem<T>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
+	private <T, U> Optional<MetadataItem<T, U>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T, U>> result
 	) {
 		if (!result.isPresent()) return result;
-		MetadataItem<T> sourceItem = result.get();
+		MetadataItem<T, U> sourceItem = result.get();
 		if (!sourceItem.isAttachedToAxes()) return result;
 		return Optional.of(new MetadataItemRealView<>(sourceItem, transform));
 	}
 
-	private static class MetadataItemRealView<T> implements MetadataItem<T> {
-		private final MetadataItem<T> source;
+	private static class MetadataItemRealView<T, U> implements MetadataItem<T, U> {
+		private final MetadataItem<T, U> source;
 		private final RealTransform transform;
 
-		public MetadataItemRealView(MetadataItem<T> source, RealTransform transform) {
+		public MetadataItemRealView(MetadataItem<T, U> source, RealTransform transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -95,7 +95,7 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public T getAt(RealLocalizable pos) {
+		public U getAt(RealLocalizable pos) {
 			final RealPoint p = new RealPoint(transform.numSourceDimensions());
 			transform.apply(pos, p);
 			return source.getAt(p);
