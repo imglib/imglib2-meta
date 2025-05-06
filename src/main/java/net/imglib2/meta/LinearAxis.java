@@ -6,40 +6,51 @@ import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class LinearAxis extends FunctionRandomAccessible<DoubleType> {
 
-    private AxisType axisType;
-    private double offset;
-    private double scale;
+    private final LinearAxisFunction function;
+    private final AxisType type;
 
     public LinearAxis(AxisType type) {
         this(type, 0.0, 1.0);
     }
 
     public LinearAxis(AxisType type, double offset, double scale) {
-        super(1, (l, o) -> o.setReal(l.getDoublePosition(0) * scale + offset), DoubleType::new);
-
-        this.axisType = type;
-        this.offset = offset;
-        this.scale = scale;
+        super(1, new LinearAxisFunction(), DoubleType::new);
+        this.function = (LinearAxisFunction) this.functionSupplier.get();
+        this.type = type;
     }
 
     public AxisType type() {
-        return axisType;
+        return type;
     }
 
     public double scale() {
-        return scale;
+        return function.scale;
     }
 
     public double offset() {
-        return offset;
+        return function.offset;
     }
 
-//    /** Gets the dimension's unit. */
-//    String unit();
-//
-//    /** Sets the dimension's unit. */
-//    void setUnit(String unit);
+    public void setScale(final double scale) {
+        function.scale = scale;
+    }
+
+    public void setOffset(final double offset) {
+        function.offset = offset;
+    }
+
+    private static class LinearAxisFunction implements BiConsumer<Localizable, DoubleType> {
+
+        public double scale = 1;
+        public double offset = 0;
+
+        @Override
+        public void accept(Localizable localizable, DoubleType doubleType) {
+            doubleType.setReal(scale * localizable.getDoublePosition(0) + offset);
+        }
+    }
 }

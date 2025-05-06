@@ -88,7 +88,7 @@ public class DefaultDatasetTest {
 		Dataset<DoubleType> sliced = dataset().view().translate(1, 2, 3, 4, 5);
 
 		Calibration calView = sliced.store().info(Calibration.class);
-		LinearAxisView axis = calView.axis(0);
+		LinearAxis axis = calView.axis(0);
 		Assert.assertEquals(1.0, axis.getAt(0));
 //		calView.axis(0).type();
 //		Assert.assertEquals(Axes.X, calView.axis(0).type());
@@ -104,7 +104,7 @@ public class DefaultDatasetTest {
 		Dataset<DoubleType> sliced = dataset().view().subsample(2, 1, 1, 1, 1);
 
 		Calibration calView = sliced.store().info(Calibration.class);
-		LinearAxisView axis = calView.axis(0);
+		LinearAxis axis = calView.axis(0);
 		Assert.assertEquals(0.0, axis.getAt(0));
 		Assert.assertEquals(2.0, axis.getAt(1));
 	}

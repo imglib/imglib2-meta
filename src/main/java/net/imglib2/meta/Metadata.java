@@ -134,21 +134,21 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingItem<T, U extends RandomAccessible<T>> implements MetadataItem<U, T> {
+	private static class VaryingItem<T, F extends RandomAccessible<T>> implements MetadataItem<F, T> {
 		final String name;
 
-		final U data;
+		final F data;
 		final MixedTransformView<?> view;
 
 		final boolean[] variesWithAxes;
 
 		final boolean[] attachedToAxes;
 
-		public VaryingItem(final String name, final U data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+		public VaryingItem(final String name, final F data, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
 			this(name, data, null, variesWithAxes, attachedToAxes);
 		}
 
-		private VaryingItem(final String name, final U data, final MixedTransformView<?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
+		private VaryingItem(final String name, final F data, final MixedTransformView<?> view, final boolean[] variesWithAxes, final boolean[] attachedToAxes) {
 			this.name = name;
 			this.data = data;
 			this.view = view;
@@ -180,7 +180,7 @@ public final class Metadata {
 		}
 
 		@Override
-		public U get() {
+		public F get() {
 			return data;
 		}
 
