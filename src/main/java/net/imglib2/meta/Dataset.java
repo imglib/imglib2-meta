@@ -9,6 +9,7 @@ import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.Util;
 import net.imglib2.view.MixedTransformView;
+import net.imglib2.view.SubsampleView;
 import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleIntervalView;
@@ -77,7 +78,13 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> subsample(long... steps) {
-		return wrap(Views.subsample(this.delegate(), Util.expandArray(steps, this.numDimensions())), store());
+		long[] fullSteps = Util.expandArray(steps, this.numDimensions());
+		SubsampleView<T> dataView = Views.subsample(this.delegate(), fullSteps);
+		MetadataStore storeView = new MetadataStoreSubsampleView(
+			store(),
+			fullSteps
+		);
+		return wrap(dataView, storeView);
 	}
 
 	@Override
