@@ -5,7 +5,6 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 
 import java.util.Optional;
 
@@ -20,13 +19,12 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T, T>> get(String key, Class<T> ofType) {
-		Optional<MetadataItem<T, T>> result = source.get(key, ofType);
-		return itemView(result);
+	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
+		return source.get(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
 		return itemView(source.get(key, d, ofType)); // FIXME: Dimensional index might have shifted meaning here.
 	}
@@ -56,20 +54,20 @@ class MetadataStoreRealView implements MetadataStore {
 		return source.numDimensions();
 	}
 
-	private <T, U> Optional<MetadataItem<T, U>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T, U>> result
+	private <T, U> Optional<VaryingMetadataItem<T, U>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<VaryingMetadataItem<T, U>> result
 	) {
 		if (!result.isPresent()) return result;
-		MetadataItem<T, U> sourceItem = result.get();
+		VaryingMetadataItem<T, U> sourceItem = result.get();
 		if (!sourceItem.isAttachedToAxes()) return result;
 		return Optional.of(new MetadataItemRealView<>(sourceItem, transform));
 	}
 
-	private static class MetadataItemRealView<T, U> implements MetadataItem<T, U> {
-		private final MetadataItem<T, U> source;
+	private static class MetadataItemRealView<T, U> implements VaryingMetadataItem<T, U> {
+		private final VaryingMetadataItem<T, U> source;
 		private final RealTransform transform;
 
-		public MetadataItemRealView(MetadataItem<T, U> source, RealTransform transform) {
+		public MetadataItemRealView(VaryingMetadataItem<T, U> source, RealTransform transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -90,12 +88,12 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public T get() {
+		public U get() {
 			return source.get();
 		}
 
 		@Override
-		public U getAt(RealLocalizable pos) {
+		public T getAt(RealLocalizable pos) {
 			final RealPoint p = new RealPoint(transform.numSourceDimensions());
 			transform.apply(pos, p);
 			return source.getAt(p);

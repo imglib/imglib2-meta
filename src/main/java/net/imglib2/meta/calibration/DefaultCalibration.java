@@ -1,10 +1,19 @@
 package net.imglib2.meta.calibration;
 
-import net.imglib2.meta.LinearAxis;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccessible;
+import net.imglib2.meta.Axis;
 import net.imglib2.meta.MetadataStore;
+import net.imglib2.position.FunctionRandomAccessible;
+import net.imglib2.type.numeric.real.DoubleType;
+
+import java.util.RandomAccess;
+import java.util.function.BiConsumer;
 
 public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
+	private static final String AXIS_DATA = "axis_data";
+	private static final String AXIS_TYPE = "axis_type";
 
 	@Override
 	public void setStore(MetadataStore store) {
@@ -13,19 +22,32 @@ public class DefaultCalibration implements Calibration {
 
 	// FIXME? This is never translated/scaled.
 	@Override
-	public LinearAxis axis(int d) {
-		return metaData.get(AXIS_KEY, d, LinearAxis.class).get().get();
+	public Axis axis(final int d) {
+		long[] coords = new long[metaData.numDimensions()];
+		return new Axis() {
+
+			@Override
+			public double calibrated(double raw) {
+				coords[d] = (long) raw;
+				return metaData.get(AXIS_DATA, d, DoubleType.class).get().getAt(coords).get();
+			}
+			@Override
+			public RandomAccessible<DoubleType> data() {
+				return metaData.get(AXIS_DATA, d, DoubleType.class).get().get();
+			}
+
+			@Override
+			public AxisType type() {
+				throw new UnsupportedOperationException("TODO");
+//				return metaData.get(AXIS_DATA, d).get().getAt(raw);
+			}
+		};
 	}
 
-	@Override
-	public double calibrated(int d, double raw) {
-		LinearAxis axis = axis(d);
-		return axis.getAt((int) raw - metaData.transform().getTranslation(d)).get();
-	}
-
 
 	@Override
-	public void setAxis(LinearAxis axis, int d) {
-		metaData.add(AXIS_KEY, axis, d);
+	public void setAxis(final Axis axis, final int d) {
+		metaData.add(AXIS_DATA, axis.data(), d);
+		metaData.add(AXIS_TYPE, axis.type(), d);
 	}
 }

@@ -26,18 +26,18 @@ public final class Metadata {
 		return store.info(Calibration.class);
 	}
 
-	public static <T> MetadataItem<T, T> item(String name, T data, int numDims, int... dims) {
+	public static <T> MetadataItem<T> item(String name, T data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		return new SimpleItem<>(name, data, axes);
 	}
 
-	public static <T, U extends RandomAccessible<T>> MetadataItem<U, T> item(String name, U data, int numDims, int... dims) {
+	public static <T, U extends RandomAccessible<T>> VaryingMetadataItem<T, U> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingItem<>(name, data, axes, axes);
 	}
 
-	public static <T, U extends RealRandomAccessible<T>> MetadataItem<U, T> item(String name, U data, int numDims, int... dims) {
+	public static <T, U extends RealRandomAccessible<T>> VaryingMetadataItem<T, U> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes, axes);
@@ -75,7 +75,7 @@ public final class Metadata {
 		return Arrays.copyOfRange( tmp, 0, i );
 	}
 
-	private static class SimpleItem<T> implements MetadataItem<T, T> {
+	private static class SimpleItem<T> implements MetadataItem<T> {
 		final String name;
 
 		final T data;
@@ -108,11 +108,6 @@ public final class Metadata {
 		}
 
 		@Override
-		public T getAt(final RealLocalizable pos) {
-			return get();
-		}
-
-		@Override
 		public String toString() {
 			final StringBuilder sb = new StringBuilder("SimpleItem \"");
 			sb.append(name);
@@ -134,7 +129,7 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingItem<T, F extends RandomAccessible<T>> implements MetadataItem<F, T> {
+	private static class VaryingItem<T, F extends RandomAccessible<T>> implements VaryingMetadataItem<T, F> {
 		final String name;
 
 		final F data;
@@ -204,7 +199,7 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> implements MetadataItem<U, T> {
+	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> implements VaryingMetadataItem<T, U> {
 		final String name;
 
 		final U data;

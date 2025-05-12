@@ -31,12 +31,12 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T, T>> get(String key, Class<T> ofType) {
-		return itemView(source.get(key, ofType));
+	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
+		return source.get(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
 		if (dim_map.length <= d) {
 			return Optional.empty();
 		}
@@ -76,20 +76,17 @@ class MetadataStoreView implements MetadataStore {
 		return transform.concatenate(source.transform());
 	}
 
-	private <T, U> Optional<MetadataItem<T, U>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T, U>> result
+	private <T, U> Optional<VaryingMetadataItem<T, U>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<VaryingMetadataItem<T, U>> result
 	) {
-		if (!result.isPresent()) return result;
-		MetadataItem<T, U> sourceItem = result.get();
-		if (!sourceItem.isAttachedToAxes()) return result;
-		return Optional.of(new MetadataItemView<>(sourceItem, transform));
+		return result.map(item -> new VaryingMetadataItemView<>(item, transform));
 	}
 
-	private static class MetadataItemView<T, U> implements MetadataItem<T, U> {
-		private final MetadataItem<T, U> source;
+	private static class VaryingMetadataItemView<T, U> implements VaryingMetadataItem<T, U> {
+		private final VaryingMetadataItem<T, U> source;
 		private final Mixed transform;
 
-		public MetadataItemView(MetadataItem<T, U> source, Mixed transform) {
+		public VaryingMetadataItemView(VaryingMetadataItem<T, U> source, Mixed transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -110,12 +107,12 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public T get() {
+		public U get() {
 			return source.get();
 		}
 
 		@Override
-		public U getAt(RealLocalizable pos) {
+		public T getAt(RealLocalizable pos) {
 			if (!(pos instanceof Localizable)) {
 				throw new UnsupportedOperationException("Cannot use non-Localizable with metadata store view. YET!");
 			}
