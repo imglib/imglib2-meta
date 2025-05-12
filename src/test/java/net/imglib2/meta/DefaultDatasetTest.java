@@ -89,7 +89,7 @@ public class DefaultDatasetTest {
 		Calibration calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
 		// Translate
-		translated = dataset().view().translate(-1, 0, 0, 0, 0).permute(0, 2);
+		translated = dataset().translate(-1, 0, 0, 0, 0).permute(0, 2);
 		calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
 	}
