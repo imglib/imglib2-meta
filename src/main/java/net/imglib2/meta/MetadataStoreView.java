@@ -14,10 +14,16 @@ class MetadataStoreView implements MetadataStore {
 	private final int[] dim_map;
 
 	public MetadataStoreView(MetadataStore source, Mixed transform) {
-		this.source = source;
-
-		this.transform = new MixedTransform(transform.numSourceDimensions(), transform.numTargetDimensions());
-		this.transform.set(transform);
+		if (source instanceof MetadataStoreView) {
+			MetadataStoreView msv = (MetadataStoreView) source;
+			this.source = msv.source;
+			this.transform = msv.transform.concatenate(transform);
+		}
+		else {
+			this.source = source;
+			this.transform = new MixedTransform(transform.numSourceDimensions(), transform.numTargetDimensions());
+			this.transform.set(transform);
+		}
 
 		this.dim_map = new int[ transform.numSourceDimensions() ];
 		for ( int d = 0; d < transform.numTargetDimensions(); ++d )
