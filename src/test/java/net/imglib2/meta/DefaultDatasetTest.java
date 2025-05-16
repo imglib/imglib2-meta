@@ -98,7 +98,7 @@ public class DefaultDatasetTest {
 	public void testFluentSubsampling() {
 		Dataset<DoubleType> translated = dataset().view().subsample(2, 1, 1, 1, 1);
 		Calibration calView = translated.store().info(Calibration.class);
-//		Assert.assertEquals(2.0, calView.calibrated(0, 1), 1e-6);
+		Assert.assertEquals(2.0, calView.axis(0).calibrated(1), 1e-6);
 	}
 
 	private Axis axis(AxisType axisType) {

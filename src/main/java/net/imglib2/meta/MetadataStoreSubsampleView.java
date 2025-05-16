@@ -18,7 +18,7 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 
 	public MetadataStoreSubsampleView(MetadataStore store, long[] steps) {
 		if (store.numDimensions() != steps.length) throw new IllegalArgumentException("BAD");
-		this.source = source;
+		this.source = store;
 		this.steps = steps;
 	}
 
@@ -107,9 +107,11 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 			}
 			Localizable l = (Localizable) pos;
 
-			// GJS: START HERE! :-D
-			final Point p = new Point(transform.numSourceDimensions());
-			transform.apply(l, p);
+			// TODO: Don't create a new Point every time. ThreadLocal?
+			final Point p = new Point(transform.getSteps().length);
+			for(int i = 0; i < l.numDimensions(); i++) {
+				p.setPosition(l.getLongPosition(i) * transform.getSteps()[i], i);
+			}
 			return source.getAt(p);
 		}
 	}

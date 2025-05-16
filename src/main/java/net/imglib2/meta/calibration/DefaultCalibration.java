@@ -38,8 +38,7 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				throw new UnsupportedOperationException("TODO");
-//				return metaData.get(AXIS_DATA, d).get().getAt(raw);
+				return metaData.get(AXIS_TYPE, d).get();
 			}
 		};
 	}
