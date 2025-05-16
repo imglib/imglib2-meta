@@ -24,9 +24,15 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-		return itemView(source.get(key, d, ofType)); // FIXME: Dimensional index might have shifted meaning here.
+		return source.get(key, d, ofType); // FIXME: Dimensional index might have shifted meaning here.
+	}
+
+	@Override
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
+		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
+		return itemView(source.getVarying(key, d, ofType)); // FIXME: Dimensional index might have shifted meaning here.
 	}
 
 	@Override

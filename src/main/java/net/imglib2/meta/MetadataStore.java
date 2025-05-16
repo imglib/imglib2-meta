@@ -31,7 +31,9 @@ public interface MetadataStore extends EuclideanSpace {
 		return (Optional) get(name, d, null);
 	}
 
-	<T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String name, int d, Class<T> ofType);
+	<T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType);
+
+	<T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String name, int d, Class<T> ofType);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);

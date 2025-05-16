@@ -25,12 +25,12 @@ class MetadataStoreView implements MetadataStore {
 			this.transform.set(transform);
 		}
 
-		this.dim_map = new int[ transform.numSourceDimensions() ];
-		for ( int d = 0; d < transform.numTargetDimensions(); ++d )
+		this.dim_map = new int[ this.transform.numSourceDimensions() ];
+		for ( int d = 0; d < this.transform.numTargetDimensions(); ++d )
 		{
-			if (!transform.getComponentZero(d) )
+			if (!this.transform.getComponentZero(d) )
 			{
-				final int e = transform.getComponentMapping(d);
+				final int e = this.transform.getComponentMapping(d);
 				this.dim_map[ e ] = d;
 			}
 		}
@@ -42,12 +42,21 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
 		if (dim_map.length <= d) {
 			return Optional.empty();
 		}
 		final int dd = dim_map[d];
-		return itemView(source.get(key, dd, ofType));
+		return source.get(key, dd, ofType);
+	}
+
+	@Override
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
+		if (dim_map.length <= d) {
+			return Optional.empty();
+		}
+		final int dd = dim_map[d];
+		return itemView(source.getVarying(key, dd, ofType));
 	}
 
 	@Override

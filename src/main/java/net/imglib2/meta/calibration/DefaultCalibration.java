@@ -4,6 +4,7 @@ import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.meta.Axis;
 import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.VaryingMetadataItem;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
@@ -20,25 +21,30 @@ public class DefaultCalibration implements Calibration {
 		this.metaData = store;
 	}
 
-	// FIXME? This is never translated/scaled.
 	@Override
 	public Axis axis(final int d) {
-		long[] coords = new long[metaData.numDimensions()];
+		// Search for Axis components
+		VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> data = metaData.getVarying(AXIS_DATA, d, DoubleType.class).get();
+		AxisType type = metaData.get(AXIS_TYPE, d, AxisType.class).get().get();
+
+		// Construct a
+		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {
 
 			@Override
 			public double calibrated(double raw) {
-				coords[d] = (long) raw;
-				return metaData.get(AXIS_DATA, d, DoubleType.class).get().getAt(coords).get();
+				long[] c = cs.get();
+				c[d] = (long) raw;
+				return data.getAt(c).get();
 			}
 			@Override
 			public RandomAccessible<DoubleType> data() {
-				return metaData.get(AXIS_DATA, d, DoubleType.class).get().get();
+				return data.get();
 			}
 
 			@Override
 			public AxisType type() {
-				return metaData.get(AXIS_TYPE, d).get();
+				return type;
 			}
 		};
 	}

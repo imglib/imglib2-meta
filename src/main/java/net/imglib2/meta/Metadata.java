@@ -160,7 +160,7 @@ public final class Metadata {
 			final RandomAccess<T> access = data.randomAccess();
 			for (int d = 0, i = 0; d < variesWithAxes.length; ++d)
 				if (variesWithAxes[d])
-					access.setPosition((long) pos.getDoublePosition(d), i++);
+					access.setPosition((long) pos.getDoublePosition(i), i++);
 			return access.get();
 		}
 

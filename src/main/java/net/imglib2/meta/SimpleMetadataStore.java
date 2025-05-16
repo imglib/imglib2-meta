@@ -46,15 +46,26 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String name, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
 			.filter(item -> item.isAttachedTo(d)) //
-			.filter(item -> item instanceof VaryingMetadataItem) //
-			.filter(item -> ofType == null || ofType.isInstance(((VaryingMetadataItem) item).getAt(0)))
-			.map(item -> (VaryingMetadataItem<T, RandomAccessible<T>>) item)
+			.filter(item -> ofType == null || ofType.isInstance(((MetadataItem) item).get()))
+			.map(item -> (MetadataItem<T>) item)
 			.findFirst();
+	}
+
+	@Override
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String name, int d, Class<T> ofType) {
+		//noinspection unchecked
+		return items.stream() //
+				.filter(item -> item.name().equals(name))
+				.filter(item -> item.isAttachedTo(d)) //
+				.filter(item -> item instanceof VaryingMetadataItem) //
+				.filter(item -> ofType == null || ofType.isInstance(((VaryingMetadataItem) item).getAt(0)))
+				.map(item -> (VaryingMetadataItem<T, RandomAccessible<T>>) item)
+				.findFirst();
 	}
 
 	@Override

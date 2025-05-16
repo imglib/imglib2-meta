@@ -28,8 +28,13 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> get(String key, int d, Class<T> ofType) {
-		return itemView(source.get(key, d, ofType));
+	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
+		return source.get(key, d, ofType);
+	}
+
+	@Override
+	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
+		return itemView(source.getVarying(key, d, ofType));
 	}
 
 	@Override
