@@ -127,7 +127,10 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> invertAxis(int axis) {
-		return wrap(Views.invertAxis(this.delegate(), axis), store());
+		MixedTransform tform = ViewTransforms.invertAxis( this.numDimensions(), axis );
+		MixedTransformView<T> raView = new MixedTransformView<>( this.delegate(), tform);
+		MetadataStore storeView = new MetadataStoreView( store(), tform);
+		return wrap(raView, storeView);
 	}
 
 	default RealRandomAccessibleView<T> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {

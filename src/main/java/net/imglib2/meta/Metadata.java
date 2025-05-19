@@ -158,9 +158,9 @@ public final class Metadata {
 		@Override
 		public T getAt(final RealLocalizable pos) {
 			final RandomAccess<T> access = data.randomAccess();
-			for (int d = 0, i = 0; d < variesWithAxes.length; ++d)
+			for (int d = 0, i = 0; d < variesWithAxes.length && d < pos.numDimensions(); ++d)
 				if (variesWithAxes[d])
-					access.setPosition((long) pos.getDoublePosition(i), i++);
+					access.setPosition((long) pos.getDoublePosition(d), i++);
 			return access.get();
 		}
 

@@ -107,6 +107,18 @@ public class DefaultDatasetTest {
 	}
 
 	@Test
+	public void testFluentInvertAxis() {
+		// Invert Axis
+		Dataset<DoubleType> inverted = dataset().view().invertAxis(1);
+		Calibration calView = inverted.store().info(Calibration.class);
+		Assert.assertEquals(-1.0, calView.axis(1).calibrated(1), 1e-6);
+		// Translate & permute
+		inverted = dataset().view().invertAxis(1).permute(1, 2);
+		calView = inverted.store().info(Calibration.class);
+		Assert.assertEquals(-1.0, calView.axis(2).calibrated(1), 1e-6);
+	}
+
+	@Test
 	public void testFluentInverseTranslation() {
 		// Translate
 		Dataset<DoubleType> translated = dataset().view().translateInverse(1, 0, 0, 0, 0);
