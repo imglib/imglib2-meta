@@ -78,7 +78,12 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> translateInverse(long... translation) {
-		return wrap(Views.translateInverse(this.delegate(), translation), store());
+		MixedTransformView<T> raView = Views.translateInverse(this.delegate(), translation);
+		MetadataStore storeView = new MetadataStoreView(
+				store(),
+				ViewTransforms.translateInverse(translation)
+		);
+		return wrap(raView, storeView);
 	}
 
 	@Override
@@ -114,7 +119,10 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> moveAxis(int fromAxis, int toAxis) {
-		return wrap(Views.moveAxis(this.delegate(), fromAxis, toAxis), store());
+		MixedTransform tform = ViewTransforms.moveAxis(this.numDimensions(), fromAxis, toAxis);
+		MixedTransformView<T> raView = new MixedTransformView<>(this.delegate(), tform);
+		MetadataStore storeView = new MetadataStoreView( store(), tform);
+		return wrap(raView, storeView);
 	}
 
 	@Override

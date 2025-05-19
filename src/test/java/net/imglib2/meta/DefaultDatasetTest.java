@@ -33,6 +33,18 @@ public class DefaultDatasetTest {
 	}
 
 	@Test
+	public void testFluentMoveAxis() {
+		Dataset<DoubleType> permuted = dataset().view().moveAxis(0, 3);
+
+		Calibration calView = permuted.store().info(Calibration.class);
+		Assert.assertEquals(Axes.Y, calView.axis(0).type());
+		Assert.assertEquals(Axes.Z, calView.axis(1).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(2).type());
+		Assert.assertEquals(Axes.X, calView.axis(3).type());
+		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
+	}
+
+	@Test
 	public void testFluentRotation() {
 		Dataset<DoubleType> rotated = dataset().view().rotate(3, 2);
 
@@ -88,8 +100,20 @@ public class DefaultDatasetTest {
 		Dataset<DoubleType> translated = dataset().view().translate(-1, 0, 0, 0, 0);
 		Calibration calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
-		// Translate
+		// Translate & permute
 		translated = dataset().translate(-1, 0, 0, 0, 0).permute(0, 2);
+		calView = translated.store().info(Calibration.class);
+		Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
+	}
+
+	@Test
+	public void testFluentInverseTranslation() {
+		// Translate
+		Dataset<DoubleType> translated = dataset().view().translateInverse(1, 0, 0, 0, 0);
+		Calibration calView = translated.store().info(Calibration.class);
+		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
+		// Translate & permute
+		translated = dataset().translateInverse(1, 0, 0, 0, 0).permute(0, 2);
 		calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
 	}
