@@ -101,6 +101,21 @@ public class DefaultDatasetTest {
 		Assert.assertEquals(2.0, calView.axis(0).calibrated(1), 1e-6);
 	}
 
+	@Test
+	public void testFluentAddDimension() {
+		Dataset<DoubleType> original = dataset();
+		Dataset<DoubleType> translated = dataset().view().addDimension();
+		Calibration cal = original.store().info(Calibration.class);
+		Calibration calView = translated.store().info(Calibration.class);
+		// New axes should be default be unknown
+		Assert.assertEquals(Axes.unknown(), calView.axis(original.numDimensions()).type());
+		// But we can set them
+		// FIXME: Can we set them??
+//		cal.setAxis(axis(Axes.X), original.numDimensions());
+		// And they should persist
+//		Assert.assertEquals(Axes.X, calView.axis(original.numDimensions()).type());
+	}
+
 	private Axis axis(AxisType axisType) {
 		return new DefaultLinearAxis(axisType, 1, 0);
 	}

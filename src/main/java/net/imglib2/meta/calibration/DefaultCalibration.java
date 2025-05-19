@@ -2,12 +2,15 @@ package net.imglib2.meta.calibration;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RealLocalizable;
 import net.imglib2.meta.Axis;
+import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.VaryingMetadataItem;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
+import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.function.BiConsumer;
 
@@ -16,6 +19,37 @@ public class DefaultCalibration implements Calibration {
 	private static final String AXIS_DATA = "axis_data";
 	private static final String AXIS_TYPE = "axis_type";
 
+	private static final MetadataItem<AxisType> UNKNOWN_TYPE = new MetadataItem<AxisType>() {
+		@Override
+		public String name() {
+			return AXIS_TYPE;
+		}
+
+		@Override
+		public AxisType get() {
+			return Axes.unknown();
+		}
+	};
+
+	private static final VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> UNKNOWN_DATA = new VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>>() {
+		@Override
+		public String name() {
+			return AXIS_DATA;
+		}
+
+		@Override
+		public RandomAccessible<DoubleType> get() {
+			throw new IllegalArgumentException("No data associated with unknown axes!");
+		}
+
+		@Override
+		public DoubleType getAt(RealLocalizable pos) {
+			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
+		}
+	};
+
+
+
 	@Override
 	public void setStore(MetadataStore store) {
 		this.metaData = store;
@@ -23,9 +57,11 @@ public class DefaultCalibration implements Calibration {
 
 	@Override
 	public Axis axis(final int d) {
+		if (d >= metaData.numDimensions()) {
+			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
+		}
 		// Search for Axis components
-		VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> data = metaData.getVarying(AXIS_DATA, d, DoubleType.class).get();
-		AxisType type = metaData.get(AXIS_TYPE, d, AxisType.class).get().get();
+		VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> data = metaData.getVarying(AXIS_DATA, d, DoubleType.class).orElse(UNKNOWN_DATA);
 
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
@@ -44,7 +80,7 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				return type;
+				return metaData.get(AXIS_TYPE, d, AxisType.class).orElse(UNKNOWN_TYPE).get();
 			}
 		};
 	}

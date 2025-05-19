@@ -58,7 +58,12 @@ public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 
 	@Override
 	default Dataset<T> addDimension() {
-		return wrap(Views.addDimension(this.delegate()), store());
+		MixedTransformView<T> raView = Views.addDimension(this.delegate());
+		MetadataStore storeView = new MetadataStoreView(
+				store(),
+				ViewTransforms.addDimension(this.numDimensions())
+		);
+		return wrap(raView, storeView);
 	}
 
 	@Override

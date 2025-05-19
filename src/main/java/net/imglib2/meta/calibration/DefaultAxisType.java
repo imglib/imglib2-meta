@@ -29,6 +29,8 @@
 
 package net.imglib2.meta.calibration;
 
+import net.imglib2.meta.DefaultLinearAxis;
+
 import java.io.Serializable;
 
 /**
@@ -94,5 +96,11 @@ public class DefaultAxisType implements AxisType, Serializable,
 	@Override
 	public String toString() {
 		return label;
+	}
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof DefaultAxisType)) return false;
+		DefaultAxisType otherAxis = (DefaultAxisType) other;
+		return getLabel().equals(otherAxis.getLabel());
 	}
 }

@@ -34,6 +34,9 @@ class MetadataStoreView implements MetadataStore {
 				this.dim_map[ e ] = d;
 			}
 		}
+		for ( int i = this.transform.numTargetDimensions(); i < this.transform.numSourceDimensions(); i++) {
+			this.dim_map[i] = i;
+		}
 	}
 
 	@Override
@@ -83,7 +86,7 @@ class MetadataStoreView implements MetadataStore {
 
 	@Override
 	public int numDimensions() {
-		return source.numDimensions();
+		return transform.numSourceDimensions();
 	}
 
 	@Override

@@ -99,7 +99,7 @@ public final class Metadata {
 
 		@Override
 		public boolean isAttachedTo(int d) {
-			return attachedToAxes != null && attachedToAxes[d];
+			return attachedToAxes != null && attachedToAxes.length > d && attachedToAxes[d];
 		}
 
 		@Override
@@ -171,7 +171,7 @@ public final class Metadata {
 
 		@Override
 		public boolean isAttachedTo(int d) {
-			return attachedToAxes != null && attachedToAxes[d];
+			return attachedToAxes != null && attachedToAxes.length > d && attachedToAxes[d];
 		}
 
 		@Override
