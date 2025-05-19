@@ -31,6 +31,11 @@ public interface MetadataStore extends EuclideanSpace {
 		return (Optional) get(name, d, null);
 	}
 
+	@SuppressWarnings({"raw", "unchecked"})
+	default Optional<VaryingMetadataItem<?, ?>> getVarying(String name, int d) {
+		return (Optional) getVarying(name, d, null);
+	}
+
 	<T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType);
 
 	<T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String name, int d, Class<T> ofType);

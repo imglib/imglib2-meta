@@ -85,7 +85,7 @@ public class SimpleMetadataStoreTest {
 
         // Test viewing metadata based on a View of the data
         MetadataStore storeView = Metadata.view(store, v);
-        lutItem = storeView.get("lut", 2).get();
+        lutItem = storeView.getVarying("lut", 2).get();
         assertEquals("red", lutItem.getAt(0, 0, 0, 0, 0));
         assertEquals("green", lutItem.getAt(0, 0, 1, 0, 0));
         assertEquals("blue", lutItem.getAt(0, 0, 2, 0, 0));
@@ -114,7 +114,7 @@ public class SimpleMetadataStoreTest {
 
         // Test viewing metadata based on a View of the data
         MetadataStore storeRealView = Metadata.view(store, v);
-        coordsItem = storeRealView.get("coords", 2).get();
+        coordsItem = storeRealView.getVarying("coords", 2).get();
         assertEquals("(-8.090909090909092, -3.090909090909091, -1.4242424242424243)", coordsItem.getAt(1, 2, 3, 4, 5).toString());
         assertEquals("(-4.454545454545455, -1.272727272727273, -0.21212121212121238)", coordsItem.getAt(5, 6, 7, 8, 9).toString());
         assertEquals("(-18.09090909090909, -9.0, -5.969696969696971)", coordsItem.getAt(-10, -11, -12, -13, -14).toString());
