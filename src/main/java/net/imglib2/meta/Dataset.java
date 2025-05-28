@@ -11,9 +11,7 @@ import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.SubsampleView;
 import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.Views;
-import net.imglib2.view.fluent.RandomAccessibleIntervalView;
 import net.imglib2.view.fluent.RandomAccessibleView;
-import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Supplier;
 
@@ -48,8 +46,7 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		);
 	}
 
-	// FIXME: Return some Dataset subclass
-	default DatasetInterval<T, ?> interval(Interval interval) {
+	default DatasetInterval<T> interval(Interval interval) {
 		return DatasetInterval.wrap(Views.interval(this.delegate(), interval), store());
 	}
 
@@ -104,17 +101,19 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		return wrap( this, ViewTransforms.invertAxis(numDimensions(), axis) );
 	}
 
-	default RealRandomAccessibleView<T> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
-		throw new UnsupportedOperationException("TODO");
-//		return wrap(RandomAccessibleView.super.interpolate(interpolation));
+	@Override
+	default RealDataset<T> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
+		return RealDataset.wrap(RandomAccessibleView.super.interpolate(interpolation), store());
 	}
 
 	// FIXME: Dataset wildcard bound
+	@Override
 	default <U> Dataset<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
 		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
 	}
 
 	// FIXME: Dataset wildcard bound
+	@Override
 	default <U> Dataset<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}

@@ -6,12 +6,14 @@ import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.view.fluent.RandomAccessibleIntervalView;
+import net.imglib2.view.fluent.RandomAccessibleView;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
 
-/** Tests {@link DefaultDataset}. */
+/** Tests {@link Dataset}, {@link DatasetInterval}, {@link RealDataset}. */
 public class DatasetTest {
 
 	/**
@@ -71,7 +73,7 @@ public class DatasetTest {
 
 	@Test
 	public void testFluentInterval() {
-		DatasetInterval<DoubleType, ?> intervaled = dataset().view().interval(new FinalInterval(10, 10, 10, 10, 10));
+		DatasetInterval<DoubleType> intervaled = dataset().view().interval(new FinalInterval(10, 10, 10, 10, 10));
 		// Assert the new dataset has an interval
 		Assert.assertArrayEquals(new long[] {0, 0, 0, 0, 0}, intervaled.minAsLongArray());
 		Assert.assertArrayEquals(new long[] {9, 9, 9, 9, 9}, intervaled.maxAsLongArray());
@@ -166,6 +168,61 @@ public class DatasetTest {
 //		cal.setAxis(axis(Axes.X), original.numDimensions());
 		// And they should persist
 //		Assert.assertEquals(Axes.X, calView.axis(original.numDimensions()).type());
+	}
+
+	@Test
+	public void testExtension() {
+		Dataset<DoubleType, ?> permuted = dataset() //
+				.interval(new FinalInterval(10, 10, 10, 10, 10)) //
+				.extend(RandomAccessibleIntervalView.Extension.border());
+
+		// Assert axes unchanged
+		Calibration calView = permuted.store().info(Calibration.class);
+		Assert.assertEquals(Axes.X, calView.axis(0).type());
+		Assert.assertEquals(Axes.Y, calView.axis(1).type());
+		Assert.assertEquals(Axes.Z, calView.axis(2).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
+		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
+	}
+
+	@Test
+	public void testExpansion() {
+		long borderSize = 2;
+		DatasetInterval<DoubleType> interval = dataset() //
+				.interval(new FinalInterval(10, 10, 10, 10, 10)); //
+		DatasetInterval<DoubleType> permuted = interval //
+				.expand(RandomAccessibleIntervalView.Extension.border(), 2, 2, 2, 2, 2);
+
+		// Assert minimum moved by -borderSize
+		for(int i = 0; i < permuted.numDimensions(); i++) {
+			Assert.assertEquals(permuted.min(i), interval.min(i) - borderSize);
+		}
+		// Assert maximum moved by +borderSize
+		for(int i = 0; i < permuted.numDimensions(); i++) {
+			Assert.assertEquals(permuted.max(i), interval.max(i) + borderSize);
+		}
+
+		// Assert axes unchanged
+		Calibration calView = permuted.store().info(Calibration.class);
+		Assert.assertEquals(Axes.X, calView.axis(0).type());
+		Assert.assertEquals(Axes.Y, calView.axis(1).type());
+		Assert.assertEquals(Axes.Z, calView.axis(2).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
+		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
+	}
+
+	@Test
+	public void testInterpolate() {
+		RealDataset<DoubleType> interpolated = dataset() //
+				.interpolate(RandomAccessibleView.Interpolation.nearestNeighbor()); //
+
+		// Assert axes unchanged
+		Calibration calView = interpolated.store().info(Calibration.class);
+		Assert.assertEquals(Axes.X, calView.axis(0).type());
+		Assert.assertEquals(Axes.Y, calView.axis(1).type());
+		Assert.assertEquals(Axes.Z, calView.axis(2).type());
+		Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
+		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
 	}
 
 	private Axis axis(AxisType axisType) {
