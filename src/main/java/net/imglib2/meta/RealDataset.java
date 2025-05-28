@@ -40,7 +40,7 @@ public interface RealDataset<T> extends RealRandomAccessibleView<T> {
     }
 
     @Override
-    default Dataset< T, ? > raster()
+    default Dataset< T > raster()
     {
         return Dataset.wrap( new RandomAccessibleOnRealRandomAccessible<>(delegate()), store());
     }

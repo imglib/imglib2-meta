@@ -138,7 +138,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default Dataset< T, ?> extend( Extension< T > extension )
+	default Dataset<T> extend( Extension< T > extension )
 	{
 		RandomAccessible<T> delegate = RandomAccessibleIntervalView.super.extend(extension);
 		return Dataset.wrap(delegate, store());

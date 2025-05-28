@@ -15,7 +15,19 @@ import net.imglib2.view.fluent.RandomAccessibleView;
 
 import java.util.function.Supplier;
 
-public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleView<T, V> {
+/**
+ * A coupled {@link RandomAccessible} and associated {@link MetadataStore}.
+ * <p>
+ * TODO: Consider a type variable {@code V} as the second argument to {@code RandomAccessibleView}.
+ * This would be useful for extension should extension be needed, although we'd want to solve the problems
+ * described <a href="https://github.com/imglib/imglib2/issues/377">here</a> first.
+ *
+ * @param <T> the type of pixels contained within the {@link RandomAccessible}
+ * @author Gabriel Selzer
+ * @author Curtis Rueden
+ * @author Edward Evans
+ */
+public interface Dataset<T> extends RandomAccessibleView<T, Dataset<T>> {
 	RandomAccessible<T> data();
 	MetadataStore store();
 
@@ -24,9 +36,16 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		return data();
 	}
 
-	// NOTE: The V type variable used for anonymous inner class
-	static <T, V extends Dataset<T, V>> Dataset<T, ?> wrap(RandomAccessible<T> delegate, MetadataStore store) {
-		return new Dataset<T, V>() {
+	/**
+	 * Creates a new {@link Dataset} from a {@link RandomAccessible} and a {@link MetadataStore}.
+	 *
+	 * @param delegate the coupled {@link RandomAccessible}
+	 * @param store the coupled {@link MetadataStore}
+	 * @return a {@link Dataset} wrapping {@code delegate} and {@code store}
+	 * @param <T> the type of pixels contained within {@code delegate}
+	 */
+	static <T> Dataset<T> wrap(RandomAccessible<T> delegate, MetadataStore store) {
+		return new Dataset<T>() {
 			@Override
 			public RandomAccessible<T> data() {
 				return delegate;
@@ -39,7 +58,15 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		};
 	}
 
-	static <T> Dataset<T, ?> wrap(Dataset<T, ?> dataset, Mixed tform) {
+	/**
+	 * Creates a new {@link Dataset} viewing an existing {@link Dataset} through a {@link Mixed} transform.
+	 *
+	 * @param dataset an existing {@link Dataset}
+	 * @param tform a {@link Mixed} describing a data transformation
+	 * @return a {@link Dataset} viewing {@code dataset} through the transform {@code tform}
+	 * @param <T> the type of pixels contained within {@code delegate}
+	 */
+	static <T> Dataset<T> wrap(Dataset<T> dataset, Mixed tform) {
 		return wrap(
 			new MixedTransformView<>(dataset.delegate(), tform),
 			new MetadataStoreView(dataset.store(), tform)
@@ -51,27 +78,27 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 	}
 
 	@Override
-	default Dataset<T, ?> slice(int d, long pos) {
+	default Dataset<T> slice(int d, long pos) {
 		return wrap( this, ViewTransforms.hyperSlice(numDimensions(), d, pos) );
 	}
 
 	@Override
-	default Dataset<T, ?> addDimension() {
+	default Dataset<T> addDimension() {
 		return wrap( this, ViewTransforms.addDimension(numDimensions()) );
 	}
 
 	@Override
-	default Dataset<T, ?> translate(long... translation) {
+	default Dataset<T> translate(long... translation) {
 		return wrap(this, ViewTransforms.translate(translation) );
 	}
 
 	@Override
-	default Dataset<T, ?> translateInverse(long... translation) {
+	default Dataset<T> translateInverse(long... translation) {
 		return wrap(this, ViewTransforms.translateInverse(translation) );
 	}
 
 	@Override
-	default Dataset<T, ?> subsample(long... steps) {
+	default Dataset<T> subsample(long... steps) {
 		long[] fullSteps = Util.expandArray(steps, this.numDimensions());
 		SubsampleView<T> dataView = Views.subsample(this.delegate(), fullSteps);
 		MetadataStore storeView = new MetadataStoreSubsampleView(
@@ -82,22 +109,22 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 	}
 
 	@Override
-	default Dataset<T, ?> rotate(int fromAxis, int toAxis) {
+	default Dataset<T> rotate(int fromAxis, int toAxis) {
 		return wrap( this, ViewTransforms.rotate(numDimensions(), fromAxis, toAxis) );
 	}
 
 	@Override
-	default Dataset<T, ?> permute(int fromAxis, int toAxis) {
+	default Dataset<T> permute(int fromAxis, int toAxis) {
 		return wrap( this, ViewTransforms.permute(numDimensions(), fromAxis, toAxis) );
 	}
 
 	@Override
-	default Dataset<T, ?> moveAxis(int fromAxis, int toAxis) {
+	default Dataset<T> moveAxis(int fromAxis, int toAxis) {
 		return wrap( this, ViewTransforms.moveAxis(numDimensions(), fromAxis, toAxis) );
 	}
 
 	@Override
-	default Dataset<T, ?> invertAxis(int axis) {
+	default Dataset<T> invertAxis(int axis) {
 		return wrap( this, ViewTransforms.invertAxis(numDimensions(), axis) );
 	}
 
@@ -108,17 +135,17 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 
 	// FIXME: Dataset wildcard bound
 	@Override
-	default <U> Dataset<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
+	default <U> Dataset<U> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
 		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
 	}
 
 	// FIXME: Dataset wildcard bound
 	@Override
-	default <U> Dataset<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
+	default <U> Dataset<U> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}
 
-	default Dataset<T, V> view() {
+	default Dataset<T> view() {
 		return this;
 	}
 

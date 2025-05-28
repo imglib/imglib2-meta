@@ -174,7 +174,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testExtension() {
-		Dataset<DoubleType, ?> permuted = dataset() //
+		Dataset<DoubleType> permuted = dataset() //
 				.extend(RandomAccessibleIntervalView.Extension.border());
 
 		// Assert axes unchanged
