@@ -112,6 +112,7 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
+			<version>7.1.6-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Test scope dependencies -->

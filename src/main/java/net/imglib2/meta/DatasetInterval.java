@@ -1,9 +1,6 @@
 package net.imglib2.meta;
 
-import net.imglib2.Interval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.*;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.transform.integer.Mixed;
@@ -15,7 +12,7 @@ import net.imglib2.view.fluent.RandomAccessibleIntervalView;
 
 import java.util.function.Supplier;
 
-public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
+public interface DatasetInterval<T, V extends DatasetInterval<T, V>> extends Dataset<T, V>, RandomAccessibleIntervalView<T, V> {
 	RandomAccessibleInterval<T> data();
 	MetadataStore store();
 
@@ -24,8 +21,8 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 		return data();
 	}
 
-	static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
-		return new DatasetInterval<T>() {
+	static <T, V extends DatasetInterval<T, V>> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
+		return new DatasetInterval<T, V>() {
 			@Override
 			public RandomAccessibleInterval<T> data() {
 				return delegate;
@@ -38,14 +35,14 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 		};
 	}
 
-	static <T> DatasetInterval<T> wrap(DatasetInterval<T> dataset, Mixed tform, Interval interval) {
+	static <T> DatasetInterval<T, ?> wrap(DatasetInterval<T, ?> dataset, Mixed tform, Interval interval) {
 		return wrap(
 			new IntervalView<>(new MixedTransformView<>(dataset.delegate(), tform), interval),
 			new MetadataStoreView(dataset.store(), tform)
 		);
 	}
 
-	default DatasetInterval<T> interval(Interval interval) {
+	default DatasetInterval<T, ?> interval(Interval interval) {
 		// TODO: Consider an interval on the metadata?
 		return wrap(
 				this,
@@ -55,7 +52,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> slice(int d, long pos) {
+	default DatasetInterval<T, ?> slice(int d, long pos) {
 		return wrap(
 				this,
 				ViewTransforms.hyperSlice(numDimensions(), d, pos),
@@ -64,7 +61,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> addDimension() {
+	default DatasetInterval<T, ?> addDimension() {
 		return wrap( //
 				this, //
 				ViewTransforms.addDimension(numDimensions()), //
@@ -73,7 +70,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> translate(long... translation) {
+	default DatasetInterval<T, ?> translate(long... translation) {
 		return wrap(
 				this,
 				ViewTransforms.translate(translation),
@@ -82,7 +79,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> translateInverse(long... translation) {
+	default DatasetInterval<T, ?> translateInverse(long... translation) {
 		return wrap(
 				this,
 				ViewTransforms.translateInverse(translation),
@@ -91,7 +88,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> subsample(long... steps) {
+	default DatasetInterval<T, ?> subsample(long... steps) {
 		long[] fullSteps = Util.expandArray(steps, this.numDimensions());
 		SubsampleIntervalView<T> dataView = Views.subsample(this.delegate(), fullSteps);
 		MetadataStore storeView = new MetadataStoreSubsampleView(
@@ -102,7 +99,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> rotate(int fromAxis, int toAxis) {
+	default DatasetInterval<T, ?> rotate(int fromAxis, int toAxis) {
 		return wrap(
 				this,
 				ViewTransforms.rotate(numDimensions(), fromAxis, toAxis),
@@ -111,7 +108,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> permute(int fromAxis, int toAxis) {
+	default DatasetInterval<T, ?> permute(int fromAxis, int toAxis) {
 		return wrap(
 				this,
 				ViewTransforms.permute(numDimensions(), fromAxis, toAxis),
@@ -120,7 +117,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> moveAxis(int fromAxis, int toAxis) {
+	default DatasetInterval<T, ?> moveAxis(int fromAxis, int toAxis) {
 		return wrap(
 				this,
 				ViewTransforms.moveAxis(numDimensions(), fromAxis, toAxis),
@@ -129,7 +126,7 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default DatasetInterval<T> invertAxis(int axis) {
+	default DatasetInterval<T, ?> invertAxis(int axis) {
 		return wrap(
 				this,
 				ViewTransforms.invertAxis(numDimensions(), axis),
@@ -138,61 +135,72 @@ public interface DatasetInterval<T> extends RandomAccessibleIntervalView<T> {
 	}
 
 	@Override
-	default Dataset<T> extend( Extension< T > extension )
+	default Dataset<T, ?> extend( Extension< T, V > extension )
 	{
 		RandomAccessible<T> delegate = RandomAccessibleIntervalView.super.extend(extension);
 		return Dataset.wrap(delegate, store());
 	}
 
 	@Override
-	default DatasetInterval< T> expand( Extension< T > extension, long... border )
+	default DatasetInterval< T, ?> expand( Extension< T, V > extension, long... border )
 	{
 		RandomAccessibleInterval<T> delegate = RandomAccessibleIntervalView.super.expand(extension, border);
 		return DatasetInterval.wrap(delegate, store());
 	}
 
 	@Override
-	default RandomAccessibleIntervalView< T > zeroMin()
+	default RandomAccessibleIntervalView< T, ? > zeroMin()
 	{
 		return wrap(this, ViewTransforms.zeroMin(this), Intervals.zeroMin(this));
 	}
 
-
-	@Override
-	default RealDataset<T> interpolate(Interpolation<T> interpolation) {
-		return RealDataset.wrap(RandomAccessibleIntervalView.super.interpolate(interpolation), store());
-	}
-
 	// FIXME: Dataset wildcard bound
 	@Override
-	default <U> DatasetInterval<U> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
+	default <U> DatasetInterval<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
 		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
 	}
 
 	// FIXME: Dataset wildcard bound
 	@Override
-	default <U> DatasetInterval<U> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
+	default <U> DatasetInterval<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}
 
-	default DatasetInterval<T> view() {
+	default DatasetInterval<T, V> view() {
 		return this;
 	}
 
+	@Override
 	default T getType() {
-		return this.delegate().getType();
+		return Dataset.super.getType();
 	}
 
-	default int numDimensions() {
-		return this.delegate().numDimensions();
+
+	/** RandomAccessibleInterval Overrides */
+
+	@Override
+	default Cursor< T > cursor()
+	{
+		return new RandomAccessibleIntervalCursor<>( this.delegate() );
 	}
 
-	default RandomAccess<T> randomAccess() {
-		return this.delegate().randomAccess();
+	@Override
+	default Cursor< T > localizingCursor()
+	{
+		return cursor();
 	}
 
-	default RandomAccess<T> randomAccess(Interval interval) {
-		return this.delegate().randomAccess(interval);
+	@Override
+	default long size()
+	{
+		return Intervals.numElements( this );
 	}
+
+	@Override
+	default Object iterationOrder()
+	{
+		return new FlatIterationOrder( this );
+	}
+
 
 }

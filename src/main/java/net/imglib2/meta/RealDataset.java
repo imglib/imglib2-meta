@@ -9,7 +9,7 @@ import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Supplier;
 
-public interface RealDataset<T> extends RealRandomAccessibleView<T> {
+public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, V>, RealRandomAccessibleView<T, V> {
     RealRandomAccessible<T> data();
     MetadataStore store();
 
