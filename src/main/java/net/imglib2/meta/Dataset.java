@@ -13,6 +13,7 @@ import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleView;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -129,7 +130,7 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 	}
 
 	@Override
-	default RealDataset<T> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
+	default RealDataset<T, ?> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
 		return RealDataset.wrap(RandomAccessibleView.super.interpolate(interpolation), store());
 	}
 
@@ -143,6 +144,12 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 	@Override
 	default <U> Dataset<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
+	}
+
+	@Override
+	default < U > U use( Function< ? super V, U > function )
+	{
+		return function.apply( (V) this );
 	}
 
 	default Dataset<T, V> view() {

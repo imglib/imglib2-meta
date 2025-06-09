@@ -23,7 +23,7 @@ public class DatasetIntervalTest {
 	 *
 	 * @return a fully calibrated {@link DatasetInterval}
 	 */
-	private DatasetInterval<DoubleType> dataset() {
+	private DatasetInterval<DoubleType, ?> dataset() {
 		RandomAccessible<DoubleType> data = Data.image();
 
 		MetadataStore store = new SimpleMetadataStore(data.numDimensions());
@@ -39,7 +39,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testFluentMoveAxis() {
-		DatasetInterval<DoubleType> permuted = dataset().moveAxis(0, 3);
+		DatasetInterval<DoubleType, ?> permuted = dataset().moveAxis(0, 3);
 
 		Calibration calView = permuted.store().info(Calibration.class);
 		Assert.assertEquals(Axes.Y, calView.axis(0).type());
@@ -51,7 +51,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testFluentRotation() {
-		DatasetInterval<DoubleType> rotated = dataset().rotate(3, 2);
+		DatasetInterval<DoubleType, ?> rotated = dataset().rotate(3, 2);
 
 		Calibration calView = rotated.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
@@ -63,7 +63,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testFluentPermutation() {
-		DatasetInterval<DoubleType> permuted = dataset().permute(3, 2);
+		DatasetInterval<DoubleType, ?> permuted = dataset().permute(3, 2);
 
 		Calibration calView = permuted.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
@@ -75,7 +75,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testFluentInterval() {
-		DatasetInterval<DoubleType> intervaled = dataset().interval(new FinalInterval(10, 10, 10, 10, 10));
+		DatasetInterval<DoubleType, ?> intervaled = dataset().interval(new FinalInterval(10, 10, 10, 10, 10));
 		// Assert the new dataset has an interval
 		Assert.assertArrayEquals(new long[] {0, 0, 0, 0, 0}, intervaled.minAsLongArray());
 		Assert.assertArrayEquals(new long[] {9, 9, 9, 9, 9}, intervaled.maxAsLongArray());
@@ -91,7 +91,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testFluentSlicing() {
 		// Take a Z-slice
-		DatasetInterval<DoubleType> sliced = dataset().slice(2, 9);
+		DatasetInterval<DoubleType, ?> sliced = dataset().slice(2, 9);
 
 		Calibration calView = sliced.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
@@ -104,7 +104,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testFluentConcatenation() {
 		// Take a slice after rotating
-		DatasetInterval<DoubleType> rotated = dataset().rotate(4, 2).slice(2, 9);
+		DatasetInterval<DoubleType, ?> rotated = dataset().rotate(4, 2).slice(2, 9);
 
 		Calibration calView = rotated.store().info(Calibration.class);
 		Assert.assertEquals(Axes.X, calView.axis(0).type());
@@ -117,7 +117,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testFluentTranslation() {
 		// Translate
-		DatasetInterval<DoubleType> translated = dataset().translate(-1, 0, 0, 0, 0);
+		DatasetInterval<DoubleType, ?> translated = dataset().translate(-1, 0, 0, 0, 0);
 		Calibration calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
 		// Translate & permute
@@ -129,7 +129,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testFluentInvertAxis() {
 		// Invert Axis
-		DatasetInterval<DoubleType> inverted = dataset().invertAxis(1);
+		DatasetInterval<DoubleType, ?> inverted = dataset().invertAxis(1);
 		Calibration calView = inverted.store().info(Calibration.class);
 		Assert.assertEquals(-1.0, calView.axis(1).calibrated(1), 1e-6);
 		// Translate & permute
@@ -141,7 +141,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testFluentInverseTranslation() {
 		// Translate
-		DatasetInterval<DoubleType> translated = dataset().translateInverse(1, 0, 0, 0, 0);
+		DatasetInterval<DoubleType, ?> translated = dataset().translateInverse(1, 0, 0, 0, 0);
 		Calibration calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
 		// Translate & permute
@@ -152,15 +152,15 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testFluentSubsampling() {
-		DatasetInterval<DoubleType> translated = dataset().subsample(2, 1, 1, 1, 1);
+		DatasetInterval<DoubleType, ?> translated = dataset().subsample(2, 1, 1, 1, 1);
 		Calibration calView = translated.store().info(Calibration.class);
 		Assert.assertEquals(2.0, calView.axis(0).calibrated(1), 1e-6);
 	}
 
 	@Test
 	public void testFluentAddDimension() {
-		DatasetInterval<DoubleType> original = dataset();
-		DatasetInterval<DoubleType> translated = dataset().addDimension();
+		DatasetInterval<DoubleType, ?> original = dataset();
+		DatasetInterval<DoubleType, ?> translated = dataset().addDimension();
 		Calibration cal = original.store().info(Calibration.class);
 		Calibration calView = translated.store().info(Calibration.class);
 		// New axes should be default be unknown
@@ -174,7 +174,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testExtension() {
-		Dataset<DoubleType> permuted = dataset() //
+		Dataset<DoubleType, ?> permuted = dataset() //
 				.extend(RandomAccessibleIntervalView.Extension.border());
 
 		// Assert axes unchanged
@@ -189,7 +189,7 @@ public class DatasetIntervalTest {
 	@Test
 	public void testExpansion() {
 		long borderSize = 2;
-		DatasetInterval<DoubleType> permuted = dataset() //
+		DatasetInterval<DoubleType, ?> permuted = dataset() //
 				.expand(RandomAccessibleIntervalView.Extension.border(), 2, 2, 2, 2, 2);
 
 		// Assert minimum moved by -borderSize
@@ -212,7 +212,7 @@ public class DatasetIntervalTest {
 
 	@Test
 	public void testInterpolate() {
-		RealDataset<DoubleType> interpolated = dataset() //
+		RealDataset<DoubleType, ?> interpolated = dataset() //
 				.interpolate(RandomAccessibleView.Interpolation.nearestNeighbor()); //
 
 		// Assert axes unchanged
