@@ -1,18 +1,15 @@
 package net.imglib2.meta.calibration;
 
-import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealLocalizable;
 import net.imglib2.meta.Axis;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.VaryingMetadataItem;
-import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.NoSuchElementException;
-import java.util.RandomAccess;
-import java.util.function.BiConsumer;
+import java.util.Optional;
 
 public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
@@ -90,5 +87,15 @@ public class DefaultCalibration implements Calibration {
 	public void setAxis(final Axis axis, final int d) {
 		metaData.add(AXIS_DATA, axis.data(), d);
 		metaData.add(AXIS_TYPE, axis.type(), d);
+	}
+
+	@Override
+	public Optional<Integer> dimension(AxisType type) {
+		for (int i = 0; i < metaData.numDimensions(); i++) {
+			if(axis(i).type() == type) {
+				return Optional.of(i);
+			}
+		}
+		return Optional.empty();
 	}
 }

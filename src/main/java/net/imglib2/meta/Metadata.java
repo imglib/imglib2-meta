@@ -7,6 +7,7 @@ import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.channels.Channels;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 import net.imglib2.transform.integer.MixedTransform;
@@ -29,6 +30,10 @@ public final class Metadata {
 
 	public static General general(MetadataStore store) {
 		return store.info(General.class);
+	}
+
+	public static Channels channels(MetadataStore store) {
+		return store.info(Channels.class);
 	}
 
 	public static <T> MetadataItem<T> item(String name, T data, int numDims, int... dims) {
