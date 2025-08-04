@@ -19,7 +19,9 @@ The current design goals are:
 The pain points are:
 * `RealRandomAccessible` does not implement `RandomAccessible`
   * This makes it difficult to make one `Dataset` class that can wrangle both `RA` and `RRA`.
+  * See [imglib/imglib2#378](https://github.com/imglib/imglib2/pull/378)
 * `RandomAccessibleView` and its subclasses have difficult typing.
   * This makes it difficult to subclass `Dataset`, if we want a `DatasetInterval` or a `RealDataset`
   * The `V` type parameter of `RandomAccessibleView` is never something I'd want a user to have to type.
     * This type is present for the `RandomAccessibleView.use` method, which allows subinterfaces to get a specialized version for free (e.g `Dataset.use(Function<? super Dataset, U)`). Without that type variable this type of thing is basically impossible.
+  * See [imglib/imglib2#379](https://github.com/imglib/imglib2/pull/379)
