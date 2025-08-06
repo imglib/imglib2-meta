@@ -83,7 +83,7 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
+		public boolean isAttachedTo(int... dims) {
 			throw new UnsupportedOperationException("RealView of metadata store does not know dimensional axis attachments");
 		}
 

@@ -7,14 +7,38 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.display.ColorTable;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-class ColorTableRAI implements RandomAccessible<ColorTable> {
+class ColorTableHolder {
+    private final Map<Integer, ColorTable> map;
+    private int idx;
+
+    public ColorTableHolder(final Map<Integer, ColorTable> map, final int idx) {
+        this.map = map;
+        this.idx = idx;
+    }
+
+    public ColorTable get() {
+        return map.getOrDefault(this.idx, null);
+    }
+
+    void setIdx(int idx) {
+        this.idx = idx;
+    }
+
+    public void set(ColorTable table) {
+        map.put(this.idx, table);
+
+    }
+}
+
+class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
 
     private final Map<Integer, ColorTable> luts = new HashMap<>();
 
-    private class ColorTableRandomAccess extends Point implements RandomAccess<ColorTable> {
+    private class ColorTableRandomAccess extends Point implements RandomAccess<ColorTableHolder> {
 
         public ColorTableRandomAccess()
         {
@@ -22,15 +46,15 @@ class ColorTableRAI implements RandomAccessible<ColorTable> {
         }
 
         @Override
-        public ColorTable get()
+        public ColorTableHolder get()
         {
-            return luts.getOrDefault(getIntPosition(0), null);
+            return new ColorTableHolder(luts, getIntPosition(0));
         }
 
         @Override
-        public ColorTable getType()
+        public ColorTableHolder getType()
         {
-            return ColorTables.BLUE;
+            return get();
         }
 
         @Override
@@ -41,12 +65,12 @@ class ColorTableRAI implements RandomAccessible<ColorTable> {
     }
 
     @Override
-    public RandomAccess<ColorTable> randomAccess() {
+    public RandomAccess<ColorTableHolder> randomAccess() {
         return new ColorTableRandomAccess();
     }
 
     @Override
-    public RandomAccess<ColorTable> randomAccess(Interval interval) {
+    public RandomAccess<ColorTableHolder> randomAccess(Interval interval) {
         return randomAccess();
     }
 
@@ -56,7 +80,7 @@ class ColorTableRAI implements RandomAccessible<ColorTable> {
     }
 
     @Override
-    public ColorTable getType() {
+    public ColorTableHolder getType() {
         return randomAccess().getType();
     }
 

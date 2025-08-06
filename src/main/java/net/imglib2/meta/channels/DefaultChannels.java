@@ -32,16 +32,16 @@ public class DefaultChannels implements Channels {
 		for (int i = 0; i < point.numDimensions(); i++) {
 			point.setPosition(axis == i ? c : 0, i);
 		}
-		return metaData.get(AXIS_KEY, ColorTable.class, axis).get().getAt(point);
+		return metaData.get(AXIS_KEY, ColorTableHolder.class, axis).get().getAt(point).get();
 	}
 
 	@Override
 	public void setLut(int axis, int c, ColorTable lut) {
-		metaData.get(AXIS_KEY, ColorTable.class, axis).orElseGet(() -> {
+		metaData.get(AXIS_KEY, ColorTableHolder.class, axis).orElseGet(() -> {
 			ColorTableRAI newLut = new ColorTableRAI();
 			metaData.add(AXIS_KEY, newLut, axis);
-			return metaData.get(AXIS_KEY, ColorTable.class, axis).get();
-		}).get()
+			return metaData.get(AXIS_KEY, ColorTableHolder.class, axis).get();
+		}).getAt(0, 0, c).set(lut);
 	}
 
 	@Override

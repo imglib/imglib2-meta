@@ -85,8 +85,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
-			return source.isAttachedTo(d);
+		public boolean isAttachedTo(int... dims) {
+			return source.isAttachedTo(dims);
 		}
 
 		@Override

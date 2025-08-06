@@ -114,11 +114,11 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
+		public boolean isAttachedTo(int... dims) {
 			if (attachedToAxes == null) {
 				return false;
 			}
-			for (int i: d) {
+			for (int i: dims) {
 				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
 					return false;
 				}
@@ -194,11 +194,11 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
+		public boolean isAttachedTo(int... dims) {
 			if (attachedToAxes == null) {
 				return false;
 			}
-			for (int i: d) {
+			for (int i: dims) {
 				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
 					return false;
 				}
@@ -269,11 +269,11 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
+		public boolean isAttachedTo(int... dims) {
 			if (attachedToAxes == null) {
 				return false;
 			}
-			for (int i: d) {
+			for (int i: dims) {
 				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
 					return false;
 				}

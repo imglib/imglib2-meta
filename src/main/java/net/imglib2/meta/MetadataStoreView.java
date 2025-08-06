@@ -114,10 +114,10 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int... d) {
-			int[] dd = new int[d.length];
-			for(int i = 0; i < d.length; i++) {
-				dd[i] = transform.getComponentMapping(d[i]);
+		public boolean isAttachedTo(int... dims) {
+			int[] dd = new int[dims.length];
+			for(int i = 0; i < dims.length; i++) {
+				dd[i] = transform.getComponentMapping(dims[i]);
 			}
 			return source.isAttachedTo(dd);
 		}
