@@ -1,8 +1,10 @@
 package net.imglib2.meta.calibration;
 
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealLocalizable;
 import net.imglib2.meta.Axis;
+import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.position.FunctionRandomAccessible;
@@ -10,34 +12,44 @@ import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
 	private static final String AXIS_DATA = "axis_data";
 	private static final String AXIS_TYPE = "axis_type";
 
-	private static final MetadataItem<AxisType> UNKNOWN_TYPE = new MetadataItem<AxisType>() {
-		@Override
-		public String name() {
-			return AXIS_TYPE;
+	private static class UnknownData implements MetadataItem<DoubleType> {
+		private final boolean[] axisAttachments;
+
+		public UnknownData(int numDimensions) {
+			axisAttachments = new boolean[numDimensions];
 		}
 
 		@Override
-		public AxisType get() {
-			return Axes.unknown();
+		public RandomAccess<DoubleType> randomAccess() {
+			return new FunctionRandomAccessible<>(
+				axisAttachments.length,
+				(loc, out) -> out.set(getAt(loc)),
+				DoubleType::new
+			).randomAccess();
 		}
-	};
 
-	private static final MetadataItem<DoubleType> UNKNOWN_DATA = new MetadataItem<DoubleType>() {
 		@Override
 		public String name() {
 			return AXIS_DATA;
 		}
 
 		@Override
-		public DoubleType get() {
+		public boolean[] attachedAxes() {
+			return axisAttachments;
+		}
+
+		@Override
+		public DoubleType getAt(RealLocalizable pos) {
 			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
 		}
+
 	};
 
 
@@ -53,11 +65,13 @@ public class DefaultCalibration implements Calibration {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
 		// Search for Axis components
-		MetadataItem<DoubleType> data = metaData.get(AXIS_DATA, DoubleType.class, d).orElse(UNKNOWN_DATA);
+		MetadataItem<DoubleType> data = metaData.get(AXIS_DATA, DoubleType.class, d).orElseGet(() -> new UnknownData(metaData.numDimensions()));
 
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {
+			private final Supplier<MetadataItem<AxisType>> unknownAxisSupplier = //
+					() -> Metadata.item(AXIS_TYPE, Axes.unknown(), metaData.numDimensions());
 
 			@Override
 			public double calibrated(double raw) {
@@ -76,7 +90,7 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				return metaData.get(AXIS_TYPE, AxisType.class, d).orElse(UNKNOWN_TYPE).get();
+				return metaData.get(AXIS_TYPE, AxisType.class, d).orElseGet(unknownAxisSupplier).getType();
 			}
 		};
 	}

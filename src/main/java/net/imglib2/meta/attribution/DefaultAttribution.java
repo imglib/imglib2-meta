@@ -14,12 +14,13 @@ public class DefaultAttribution implements Attribution {
 	@Override
 	public String author() {
 		MetadataItem<String> item = metaData.get("author", String.class).orElse(null);
-		return item == null ? null : item.get();
+		return item == null ? null : item.getType();
 	}
 
 	@Override
 	public String citation() {
 		MetadataItem<String> item = metaData.get("citation", String.class).orElse(null);
-		return item == null ? null : item.get();
+		// FIXME: Using getType here is a bit of a HACK :)
+		return item == null ? null : item.getType();
 	}
 }

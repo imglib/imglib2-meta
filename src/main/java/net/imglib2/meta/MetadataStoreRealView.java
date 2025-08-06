@@ -1,10 +1,10 @@
 package net.imglib2.meta;
 
-import net.imglib2.RandomAccessible;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
-import net.imglib2.RealRandomAccessible;
+import net.imglib2.*;
+import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformRealRandomAccessible;
+import net.imglib2.view.Views;
 
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ class MetadataStoreRealView implements MetadataStore {
 	@Override
 	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-		return itemView(source.get(key, ofType, d)); // FIXME: Dimensional index might have shifted meaning here.
+		return source.get(key, ofType, d).map(this::itemView); // FIXME: Dimensional index might have shifted meaning here.
 	}
 
 	@Override
@@ -54,20 +54,18 @@ class MetadataStoreRealView implements MetadataStore {
 		return source.numDimensions();
 	}
 
-	private <T> Optional<MetadataItem<T>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
-	) {
-		if (!result.isPresent()) return result;
-		MetadataItem<T> sourceItem = result.get();
-		if (!sourceItem.isAttachedToAxes()) return result;
-		return Optional.of(new MetadataItemRealView<>(sourceItem, transform));
+	private <T> MetadataItem<T> itemView(MetadataItem<T> result) {
+		if (!result.isAttachedToAnyAxis()) return result;
+		return new MetadataItemRealView<>(result, transform);
 	}
 
-	private static class MetadataItemRealView<T> implements MetadataItem<T> {
+	private static class MetadataItemRealView<T, R extends RealTransform> extends RealTransformRealRandomAccessible<T, R> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
-		private final RealTransform transform;
+		private final R transform;
 
-		public MetadataItemRealView(MetadataItem<T> source, RealTransform transform) {
+		public MetadataItemRealView(MetadataItem<T> source, R transform) {
+			// FIXME: Poor RRA construction
+			super(Views.interpolate(source, new NearestNeighborInterpolatorFactory<>()), transform);
 			this.source = source;
 			this.transform = transform;
 		}
@@ -78,8 +76,8 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedToAxes() {
-			return source.isAttachedToAxes();
+		public boolean[] attachedAxes() {
+			throw new UnsupportedOperationException("TODO Lol");
 		}
 
 		@Override
@@ -88,15 +86,70 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public T get() {
-			return source.get();
+		public T getAt(long... pos) {
+			return super.getAt(pos);
 		}
 
 		@Override
-		public T getAt(RealLocalizable pos) {
-			final RealPoint p = new RealPoint(transform.numSourceDimensions());
-			transform.apply(pos, p);
-			return source.getAt(p);
+		public T getAt(float... position) {
+			return super.getAt(position);
+		}
+
+		@Override
+		public T getAt(double... position) {
+			return super.getAt(position);
+		}
+
+		@Override
+		public T getAt(RealLocalizable position) {
+			return super.getAt(position);
+		}
+
+		@Override
+		public RandomAccess<T> randomAccess() {
+			return new RealTransformRandomAccess();
+		}
+
+		@Override
+		public RandomAccess<T> randomAccess(Interval interval) {
+			return new RealTransformRandomAccess();
+		}
+
+		public class RealTransformRandomAccess extends Point implements RandomAccess<T> {
+			protected final RandomAccess<T> sourceAccess;
+			protected final RealTransform transformCopy;
+
+			protected RealTransformRandomAccess() {
+				super(MetadataItemRealView.this.transformToSource.numSourceDimensions());
+				this.sourceAccess = MetadataItemRealView.this.source.randomAccess();
+				this.transformCopy = MetadataItemRealView.this.transformToSource.copy();
+			}
+
+			private RealTransformRandomAccess(MetadataItemRealView<T, R>.RealTransformRandomAccess a) {
+				super(a);
+				this.sourceAccess = a.sourceAccess.copy();
+				this.transformCopy = a.transformCopy.copy();
+			}
+
+			public T get() {
+				// FIXME: Reuse points?
+				RealPoint point = new RealPoint(this);
+				this.transformCopy.apply(this, point);
+				return MetadataItemRealView.this.source.getAt(point);
+			}
+
+			public T getType() {
+				return MetadataItemRealView.this.source.getType();
+			}
+
+			public MetadataItemRealView<T, R>.RealTransformRandomAccess copy() {
+				return MetadataItemRealView.this.new RealTransformRandomAccess(this);
+			}
+
+			@Override
+			public long getLongPosition(int d) {
+				return 0;
+			}
 		}
 	}
 }

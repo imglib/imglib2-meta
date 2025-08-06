@@ -2,6 +2,7 @@ package net.imglib2.meta;
 
 import net.imglib2.*;
 import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.view.SubsampleView;
 
 import java.util.Optional;
 
@@ -64,11 +65,12 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		return result.map(item -> new MetadataStoreSubsampleView.MetadataItemSubsampleView<>(item, steps));
 	}
 
-	private static class MetadataItemSubsampleView<T> implements MetadataItem<T> {
+	private static class MetadataItemSubsampleView<T> extends SubsampleView<T> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
 		private final long[] steps;
 
 		public MetadataItemSubsampleView(MetadataItem<T> source, long[] steps) {
+			super(source, steps);
 			this.source = source;
 			// FIXME: The RA here is only <=N-dimensional not necessarily N-dimensional.
 			this.steps = steps;
@@ -80,18 +82,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedToAxes() {
-			return source.isAttachedToAxes();
-		}
-
-		@Override
-		public boolean isAttachedTo(int... dims) {
-			return source.isAttachedTo(dims);
-		}
-
-		@Override
-		public T get() {
-			return source.get();
+		public boolean[] attachedAxes() {
+			return source.attachedAxes();
 		}
 
 		@Override

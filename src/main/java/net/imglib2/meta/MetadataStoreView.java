@@ -3,6 +3,7 @@ package net.imglib2.meta;
 import net.imglib2.*;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.view.MixedTransformView;
 
 import java.util.Optional;
 
@@ -53,7 +54,7 @@ class MetadataStoreView implements MetadataStore {
 			}
 			dd[i] = dim_map[d[i]];
 		}
-		return itemView(source.get(key, ofType, dd));
+		return source.get(key, ofType, dd).map(this::itemView);
 	}
 
 	@Override
@@ -88,17 +89,16 @@ class MetadataStoreView implements MetadataStore {
 		return transform.concatenate(source.transform());
 	}
 
-	private <T, U> Optional<MetadataItem<T>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
-	) {
-		return result.map(item -> new MetadataItemView<>(item, transform));
+	private <T> MetadataItem<T> itemView(MetadataItem<T> result ) {
+		return new MetadataItemView<>(result, transform);
 	}
 
-	private static class MetadataItemView<T> implements MetadataItem<T> {
+	private static class MetadataItemView<T> extends MixedTransformView<T> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
 		private final Mixed transform;
 
 		public MetadataItemView(MetadataItem<T> source, Mixed transform) {
+			super(source, transform);
 			this.source = source;
 			this.transform = transform;
 		}
@@ -109,8 +109,8 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedToAxes() {
-			return source.isAttachedToAxes();
+		public boolean[] attachedAxes() {
+			return new boolean[0];
 		}
 
 		@Override
@@ -120,11 +120,6 @@ class MetadataStoreView implements MetadataStore {
 				dd[i] = transform.getComponentMapping(dims[i]);
 			}
 			return source.isAttachedTo(dd);
-		}
-
-		@Override
-		public T get() {
-			return source.get();
 		}
 
 		@Override

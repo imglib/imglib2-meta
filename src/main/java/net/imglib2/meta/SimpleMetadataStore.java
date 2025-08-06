@@ -39,8 +39,8 @@ public class SimpleMetadataStore implements MetadataStore {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(key))
-			.filter(item -> !item.isAttachedToAxes())
-			.filter(item -> ofType == null || ofType.isInstance(item.get()))
+			.filter(item -> !item.isAttachedToAnyAxis())
+			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
 			.findFirst();
 	}
@@ -51,7 +51,7 @@ public class SimpleMetadataStore implements MetadataStore {
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
 			.filter(item -> item.isAttachedTo(d)) //
-			.filter(item -> ofType == null || ofType.isInstance(((MetadataItem) item).get()))
+			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
 			.findFirst();
 	}

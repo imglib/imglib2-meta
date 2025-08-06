@@ -9,7 +9,7 @@ public class DefaultGeneral implements General{
     @Override
     public String name() {
         MetadataItem<String> item = metaData.get("name", String.class).orElse(null);
-        return item == null ? null : item.get();
+        return item == null ? null : item.getType();
     }
 
     @Override

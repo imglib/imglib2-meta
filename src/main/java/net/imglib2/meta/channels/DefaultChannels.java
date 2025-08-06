@@ -44,7 +44,7 @@ public class DefaultChannels implements Channels {
 		}
 		else {
 			// One LUT for the whole image
-			return metaData.get(AXIS_KEY, ColorTable.class).get().getAt();
+			return metaData.get(AXIS_KEY, ColorTable.class).get().getType();
 		}
 	}
 
@@ -63,7 +63,7 @@ public class DefaultChannels implements Channels {
 	@Override
 	public boolean isRGB() {
 		Optional<MetadataItem<Boolean>> item = metaData.get(RGB_KEY, Boolean.class);
-		return item.isPresent() ? item.get().get() : false;
+		return item.isPresent() ? item.get().getType() : false;
 	}
 
 	@Override
