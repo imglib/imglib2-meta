@@ -15,30 +15,44 @@ public interface MetadataStore extends EuclideanSpace {
 	}
 
 	/**
-	 * Find a {@link MetadataItem} matching {@code key}
-	 * @param name
+	 * Find a {@link MetadataItem} associated with key {@code key}.
+	 *
+	 * @param key the identifier of the {@link MetadataItem}
 	 * @return a {@link MetadataItem} matching {@code key}
 	 */
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String name) {
-		return (Optional) get(name, null);
+	default Optional<MetadataItem<?>> get(String key) {
+		return (Optional) get(key, Object.class);
 	}
 
-	<T> Optional<MetadataItem<T>> get(String name, Class<T> ofType);
+	/**
+	 * Find a {@link MetadataItem} associated with key {@code key} of {@link Class} {@code ofType}.
+	 *
+	 * @param key the identifier of the {@link MetadataItem}
+	 * @param ofType the type of the {@link MetadataItem}
+	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
+	 */
+	<T> Optional<MetadataItem<T>> get(String key, Class<T> ofType);
 
-	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<VaryingMetadataItem<?, ?>> get(String name, int d) {
-		return (Optional) get(name, d, null);
+	/**
+	 * Find a {@link MetadataItem} associated with key {@code key} and axes {@code d}
+	 * @param key the identifier of the {@link MetadataItem}
+	 * @param d the axes associated with the {@link MetadataItem}
+	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
+	 */
+	default <T> Optional<MetadataItem<T>> get(String key, int... d) {
+		return (Optional) get(key, Object.class, d);
 	}
 
-	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<VaryingMetadataItem<?, ?>> getVarying(String name, int d) {
-		return (Optional) getVarying(name, d, null);
-	}
-
-	<T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType);
-
-	<T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String name, int d, Class<T> ofType);
+	/**
+	 * Find a {@link MetadataItem} associated with key {@code key} and axes {@code d} of {@link Class} {@code ofType}.
+	 *
+	 * @param key the identifier of the {@link MetadataItem}
+	 * @param ofType the type of the {@link MetadataItem}
+	 * @param d the axes associated with the {@link MetadataItem}
+	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
+	 */
+	<T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);

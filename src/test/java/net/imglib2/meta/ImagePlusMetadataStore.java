@@ -4,6 +4,9 @@ package net.imglib2.meta;
 import ij.ImagePlus;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.display.ColorTable;
+import net.imglib2.imagej.LUTToColorTable;
+import net.imglib2.img.list.ListImg;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
@@ -11,8 +14,11 @@ import net.imglib2.meta.calibration.DefaultCalibration;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 public class ImagePlusMetadataStore implements MetadataStore {
 
@@ -31,7 +37,22 @@ public class ImagePlusMetadataStore implements MetadataStore {
     }
 
     @Override
-    public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
+    public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... dims) {
+        // FIXME
+        int d = dims[0];
+        if (key.equals("channel") && is(ofType, ColorTable.class)) {
+            if (axisType(d) == Axes.CHANNEL) {
+                List<ColorTable> tables = Arrays.stream(imp.getLuts()) //
+                    .map(LUTToColorTable::wrap) //
+                    .collect(Collectors.toList());
+                return Optional.of(Metadata.item(
+                    key,
+                    (RandomAccessible<T>) new ListImg<>(tables),
+                    numDimensions(),
+                    d
+                ));
+            }
+        }
         if (key.equals("axis_data") && is(ofType, DoubleType.class)) {
             AxisType type = axisType(d);
             if (type != null) {
@@ -48,16 +69,11 @@ public class ImagePlusMetadataStore implements MetadataStore {
                 ));
             }
         }
-        return Optional.empty();
-    }
-
-    @Override
-    public <T> Optional<MetadataItem<T>> get(String name, int d, Class<T> ofType) {
-        if (name.equals("axis_type") && is(ofType, AxisType.class)) {
+        if (key.equals("axis_type") && is(ofType, AxisType.class)) {
             AxisType type = axisType(d);
             if (type != null) {
                 return Optional.of(Metadata.item(
-                        name,
+                        key,
                         (T) type,
                         numDimensions(),
                         d

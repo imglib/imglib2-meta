@@ -24,15 +24,9 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-		return source.get(key, d, ofType); // FIXME: Dimensional index might have shifted meaning here.
-	}
-
-	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
-		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-		return itemView(source.getVarying(key, d, ofType)); // FIXME: Dimensional index might have shifted meaning here.
+		return itemView(source.get(key, ofType, d)); // FIXME: Dimensional index might have shifted meaning here.
 	}
 
 	@Override
@@ -60,20 +54,20 @@ class MetadataStoreRealView implements MetadataStore {
 		return source.numDimensions();
 	}
 
-	private <T, U> Optional<VaryingMetadataItem<T, U>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<VaryingMetadataItem<T, U>> result
+	private <T> Optional<MetadataItem<T>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
 	) {
 		if (!result.isPresent()) return result;
-		VaryingMetadataItem<T, U> sourceItem = result.get();
+		MetadataItem<T> sourceItem = result.get();
 		if (!sourceItem.isAttachedToAxes()) return result;
 		return Optional.of(new MetadataItemRealView<>(sourceItem, transform));
 	}
 
-	private static class MetadataItemRealView<T, U> implements VaryingMetadataItem<T, U> {
-		private final VaryingMetadataItem<T, U> source;
+	private static class MetadataItemRealView<T> implements MetadataItem<T> {
+		private final MetadataItem<T> source;
 		private final RealTransform transform;
 
-		public MetadataItemRealView(VaryingMetadataItem<T, U> source, RealTransform transform) {
+		public MetadataItemRealView(MetadataItem<T> source, RealTransform transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -89,12 +83,12 @@ class MetadataStoreRealView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
+		public boolean isAttachedTo(int... d) {
 			throw new UnsupportedOperationException("RealView of metadata store does not know dimensional axis attachments");
 		}
 
 		@Override
-		public U get() {
+		public T get() {
 			return source.get();
 		}
 

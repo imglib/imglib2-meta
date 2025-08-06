@@ -1,10 +1,6 @@
 package net.imglib2.meta;
 
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealRandomAccess;
-import net.imglib2.RealRandomAccessible;
+import net.imglib2.*;
 import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
@@ -36,18 +32,28 @@ public final class Metadata {
 		return store.info(Channels.class);
 	}
 
-	public static <T> MetadataItem<T> item(String name, T data, int numDims, int... dims) {
+	/**
+	 * Creates a {@link MetadataItem}.
+	 *
+	 * @param key the {@link String} key associated with the item
+	 * @param data
+	 * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
+	 * @param dims the dimension indices to which this item pertains.
+	 * @return a {@link MetadataItem}
+	 * @param <T>
+	 */
+	public static <T> MetadataItem<T> item(String key, T data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		return new SimpleItem<>(name, data, axes);
+		return new SimpleItem<>(key, data, axes);
 	}
 
-	public static <T, U extends RandomAccessible<T>> VaryingMetadataItem<T, U> item(String name, U data, int numDims, int... dims) {
+	public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingItem<>(name, data, axes, axes);
 	}
 
-	public static <T, U extends RealRandomAccessible<T>> VaryingMetadataItem<T, U> item(String name, U data, int numDims, int... dims) {
+	public static <T, U extends RealRandomAccessible<T>> MetadataItem<T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes, axes);
@@ -108,8 +114,16 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
-			return attachedToAxes != null && attachedToAxes.length > d && attachedToAxes[d];
+		public boolean isAttachedTo(int... d) {
+			if (attachedToAxes == null) {
+				return false;
+			}
+			for (int i: d) {
+				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		@Override
@@ -139,7 +153,7 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingItem<T, F extends RandomAccessible<T>> implements VaryingMetadataItem<T, F> {
+	private static class VaryingItem<T, F extends RandomAccessible<T>> implements MetadataItem<T> {
 		final String name;
 
 		final F data;
@@ -180,13 +194,24 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
-			return attachedToAxes != null && attachedToAxes.length > d && attachedToAxes[d];
+		public boolean isAttachedTo(int... d) {
+			if (attachedToAxes == null) {
+				return false;
+			}
+			for (int i: d) {
+				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		@Override
-		public F get() {
-			return data;
+		public T get() {
+			// TODO: Consider alternative implementation
+			long[] pos = new long[data.numDimensions()];
+			Arrays.fill(pos, 0);
+			return getAt(pos);
 		}
 
 		@Override
@@ -209,7 +234,7 @@ public final class Metadata {
 		}
 	}
 
-	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> implements VaryingMetadataItem<T, U> {
+	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> implements MetadataItem<T> {
 		final String name;
 
 		final U data;
@@ -244,13 +269,24 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
-			return attachedToAxes != null && attachedToAxes[d];
+		public boolean isAttachedTo(int... d) {
+			if (attachedToAxes == null) {
+				return false;
+			}
+			for (int i: d) {
+				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		@Override
-		public U get() {
-			return data;
+		public T get() {
+			long[] pos = new long[data.numDimensions()];
+			Arrays.fill(pos, 0);
+			return getAt(pos);
+//			throw new UnsupportedOperationException("Varying items must be accessed at a position");
 		}
 
 		@Override

@@ -2,10 +2,12 @@ package net.imglib2.meta.channels;
 
 import net.imglib2.*;
 import net.imglib2.display.ColorTable;
+import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class DefaultChannels implements Channels {
@@ -30,16 +32,27 @@ public class DefaultChannels implements Channels {
 		for (int i = 0; i < point.numDimensions(); i++) {
 			point.setPosition(axis == i ? c : 0, i);
 		}
-		return metaData.getVarying(AXIS_KEY, axis, ColorTable.class).get().getAt(point);
+		return metaData.get(AXIS_KEY, ColorTable.class, axis).get().getAt(point);
 	}
 
 	@Override
 	public void setLut(int axis, int c, ColorTable lut) {
-		metaData.get(AXIS_KEY, axis, ColorTableRAI.class).orElseGet(() -> {
+		metaData.get(AXIS_KEY, ColorTable.class, axis).orElseGet(() -> {
 			ColorTableRAI newLut = new ColorTableRAI();
 			metaData.add(AXIS_KEY, newLut, axis);
-			return metaData.get(AXIS_KEY, axis, ColorTableRAI.class).get();
-		}).get().setLut(c, lut);
+			return metaData.get(AXIS_KEY, ColorTable.class, axis).get();
+		}).get()
+	}
+
+	@Override
+	public boolean isRGB() {
+		Optional<MetadataItem<Boolean>> item = metaData.get(RGB_KEY, Boolean.class);
+		return item.isPresent() ? item.get().get() : false;
+	}
+
+	@Override
+	public void setRGB(boolean isRGB) {
+		metaData.add(RGB_KEY, isRGB);
 	}
 
 }

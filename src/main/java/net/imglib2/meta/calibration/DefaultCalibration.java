@@ -5,7 +5,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.meta.Axis;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.VaryingMetadataItem;
+import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.NoSuchElementException;
@@ -28,19 +28,14 @@ public class DefaultCalibration implements Calibration {
 		}
 	};
 
-	private static final VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> UNKNOWN_DATA = new VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>>() {
+	private static final MetadataItem<DoubleType> UNKNOWN_DATA = new MetadataItem<DoubleType>() {
 		@Override
 		public String name() {
 			return AXIS_DATA;
 		}
 
 		@Override
-		public RandomAccessible<DoubleType> get() {
-			throw new IllegalArgumentException("No data associated with unknown axes!");
-		}
-
-		@Override
-		public DoubleType getAt(RealLocalizable pos) {
+		public DoubleType get() {
 			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
 		}
 	};
@@ -58,7 +53,7 @@ public class DefaultCalibration implements Calibration {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
 		// Search for Axis components
-		VaryingMetadataItem<DoubleType, RandomAccessible<DoubleType>> data = metaData.getVarying(AXIS_DATA, d, DoubleType.class).orElse(UNKNOWN_DATA);
+		MetadataItem<DoubleType> data = metaData.get(AXIS_DATA, DoubleType.class, d).orElse(UNKNOWN_DATA);
 
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
@@ -72,12 +67,16 @@ public class DefaultCalibration implements Calibration {
 			}
 			@Override
 			public RandomAccessible<DoubleType> data() {
-				return data.get();
+				return new FunctionRandomAccessible<>(
+						1,
+						(pos, out) -> out.set(calibrated(pos.getDoublePosition(0))),
+						DoubleType::new
+				);
 			}
 
 			@Override
 			public AxisType type() {
-				return metaData.get(AXIS_TYPE, d, AxisType.class).orElse(UNKNOWN_TYPE).get();
+				return metaData.get(AXIS_TYPE, AxisType.class, d).orElse(UNKNOWN_TYPE).get();
 			}
 		};
 	}

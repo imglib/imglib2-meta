@@ -1,13 +1,7 @@
 package net.imglib2.meta;
 
-import net.imglib2.Localizable;
-import net.imglib2.Point;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealRandomAccessible;
-import net.imglib2.transform.integer.Mixed;
+import net.imglib2.*;
 import net.imglib2.transform.integer.MixedTransform;
-import net.imglib2.view.SubsampleView;
 
 import java.util.Optional;
 
@@ -28,13 +22,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
-		return source.get(key, d, ofType);
-	}
-
-	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
-		return itemView(source.getVarying(key, d, ofType));
+	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
+		return itemView(source.get(key, ofType, d));
 	}
 
 	@Override
@@ -69,20 +58,20 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		throw new UnsupportedOperationException("FIXME");
 	}
 
-	private <T, U extends RandomAccessible<T>> Optional<VaryingMetadataItem<T, U>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<VaryingMetadataItem<T, U>> result
+	private <T, U extends RandomAccessible<T>> Optional<MetadataItem<T>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
 	) {
-		return result.map(item -> new MetadataStoreSubsampleView.VaryingMetadataItemSubsampleView<>(item, steps));
+		return result.map(item -> new MetadataStoreSubsampleView.MetadataItemSubsampleView<>(item, steps));
 	}
 
-	private static class VaryingMetadataItemSubsampleView<T, U extends RandomAccessible<T>> implements VaryingMetadataItem<T, U> {
-		private final VaryingMetadataItem<T, U> source;
-		private final SubsampleView<T> transform;
+	private static class MetadataItemSubsampleView<T> implements MetadataItem<T> {
+		private final MetadataItem<T> source;
+		private final long[] steps;
 
-		public VaryingMetadataItemSubsampleView(VaryingMetadataItem<T, U> source, long[] steps) {
+		public MetadataItemSubsampleView(MetadataItem<T> source, long[] steps) {
 			this.source = source;
 			// FIXME: The RA here is only <=N-dimensional not necessarily N-dimensional.
-			this.transform = new SubsampleView<T>(source.get(), steps);
+			this.steps = steps;
 		}
 
 		@Override
@@ -96,12 +85,12 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
+		public boolean isAttachedTo(int... d) {
 			return source.isAttachedTo(d);
 		}
 
 		@Override
-		public U get() {
+		public T get() {
 			return source.get();
 		}
 
@@ -113,9 +102,9 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 			Localizable l = (Localizable) pos;
 
 			// TODO: Don't create a new Point every time. ThreadLocal?
-			final Point p = new Point(transform.getSteps().length);
+			final Point p = new Point(steps.length);
 			for(int i = 0; i < l.numDimensions(); i++) {
-				p.setPosition(l.getLongPosition(i) * transform.getSteps()[i], i);
+				p.setPosition(l.getLongPosition(i) * steps[i], i);
 			}
 			return source.getAt(p);
 		}

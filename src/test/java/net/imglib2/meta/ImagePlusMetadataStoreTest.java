@@ -2,15 +2,20 @@ package net.imglib2.meta;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.process.LUT;
+import net.imglib2.display.ColorTable;
 import net.imglib2.imagej.ImagePlusToImg;
 import net.imglib2.img.Img;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.awt.*;
 
 public class ImagePlusMetadataStoreTest {
 
@@ -48,6 +53,18 @@ public class ImagePlusMetadataStoreTest {
         Assert.assertEquals(Axes.X, cal.axis(0).type());
         Assert.assertEquals(Axes.Y, cal.axis(1).type());
         Assert.assertEquals(Axes.Z, cal.axis(2).type());
+    }
 
+    @Test
+    public void testLUTs() {
+        // TODO: Test RGB
+        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/xrays.zip");
+        imp.setLut(LUT.createLutFromColor(Color.RED));
+        Img<UnsignedByteType> img = ImagePlusToImg.wrapByteDirect(imp);
+        MetadataStore metadata = new ImagePlusMetadataStore(imp);
+
+        Channels chan = Metadata.channels(metadata);
+//        ColorTable table = chan.lut(0);
+//        System.out.println(table);
     }
 }

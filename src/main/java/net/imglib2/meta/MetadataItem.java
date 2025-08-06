@@ -1,13 +1,44 @@
 package net.imglib2.meta;
 
+import net.imglib2.Point;
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
+
 public interface MetadataItem<T> {
 
 	String name();
 
 	default boolean isAttachedToAxes() { return false; }
 
-	default boolean isAttachedTo(final int d) { return false; }
+	default boolean isAttachedTo(final int... d) { return false; }
 
 	T get();
+
+	void set(T value);
+
+	default T getAt(RealLocalizable pos) {
+		return get();
+	}
+
+	default T getAt(long... pos) {
+		return getAt(new Point(pos));
+	}
+
+	default T getAt(double... pos) {
+		return getAt(new RealPoint(pos));
+	}
+
+	default void setAt(T value, RealLocalizable pos) {
+		set(value);
+	}
+
+	default void setAt(T value, long... pos) {
+		setAt(value, new Point(pos));
+	}
+
+	default void setAt(T value, double... pos) {
+		return getAt(new RealPoint(pos));
+	}
+
 
 }

@@ -45,21 +45,15 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, int d, Class<T> ofType) {
-		if (dim_map.length <= d) {
-			return Optional.empty();
+	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
+		final int[] dd = new int[d.length];
+		for(int i = 0; i < dd.length; i++) {
+			if (dim_map.length <= d[i]) {
+				return Optional.empty();
+			}
+			dd[i] = dim_map[d[i]];
 		}
-		final int dd = dim_map[d];
-		return source.get(key, dd, ofType);
-	}
-
-	@Override
-	public <T> Optional<VaryingMetadataItem<T, RandomAccessible<T>>> getVarying(String key, int d, Class<T> ofType) {
-		if (dim_map.length <= d) {
-			return Optional.empty();
-		}
-		final int dd = dim_map[d];
-		return itemView(source.getVarying(key, dd, ofType));
+		return itemView(source.get(key, ofType, dd));
 	}
 
 	@Override
@@ -94,17 +88,17 @@ class MetadataStoreView implements MetadataStore {
 		return transform.concatenate(source.transform());
 	}
 
-	private <T, U> Optional<VaryingMetadataItem<T, U>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<VaryingMetadataItem<T, U>> result
+	private <T, U> Optional<MetadataItem<T>> itemView(
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
 	) {
-		return result.map(item -> new VaryingMetadataItemView<>(item, transform));
+		return result.map(item -> new MetadataItemView<>(item, transform));
 	}
 
-	private static class VaryingMetadataItemView<T, U> implements VaryingMetadataItem<T, U> {
-		private final VaryingMetadataItem<T, U> source;
+	private static class MetadataItemView<T> implements MetadataItem<T> {
+		private final MetadataItem<T> source;
 		private final Mixed transform;
 
-		public VaryingMetadataItemView(VaryingMetadataItem<T, U> source, Mixed transform) {
+		public MetadataItemView(MetadataItem<T> source, Mixed transform) {
 			this.source = source;
 			this.transform = transform;
 		}
@@ -120,12 +114,16 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public boolean isAttachedTo(int d) {
-			return source.isAttachedTo(transform.getComponentMapping(d));
+		public boolean isAttachedTo(int... d) {
+			int[] dd = new int[d.length];
+			for(int i = 0; i < d.length; i++) {
+				dd[i] = transform.getComponentMapping(d[i]);
+			}
+			return source.isAttachedTo(dd);
 		}
 
 		@Override
-		public U get() {
+		public T get() {
 			return source.get();
 		}
 
