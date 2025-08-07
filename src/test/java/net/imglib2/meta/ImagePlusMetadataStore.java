@@ -150,7 +150,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
                                     null;
         }
         else if (d == 3) {
-            return imp.getNSlices() > 1 ? Axes.Z :
+            return imp.getNSlices() > 1 && imp.getNChannels() > 1 ? Axes.Z :
                     imp.getNFrames() > 1 ? Axes.TIME :
                             null;
         }

@@ -1,5 +1,6 @@
 package net.imglib2.meta;
 
+import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.LUT;
@@ -20,23 +21,24 @@ import java.awt.*;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 public class ImagePlusMetadataStoreTest {
 
     @Test
     public void testName() {
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/mitosis.tif");
+        String title = "Fooooooo";
+        ImagePlus imp = IJ.createImage(title, 10, 10, 1, 8);
         MetadataStore metadata = new ImagePlusMetadataStore(imp);
 
         General gen = Metadata.general(metadata);
-        Assert.assertEquals("mitosis.tif", gen.name());
+        Assert.assertEquals(title, gen.name());
     }
 
     @Test
     public void test5dAxes() {
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/mitosis.tif");
+        ImagePlus imp = IJ.createImage("image", 10, 10, 8, 8);
+        imp.setDimensions(2, 2,2);
         MetadataStore metadata = new ImagePlusMetadataStore(imp);
 
         Calibration cal = Metadata.calibration(metadata);
@@ -48,23 +50,50 @@ public class ImagePlusMetadataStoreTest {
     }
 
     @Test
-    public void test3dAxes() {
-        // Test an image with Z-Slices
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/xrays.zip");
+    public void testAxes() {
+        ImagePlus imp = IJ.createImage("image", 10, 10, 8, 8);
         MetadataStore metadata = new ImagePlusMetadataStore(imp);
-
         Calibration cal = Metadata.calibration(metadata);
+
+        imp.setDimensions(1, 8, 1);
         Assert.assertEquals(Axes.X, cal.axis(0).type());
         Assert.assertEquals(Axes.Y, cal.axis(1).type());
         Assert.assertEquals(Axes.Z, cal.axis(2).type());
 
-        imp = IJ.openImage("https://imagej.net/ij/images/mitosis.tif");
-        metadata = new ImagePlusMetadataStore(imp);
-
-        cal = Metadata.calibration(metadata);
+        imp.setDimensions(8, 1, 1);
         Assert.assertEquals(Axes.X, cal.axis(0).type());
         Assert.assertEquals(Axes.Y, cal.axis(1).type());
         Assert.assertEquals(Axes.CHANNEL, cal.axis(2).type());
+
+        imp.setDimensions(1, 1, 8);
+        Assert.assertEquals(Axes.X, cal.axis(0).type());
+        Assert.assertEquals(Axes.Y, cal.axis(1).type());
+        Assert.assertEquals(Axes.TIME, cal.axis(2).type());
+
+        imp.setDimensions(2, 4, 1);
+        Assert.assertEquals(Axes.X, cal.axis(0).type());
+        Assert.assertEquals(Axes.Y, cal.axis(1).type());
+        Assert.assertEquals(Axes.CHANNEL, cal.axis(2).type());
+        Assert.assertEquals(Axes.Z, cal.axis(3).type());
+
+        imp.setDimensions(2, 1, 4);
+        Assert.assertEquals(Axes.X, cal.axis(0).type());
+        Assert.assertEquals(Axes.Y, cal.axis(1).type());
+        Assert.assertEquals(Axes.CHANNEL, cal.axis(2).type());
+        Assert.assertEquals(Axes.TIME, cal.axis(3).type());
+
+        imp.setDimensions(1, 2, 4);
+        Assert.assertEquals(Axes.X, cal.axis(0).type());
+        Assert.assertEquals(Axes.Y, cal.axis(1).type());
+        Assert.assertEquals(Axes.Z, cal.axis(2).type());
+        Assert.assertEquals(Axes.TIME, cal.axis(3).type());
+
+        imp.setDimensions(2, 2, 2);
+        Assert.assertEquals(Axes.X, cal.axis(0).type());
+        Assert.assertEquals(Axes.Y, cal.axis(1).type());
+        Assert.assertEquals(Axes.CHANNEL, cal.axis(2).type());
+        Assert.assertEquals(Axes.Z, cal.axis(3).type());
+        Assert.assertEquals(Axes.TIME, cal.axis(4).type());
     }
 
     @Test
@@ -73,7 +102,8 @@ public class ImagePlusMetadataStoreTest {
         LUT lut = randomLUT(0xdeadbeefL);
 
         // Assign it to an image
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/xrays.zip");
+        ImagePlus imp = IJ.createImage("1 Channel", 10, 10, 10, 8);
+        imp.setDimensions(1, 8, 1);
         imp.setLut(lut);
         MetadataStore metadata = new ImagePlusMetadataStore(imp);
 
@@ -85,11 +115,8 @@ public class ImagePlusMetadataStoreTest {
 
     @Test
     public void testRGBLUT() {
-        // Create random LUT
-        LUT lut = randomLUT(0xdeadbeefL);
-
-        // Assign it to an image
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/clown.png");
+        ImagePlus imp = IJ.createImage("RGB", 10, 10, 1, 24);
+        assertTrue(imp.isRGB());
         MetadataStore metadata = new ImagePlusMetadataStore(imp);
 
         // RGB images should have no LUT, as imglib2-imagej converts them to ARGBType
@@ -99,13 +126,16 @@ public class ImagePlusMetadataStoreTest {
 
     @Test
     public void testMultiLUT() {
-        // Assign it to an image
-        ImagePlus imp = IJ.openImage("https://imagej.net/ij/images/3_channel_inverted_luts.tif");
-        MetadataStore metadata = new ImagePlusMetadataStore(imp);
+        // Create a composite (multi-channel) image
+        ImagePlus imp = IJ.createImage("Multiple LUTs", 10, 10, 3, 8);
+        imp.setDimensions(3, 1, 1);
+        CompositeImage comp = new CompositeImage(imp);
+        // And a imglib2-meta wrapper around it
+        MetadataStore metadata = new ImagePlusMetadataStore(comp);
 
         Channels chan = Metadata.channels(metadata);
-        for(int i = 0; i < imp.getNChannels(); i++) {
-            assertLUTEquals(imp.getLuts()[i], chan.lut(i));
+        for(int i = 0; i < comp.getNChannels(); i++) {
+            assertLUTEquals(comp.getLuts()[i], chan.lut(i));
         }
         assertThrows(NoSuchElementException.class, () -> chan.lut(imp.getNChannels()));
     }
