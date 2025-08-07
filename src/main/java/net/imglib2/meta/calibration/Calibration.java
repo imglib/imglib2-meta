@@ -15,5 +15,5 @@ public interface Calibration extends HasMetadataStore {
 	 * @param type the {@link AxisType} to search for.
 	 * @return the position of {@code type}, if it is present.
 	 */
-	Optional<Integer> dimension(AxisType type);
+	Optional<Integer> indexOf(AxisType type);
 }

@@ -89,7 +89,7 @@ public class DefaultCalibration implements Calibration {
 	}
 
 	@Override
-	public Optional<Integer> dimension(AxisType type) {
+	public Optional<Integer> indexOf(AxisType type) {
 		for (int i = 0; i < metaData.numDimensions(); i++) {
 			if(axis(i).type() == type) {
 				return Optional.of(i);

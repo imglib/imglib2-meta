@@ -2,6 +2,7 @@ package net.imglib2.meta;
 
 
 import ij.ImagePlus;
+import ij.process.LUT;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.display.ColorTable;
@@ -11,6 +12,8 @@ import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultCalibration;
+import net.imglib2.meta.channels.ColorTableHolder;
+import net.imglib2.meta.channels.ColorTableRAI;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
@@ -33,6 +36,17 @@ public class ImagePlusMetadataStore implements MetadataStore {
         if (key.equals("name") && is(ofType, String.class)) {
             return Optional.of(Metadata.item(key, (T) imp.getTitle(), numDimensions()));
         }
+        if (key.equals("channel") && is(ofType, ColorTable.class)) {
+            LUT[] luts = imp.getLuts();
+            if (luts.length == 0) {
+                return Optional.empty();
+            }
+            return Optional.of(Metadata.item(
+                key,
+                (T) LUTToColorTable.wrap(luts[0]),
+                numDimensions()
+            ));
+        }
         return Optional.empty();
     }
 
@@ -40,18 +54,21 @@ public class ImagePlusMetadataStore implements MetadataStore {
     public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... dims) {
         // FIXME
         int d = dims[0];
-        if (key.equals("channel") && is(ofType, ColorTable.class)) {
+        if (key.equals("channel") && is(ofType, ColorTableHolder.class)) {
             if (axisType(d) == Axes.CHANNEL) {
                 List<ColorTable> tables = Arrays.stream(imp.getLuts()) //
                     .map(LUTToColorTable::wrap) //
                     .collect(Collectors.toList());
                 return Optional.of(Metadata.item(
                     key,
-                    (RandomAccessible<T>) new ListImg<>(tables),
+                    (RandomAccessible<T>) new ColorTableRAI(tables),
                     numDimensions(),
                     d
                 ));
             }
+//            else if (imp.isRGB()) {
+//                ColorTable.
+//            }
         }
         if (key.equals("axis_data") && is(ofType, DoubleType.class)) {
             AxisType type = axisType(d);
