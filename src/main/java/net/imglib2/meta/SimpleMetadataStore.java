@@ -68,7 +68,7 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(key))
@@ -79,7 +79,7 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String name, Class<T> ofType, int... d) {
+	public <T> Optional<MetadataItem<T>> item(String name, Class<T> ofType, int... d) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))

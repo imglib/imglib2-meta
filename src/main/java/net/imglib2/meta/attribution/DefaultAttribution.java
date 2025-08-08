@@ -46,13 +46,13 @@ public class DefaultAttribution implements Attribution {
 
 	@Override
 	public String author() {
-		MetadataItem<String> item = metaData.get("author", String.class).orElse(null);
-		return item == null ? null : item.get();
+		MetadataItem<String> item = metaData.item("author", String.class).orElse(null);
+		return item == null ? null : item.value();
 	}
 
 	@Override
 	public String citation() {
-		MetadataItem<String> item = metaData.get("citation", String.class).orElse(null);
-		return item == null ? null : item.get();
+		MetadataItem<String> item = metaData.item("citation", String.class).orElse(null);
+		return item == null ? null : item.value();
 	}
 }

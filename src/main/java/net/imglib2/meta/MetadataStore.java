@@ -54,8 +54,8 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @return a {@link MetadataItem} matching {@code key}
 	 */
 	@SuppressWarnings({"raw", "unchecked"})
-	default Optional<MetadataItem<?>> get(String key) {
-		return (Optional) get(key, Object.class);
+	default Optional<MetadataItem<?>> item(String key) {
+		return (Optional) item(key, Object.class);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param ofType the type of the {@link MetadataItem}
 	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
 	 */
-	<T> Optional<MetadataItem<T>> get(String key, Class<T> ofType);
+	<T> Optional<MetadataItem<T>> item(String key, Class<T> ofType);
 
 	/**
 	 * Find a {@link MetadataItem} associated with key {@code key} and axes {@code d}
@@ -73,8 +73,8 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param d the axes associated with the {@link MetadataItem}
 	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
 	 */
-	default <T> Optional<MetadataItem<T>> get(String key, int... d) {
-		return (Optional) get(key, Object.class, d);
+	default <T> Optional<MetadataItem<T>> item(String key, int... d) {
+		return (Optional) item(key, Object.class, d);
 	}
 
 	/**
@@ -85,7 +85,7 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param d the axes associated with the {@link MetadataItem}
 	 * @return a {@link MetadataItem} matching {@code key} of type {@code ofType}
 	 */
-	<T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d);
+	<T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);

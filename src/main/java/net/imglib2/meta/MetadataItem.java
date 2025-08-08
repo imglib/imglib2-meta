@@ -52,12 +52,14 @@ import net.imglib2.*;
  * Often, metadata is a single value that may (e.g. axis type) or may not (e.g.
  * author name) be associated with an axis; in these cases,
  * {@link #getAt(RealLocalizable)} et. al return that single value across all
- * positions. {@link #get()} provides a no-args convenience for that single value.
+ * positions. {@link #value()} provides a no-args convenience for that single value.
  * </p>
  * <p>
  * Other metadata elements (e.g. axis calibration) vary along one or more axes.
  * {@link #getAt(RealLocalizable)} et. al are then responsible for projecting
- * positions. {@link #get()} will then return a value at an arbitrary position.
+ * positions from the metadata item's internal m-dimensional space onto the
+ * external n-dimensional space of the {@link RealLocalizable}.
+ * {@link #value()} will then return a value at an arbitrary position.
  * </p>
  *
  * TODO: Consider whether a RealRandomAccessible is more applicable
@@ -91,7 +93,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 *
 	 * @param pos - a point in {@code n} dimensions
 	 * @return the value of the metadata at {@code pos}
-	 * @see #getAt(RealLocalizable) to get an object queryable in m-dimensional space.
+	 * @see #valueAt(RealLocalizable) to get an object queryable in m-dimensional space.
 	 */
 	T getAt(RealLocalizable pos);
 
@@ -132,7 +134,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 *
 	 * @return the value of the metadata at {@code pos}
 	 */
-	default T get() {
+	default T value() {
 		return getAt(new long[attachedAxes().length]);
 	}
 
@@ -141,7 +143,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 *
 	 * @param pos - a length-{@code n} array of dimensional coordinates
 	 * @return the value of the metadata at {@code pos}
-	 * @see #get() for a con
+	 * @see #value() for a con
 	 */
 	default T getAt(long... pos) {
 		return getAt(new Point(pos));
@@ -152,10 +154,10 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 *
 	 * @param pos - a length-{@code n} array of dimensional coordinates
 	 * @return the value of the metadata at {@code pos}
-	 * @see #get() to get an object queryable in m-dimensional space.
+	 * @see #value() to get an object queryable in m-dimensional space.
 	 */
 	default T getAt(double... pos) {
-		return getAt(new RealPoint(pos));
+		return getAt(new long[attachedAxes().length]);
 	}
 
 	// -- RandomAccessible Overrides -- //
@@ -165,7 +167,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	}
 
 	default T getType() {
-        return get();
+        return value();
 	}
 
 	default RandomAccess<T> randomAccess(Interval interval) {

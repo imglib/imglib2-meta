@@ -52,14 +52,14 @@ class MetadataStoreRealView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
-		return source.get(key, ofType);
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
+		return source.item(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
 		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-		return source.get(key, ofType, d).map(this::itemView); // FIXME: Dimensional index might have shifted meaning here.
+		return source.item(key, ofType, d).map(this::itemView); // FIXME: Dimensional index might have shifted meaning here.
 	}
 
 	@Override
@@ -120,7 +120,7 @@ class MetadataStoreRealView implements MetadataStore {
 
 		@Override
 		public T getAt(long... pos) {
-			return super.getAt(pos);
+			return getAt(pos);
 		}
 
 		@Override
@@ -130,12 +130,12 @@ class MetadataStoreRealView implements MetadataStore {
 
 		@Override
 		public T getAt(double... position) {
-			return super.getAt(position);
+			return getAt(position);
 		}
 
 		@Override
 		public T getAt(RealLocalizable position) {
-			return super.getAt(position);
+			return getAt(position);
 		}
 
 		@Override
@@ -164,6 +164,7 @@ class MetadataStoreRealView implements MetadataStore {
 				this.transformCopy = a.transformCopy.copy();
 			}
 
+			@Override
 			public T get() {
 				// FIXME: Reuse points?
 				RealPoint point = new RealPoint(this);

@@ -65,7 +65,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
     }
 
     @Override
-    public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
+    public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
         if (key.equals("name") && is(ofType, String.class)) {
             return Optional.of(Metadata.item(key, (T) imp.getTitle(), numDimensions()));
         }
@@ -84,7 +84,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
     }
 
     @Override
-    public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... dims) {
+    public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... dims) {
         // FIXME
         int d = dims[0];
         if (key.equals("channel") && is(ofType, ColorTableHolder.class)) {

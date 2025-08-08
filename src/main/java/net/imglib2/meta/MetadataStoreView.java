@@ -74,12 +74,12 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
-		return source.get(key, ofType);
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
+		return source.item(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
 		final int[] dd = new int[d.length];
 		for(int i = 0; i < dd.length; i++) {
 			if (dim_map.length <= d[i]) {
@@ -87,7 +87,7 @@ class MetadataStoreView implements MetadataStore {
 			}
 			dd[i] = dim_map[d[i]];
 		}
-		return source.get(key, ofType, dd).map(this::itemView);
+		return source.item(key, ofType, dd).map(this::itemView);
 	}
 
 	@Override

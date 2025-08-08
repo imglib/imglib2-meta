@@ -98,7 +98,7 @@ public class DefaultCalibration implements Calibration {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
 		// Search for Axis components
-		MetadataItem<DoubleType> data = metaData.get(AXIS_DATA, DoubleType.class, d).orElseGet(() -> new UnknownData(metaData.numDimensions()));
+		MetadataItem<DoubleType> data = metaData.item(AXIS_DATA, DoubleType.class, d).orElseGet(() -> new UnknownData(metaData.numDimensions()));
 
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
@@ -123,7 +123,7 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				return metaData.get(AXIS_TYPE, AxisType.class, d).orElseGet(unknownAxisSupplier).getType();
+				return metaData.item(AXIS_TYPE, AxisType.class, d).orElseGet(unknownAxisSupplier).getType();
 			}
 		};
 	}

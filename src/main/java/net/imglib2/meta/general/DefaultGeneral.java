@@ -41,8 +41,8 @@ public class DefaultGeneral implements General{
 
     @Override
     public String name() {
-        MetadataItem<String> item = metaData.get("name", String.class).orElse(null);
-        return item == null ? null : item.get();
+        MetadataItem<String> item = metaData.item("name", String.class).orElse(null);
+        return item == null ? null : item.value();
     }
 
     @Override

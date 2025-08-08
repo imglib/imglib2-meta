@@ -39,8 +39,6 @@ import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axes;
-import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.Calibration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,11 +71,11 @@ public class DefaultChannels implements Channels {
 			for (int i = 0; i < point.numDimensions(); i++) {
 				point.setPosition(axis.get() == i ? c : 0, i);
 			}
-			return metaData.get(AXIS_KEY, ColorTableHolder.class, axis.get()).get().getAt(point).get();
+			return metaData.item(AXIS_KEY, ColorTableHolder.class, axis.get()).get().getAt(point).get();
 		}
 		else {
 			// One LUT for the whole image
-			return metaData.get(AXIS_KEY, ColorTable.class).get().get();
+			return metaData.item(AXIS_KEY, ColorTable.class).get().value();
 		}
 	}
 
@@ -86,17 +84,17 @@ public class DefaultChannels implements Channels {
 		int axis = Metadata.calibration(this.metaData)
 				.indexOf(Axes.CHANNEL)
 				.orElseThrow(NO_CHANNEL_AXIS_YET);
-		metaData.get(AXIS_KEY, ColorTableHolder.class, axis).orElseGet(() -> {
+		metaData.item(AXIS_KEY, ColorTableHolder.class, axis).orElseGet(() -> {
 			ColorTableRAI newLut = new ColorTableRAI();
 			metaData.add(AXIS_KEY, newLut, axis);
-			return metaData.get(AXIS_KEY, ColorTableHolder.class, axis).get();
+			return metaData.item(AXIS_KEY, ColorTableHolder.class, axis).get();
 		}).getAt(0, 0, c).set(lut);
 	}
 
 	@Override
 	public boolean isRGB() {
-		Optional<MetadataItem<Boolean>> item = metaData.get(RGB_KEY, Boolean.class);
-		return item.isPresent() ? item.get().get() : false;
+		Optional<MetadataItem<Boolean>> item = metaData.item(RGB_KEY, Boolean.class);
+		return item.isPresent() ? item.get().value() : false;
 	}
 
 	@Override

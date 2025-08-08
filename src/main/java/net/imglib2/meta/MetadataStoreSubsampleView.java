@@ -51,13 +51,13 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType) {
-		return source.get(key, ofType);
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
+		return source.item(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> get(String key, Class<T> ofType, int... d) {
-		return itemView(source.get(key, ofType, d));
+	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
+		return itemView(source.item(key, ofType, d));
 	}
 
 	@Override
