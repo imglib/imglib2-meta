@@ -54,11 +54,11 @@ public class SimpleMetadataStoreTest {
         store.add("lut", tables, 3);
 
         // Query metadata type-unsafely (using key strings).
-        Object authorObject = store.get("author").get().getType();
+        Object authorObject = store.get("author").get().get();
         assertEquals("foo Selzer", authorObject);
 
         // Query metadata type-safely (but still using a key string).
-        String authorString = store.get("author", String.class).get().getType();
+        String authorString = store.get("author", String.class).get().get();
         assertEquals("foo Selzer", authorString);
 
         // An actually nice window into groups of metadata.

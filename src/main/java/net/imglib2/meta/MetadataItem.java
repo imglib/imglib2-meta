@@ -3,12 +3,35 @@ package net.imglib2.meta;
 import net.imglib2.*;
 
 /**
- * A piece of m-dimensional metadata associated with a n-dimensional dataset (n&ge;m).
+ * A piece of metadata associated with an n-dimensional dataset.
+ * All {@link MetadataItem}s have:
+ * <ol>
+ * <li>A {@link String} name</li>
+ * <li>A {@code m}-dimensional value (m&le;n)</li>
+ * <li>{@code m} axes to which they are "attached". Metadata can vary along
+ * each axis it is attached to.</li>
+ * </ol>
  * <p>
- * Pertains to dimensions {d<sub>1</sub>, d<sub>2</sub>, ..., d<sub>m</sub>},
- * where d<sub>i</sub> is within [0, n-1].
+ * {@link MetadataItem}s are {@link RandomAccessible} across the {@code n}
+ * dimensions of its associated dataset.
  * </p>
- * @param <T> the element type
+ * <p>
+ * Often, metadata is a single value that may (e.g. axis type) or may not (e.g.
+ * author name) be associated with an axis; in these cases,
+ * {@link #getAt(RealLocalizable)} et. al return that single value across all
+ * positions. {@link #get()} provides a no-args convenience for that single value.
+ * </p>
+ * <p>
+ * Other metadata elements (e.g. axis calibration) vary along one or more axes.
+ * {@link #getAt(RealLocalizable)} et. al are then responsible for projecting
+ * positions. {@link #get()} will then return a value at an arbitrary position.
+ * </p>
+ *
+ * TODO: Consider whether a RealRandomAccessible is more applicable
+ * TODO: Add API for setting values (e.g. LUTs) after constructing one of these
+ * TODO: Is there any time when access to the source RAI is useful?
+ *
+ * @param <T> the type of metadata values.
  * @author Curtis Rueden
  * @author Gabriel Selzer
  */
@@ -20,6 +43,14 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 */
 	String name();
 
+	/**
+	 * Returns a boolean array [b<sub>1</sub>, b<sub>2</sub>, ..., b<sub>n</sub>].
+	 * This {@link MetadataItem} is considered "attached" to dimension {@code i}
+	 * iff b<sub>i</sub> is {@code true}.
+	 *
+	 * @return a {@code boolean[]} denoting attachment to each of the {@code n}
+	 * dimensions in the data space.
+	 */
 	boolean[] attachedAxes();
 
 	/**
@@ -63,11 +94,21 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	}
 
 	/**
+	 * Returns the value of the metadata at an <em>arbitrary</em> position.
+	 * Convenient for constant metadata.
+	 *
+	 * @return the value of the metadata at {@code pos}
+	 */
+	default T get() {
+		return getAt(new long[attachedAxes().length]);
+	}
+
+	/**
 	 * Returns the value of the metadata in {@code n}-dimensional space.
 	 *
 	 * @param pos - a length-{@code n} array of dimensional coordinates
 	 * @return the value of the metadata at {@code pos}
-	 * @see #get() to get an object queryable in m-dimensional space.
+	 * @see #get() for a con
 	 */
 	default T getAt(long... pos) {
 		return getAt(new Point(pos));
@@ -87,13 +128,11 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	// -- RandomAccessible Overrides -- //
 
 	default int numDimensions() {
-		int ndim = 0;
-		for (boolean b : attachedAxes()) if (b) ndim++;
-		return ndim;
+		return attachedAxes().length;
 	}
 
 	default T getType() {
-        return getAt(new long[numDimensions()]);
+        return get();
 	}
 
 	default RandomAccess<T> randomAccess(Interval interval) {
