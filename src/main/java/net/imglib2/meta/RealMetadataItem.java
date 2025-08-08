@@ -40,15 +40,7 @@ import net.imglib2.RealRandomAccessible;
 
 public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
     @Override
-    T getAt(RealLocalizable pos);
-
-    @Override
     default RandomAccess<T> randomAccess(final Interval interval) {
         return RealRandomAccessible.super.randomAccess();
-    }
-
-    @Override
-    default T getAt(double... pos) {
-        return MetadataItem.super.getAt(pos);
     }
 }

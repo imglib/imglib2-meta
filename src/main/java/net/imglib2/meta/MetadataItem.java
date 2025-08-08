@@ -51,14 +51,14 @@ import net.imglib2.*;
  * <p>
  * Often, metadata is a single value that may (e.g. axis type) or may not (e.g.
  * author name) be associated with an axis; in these cases,
- * {@link #getAt(RealLocalizable)} et. al return that single value across all
+ * {@link #getAt(Localizable)} et. al return that single value across all
  * positions. {@link #value()} provides a no-args convenience for that single value.
  * </p>
  * <p>
  * Other metadata elements (e.g. axis calibration) vary along one or more axes.
- * {@link #getAt(RealLocalizable)} et. al are then responsible for projecting
+ * {@link #getAt(Localizable)} et. al are then responsible for projecting
  * positions from the metadata item's internal m-dimensional space onto the
- * external n-dimensional space of the {@link RealLocalizable}.
+ * external n-dimensional space of the {@link Localizable}.
  * {@link #value()} will then return a value at an arbitrary position.
  * </p>
  *
@@ -87,15 +87,6 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * dimensions in the data space.
 	 */
 	boolean[] attachedAxes();
-
-	/**
-	 * Returns the value of the metadata in {@code n}-dimensional space.
-	 *
-	 * @param pos - a point in {@code n} dimensions
-	 * @return the value of the metadata at {@code pos}
-	 * @see #valueAt(RealLocalizable) to get an object queryable in m-dimensional space.
-	 */
-	T getAt(RealLocalizable pos);
 
 	// -- default utility methods -- //
 
@@ -138,28 +129,6 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 		return getAt(new long[attachedAxes().length]);
 	}
 
-	/**
-	 * Returns the value of the metadata in {@code n}-dimensional space.
-	 *
-	 * @param pos - a length-{@code n} array of dimensional coordinates
-	 * @return the value of the metadata at {@code pos}
-	 * @see #value() for a con
-	 */
-	default T getAt(long... pos) {
-		return getAt(new Point(pos));
-	}
-
-	/**
-	 * Returns the value of the metadata in {@code n}-dimensional space.
-	 *
-	 * @param pos - a length-{@code n} array of dimensional coordinates
-	 * @return the value of the metadata at {@code pos}
-	 * @see #value() to get an object queryable in m-dimensional space.
-	 */
-	default T getAt(double... pos) {
-		return getAt(new long[attachedAxes().length]);
-	}
-
 	// -- RandomAccessible Overrides -- //
 
 	default int numDimensions() {
@@ -168,9 +137,5 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 
 	default T getType() {
         return value();
-	}
-
-	default RandomAccess<T> randomAccess(Interval interval) {
-		return randomAccess();
 	}
 }

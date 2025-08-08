@@ -147,7 +147,7 @@ public final class Metadata {
 		}
 
 		@Override
-		public T getAt(RealLocalizable pos) {
+		public T getAt(Localizable pos) {
 			return data;
 		}
 
