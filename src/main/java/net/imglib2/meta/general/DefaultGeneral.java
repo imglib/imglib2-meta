@@ -33,16 +33,21 @@
  */
 package net.imglib2.meta.general;
 
-import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
+
+import java.util.NoSuchElementException;
 
 public class DefaultGeneral implements General{
     private MetadataStore metaData;
 
     @Override
     public String name() {
-        MetadataItem<String> item = metaData.item("name", String.class).orElse(null);
-        return item == null ? null : item.value();
+        try {
+            return metaData.item("name", String.class).value();
+        }
+        catch (NoSuchElementException e) {
+            return null;
+        }
     }
 
     @Override

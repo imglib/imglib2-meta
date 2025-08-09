@@ -33,9 +33,7 @@
  */
 package net.imglib2.meta.calibration;
 
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RealLocalizable;
+import net.imglib2.*;
 import net.imglib2.meta.Axis;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
@@ -69,6 +67,11 @@ public class DefaultCalibration implements Calibration {
 		}
 
 		@Override
+		public RandomAccess<DoubleType> randomAccess(Interval interval) {
+			return randomAccess();
+		}
+
+		@Override
 		public String name() {
 			return AXIS_DATA;
 		}
@@ -79,7 +82,7 @@ public class DefaultCalibration implements Calibration {
 		}
 
 		@Override
-		public DoubleType getAt(RealLocalizable pos) {
+		public DoubleType getAt(Localizable pos) {
 			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
 		}
 
@@ -98,8 +101,14 @@ public class DefaultCalibration implements Calibration {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
 		// Search for Axis components
-		MetadataItem<DoubleType> data = metaData.item(AXIS_DATA, DoubleType.class, d).orElseGet(() -> new UnknownData(metaData.numDimensions()));
-
+		// FIXME: Decide
+		MetadataItem<DoubleType> data;
+		try{
+			 data = metaData.item(AXIS_DATA, DoubleType.class, d);
+		} catch (NoSuchElementException e) {
+			data = new UnknownData(metaData.numDimensions());
+		}
+		final MetadataItem<DoubleType> finalData = data;
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {
@@ -110,7 +119,7 @@ public class DefaultCalibration implements Calibration {
 			public double calibrated(double raw) {
 				long[] c = cs.get();
 				c[d] = (long) raw;
-				return data.getAt(c).get();
+				return finalData.getAt(c).get();
 			}
 			@Override
 			public RandomAccessible<DoubleType> data() {
@@ -123,7 +132,11 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				return metaData.item(AXIS_TYPE, AxisType.class, d).orElseGet(unknownAxisSupplier).getType();
+				try {
+					return metaData.item(AXIS_TYPE, AxisType.class, d).getType();
+				} catch (NoSuchElementException e) {
+					return Axes.unknown();
+				}
 			}
 		};
 	}

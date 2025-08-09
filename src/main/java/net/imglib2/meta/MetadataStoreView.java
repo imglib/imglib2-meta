@@ -33,11 +33,14 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.*;
+import net.imglib2.Localizable;
+import net.imglib2.Point;
+import net.imglib2.RandomAccessible;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 class MetadataStoreView implements MetadataStore {
@@ -74,20 +77,20 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
+	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
 		return source.item(key, ofType);
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
+	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... d) {
 		final int[] dd = new int[d.length];
 		for(int i = 0; i < dd.length; i++) {
 			if (dim_map.length <= d[i]) {
-				return Optional.empty();
+				throw new IllegalArgumentException("Dimensions " + Arrays.toString(d) + " is not present in the source metadata.");
 			}
 			dd[i] = dim_map[d[i]];
 		}
-		return source.item(key, ofType, dd).map(this::itemView);
+		return itemView(source.item(key, ofType, dd));
 	}
 
 	@Override
@@ -103,23 +106,13 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
-		throw new UnsupportedOperationException("View of metadata store is read-only");
-	}
-
-	@Override
-	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
+	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
 	@Override
 	public int numDimensions() {
 		return transform.numSourceDimensions();
-	}
-
-	@Override
-	public MixedTransform transform() {
-		return transform.concatenate(source.transform());
 	}
 
 	private <T> MetadataItem<T> itemView(MetadataItem<T> result ) {
@@ -156,13 +149,9 @@ class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public T getAt(RealLocalizable pos) {
-			if (!(pos instanceof Localizable)) {
-				throw new UnsupportedOperationException("Cannot use non-Localizable with metadata store view. YET!");
-			}
-			Localizable l = (Localizable) pos;
+		public T getAt(Localizable pos) {
 			final Point p = new Point(transform.numSourceDimensions());
-			transform.apply(l, p);
+			transform.apply(pos, p);
 			return source.getAt(p);
 		}
 	}

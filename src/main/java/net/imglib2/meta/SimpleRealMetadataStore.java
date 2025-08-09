@@ -33,41 +33,42 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.RandomAccessible;
+import net.imglib2.RealRandomAccessible;
 
 import java.util.*;
 
-public class SimpleMetadataStore implements MetadataStore {
+public class SimpleRealMetadataStore implements RealMetadataStore {
 
-	private final List<MetadataItem<?>> items;
+	private final List<RealMetadataItem<?>> items;
 	private final int numDims;
 
-	public SimpleMetadataStore(int n) {
+	public SimpleRealMetadataStore(int n) {
 		this.items = new ArrayList<>();
 		this.numDims = n;
 	}
 
 	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
+	public <T> RealMetadataItem<T> item(String key, Class<T> ofType) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(key))
 			.filter(item -> !item.isAttachedToAnyAxis())
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
-			.map(item -> (MetadataItem<T>) item)
+			.map(item -> (RealMetadataItem<T>) item)
 			.findFirst().orElseThrow(NoSuchElementException::new);
 	}
 
 	@Override
-	public <T> MetadataItem<T> item(String name, Class<T> ofType, int... d) {
+	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... d) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
 			.filter(item -> item.isAttachedTo(d)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
-			.map(item -> (MetadataItem<T>) item)
+			.map(item -> (RealMetadataItem<T>) item)
 			.findFirst().orElseThrow(NoSuchElementException::new);
 	}
+
 
 	@Override
 	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
@@ -79,12 +80,12 @@ public class SimpleMetadataStore implements MetadataStore {
 
 	@Override
 	public <T> void add(String name, T data, int... dims) {
-		items.add(Metadata.item(name, data, numDims, dims));
+		items.add(RealMetadata.item(name, data, numDims, dims));
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
-		items.add(Metadata.item(name, data, numDims, dims));
+	public <T> void add(String name, RealRandomAccessible<T> data, int... d) {
+		items.add(RealMetadata.item(name, data, numDims, d));
 	}
 
 	@Override

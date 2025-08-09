@@ -93,6 +93,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	/**
 	 * Describes whether this {@link MetadataItem} is attached to <em>any</em> dimensions.
 	 * @return {@code true} iff this {@link MetadataItem} pertains to any dimension.
+	 * TODO: Could we remove this in favor of an empty array to {@link #isAttachedTo(int...)}?
 	 */
 	default boolean isAttachedToAnyAxis() {
 		for(boolean b: attachedAxes()) if (b) return true;

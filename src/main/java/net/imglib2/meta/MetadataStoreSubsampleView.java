@@ -33,8 +33,7 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.*;
-import net.imglib2.transform.integer.MixedTransform;
+import net.imglib2.RandomAccessible;
 import net.imglib2.view.SubsampleView;
 
 import java.util.Optional;
@@ -51,12 +50,12 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
-		return source.item(key, ofType);
+	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
+		return itemView(source.item(key, ofType));
 	}
 
 	@Override
-	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
+	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... d) {
 		return itemView(source.item(key, ofType, d));
 	}
 
@@ -73,40 +72,29 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
+	public <T> void add(String name, RandomAccessible<T> data, int... d) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
-	@Override
-	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
-		throw new UnsupportedOperationException("View of metadata store is read-only");
-	}
 
 	@Override
 	public int numDimensions() {
 		return source.numDimensions();
 	}
 
-	@Override
-	public MixedTransform transform() {
-		throw new UnsupportedOperationException("FIXME");
-	}
-
-	private <T, U extends RandomAccessible<T>> Optional<MetadataItem<T>> itemView(
-		@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<MetadataItem<T>> result
-	) {
-		return result.map(item -> new MetadataStoreSubsampleView.MetadataItemSubsampleView<>(item, steps));
+	private <T> MetadataItem<T> itemView(MetadataItem<T> result) {
+		return new MetadataStoreSubsampleView.MetadataItemSubsampleView<>(result, steps);
 	}
 
 	private static class MetadataItemSubsampleView<T> extends SubsampleView<T> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
-		private final long[] steps;
+//		private final long[] steps;
 
 		public MetadataItemSubsampleView(MetadataItem<T> source, long[] steps) {
 			super(source, steps);
 			this.source = source;
 			// FIXME: The RA here is only <=N-dimensional not necessarily N-dimensional.
-			this.steps = steps;
+//			this.steps = steps;
 		}
 
 		@Override
@@ -119,19 +107,15 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 			return source.attachedAxes();
 		}
 
-		@Override
-		public T getAt(RealLocalizable pos) {
-			if (!(pos instanceof Localizable)) {
-				throw new UnsupportedOperationException("Cannot use non-Localizable with metadata store view. YET!");
-			}
-			Localizable l = (Localizable) pos;
-
-			// TODO: Don't create a new Point every time. ThreadLocal?
-			final Point p = new Point(steps.length);
-			for(int i = 0; i < l.numDimensions(); i++) {
-				p.setPosition(l.getLongPosition(i) * steps[i], i);
-			}
-			return source.getAt(p);
-		}
+//		@Override
+//		public T getAt(Localizable pos) {
+//			// TODO: Don't create a new Point every time. ThreadLocal?
+//			final Point p = new Point(steps.length);
+//			for(int i = 0; i < pos.numDimensions(); i++) {
+//				p.setPosition(pos.getLongPosition(i) * steps[i], i);
+//			}
+//			return source.getAt(p);
+//		}
 	}
 }
+

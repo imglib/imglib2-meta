@@ -39,8 +39,4 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealRandomAccessible;
 
 public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
-    @Override
-    default RandomAccess<T> randomAccess(final Interval interval) {
-        return RealRandomAccessible.super.randomAccess();
-    }
 }
