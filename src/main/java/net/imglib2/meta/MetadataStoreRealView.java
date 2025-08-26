@@ -37,14 +37,16 @@
 //import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 //import net.imglib2.realtransform.RealTransform;
 //import net.imglib2.realtransform.RealTransformRealRandomAccessible;
+//import net.imglib2.view.RandomAccessibleOnRealRandomAccessible;
 //import net.imglib2.view.Views;
+//import net.imglib2.view.fluent.RandomAccessibleView;
 //
 //import java.util.Optional;
 //
-/////**
-// *
+///**
+// * A {@link RealMetadataStore} wrapping a {@link MetadataStore}
 // */
-//class MetadataStoreRealView implements MetadataStore {
+//class MetadataStoreRealView implements RealMetadataStore {
 //
 //	private final MetadataStore source;
 //	private final RealTransform transform;
@@ -55,14 +57,14 @@
 //	}
 //
 //	@Override
-//	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType) {
-//		return source.item(key, ofType);
+//	public <T> RealMetadataItem<T> item(String key, Class<T> ofType) {
+//		return new MetadataItemRealView<>(source.item(key, ofType), transform);
 //	}
 //
 //	@Override
-//	public <T> Optional<MetadataItem<T>> item(String key, Class<T> ofType, int... d) {
-//		//throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
-//		return source.item(key, ofType, d).map(this::itemView); // FIXME: Dimensional index might have shifted meaning here.
+//	public <T> RealMetadataItem<T> item(String key, Class<T> ofType, int... d) {
+//		throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
+////		return new MetadataItemRealView<>(source.item(key, ofType, d), transform);
 //	}
 //
 //	@Override
@@ -76,12 +78,7 @@
 //	}
 //
 //	@Override
-//	public <T, U extends RandomAccessible<T>> void add(String name, U data, int... dims) {
-//		throw new UnsupportedOperationException("RealView of metadata store is read-only");
-//	}
-//
-//	@Override
-//	public <T, U extends RealRandomAccessible<T>> void add(String name, U data, int... dims) {
+//	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
 //		throw new UnsupportedOperationException("RealView of metadata store is read-only");
 //	}
 //
@@ -90,12 +87,7 @@
 //		return source.numDimensions();
 //	}
 //
-//	private <T> RealMetadataItem<T> itemView(MetadataItem<T> result) {
-//		if (!result.isAttachedToAnyAxis()) return result;
-//		return new MetadataItemRealView<>(result, transform);
-//	}
-//
-//	private static class MetadataItemRealView<T, R extends RealTransform> extends RealTransformRealRandomAccessible<T, R> implements MetadataItem<T> {
+//	private static class MetadataItemRealView<T, R extends RealTransform> extends RealTransformRealRandomAccessible<T, R> implements RealMetadataItem<T> {
 //		private final MetadataItem<T> source;
 //		private final R transform;
 //
@@ -120,30 +112,10 @@
 //		public boolean isAttachedTo(int... dims) {
 //			throw new UnsupportedOperationException("RealView of metadata store does not know dimensional axis attachments");
 //		}
-//
-//		@Override
-//		public T getAt(long... pos) {
-//			return getAt(pos);
-//		}
-//
-//		@Override
-//		public T getAt(float... position) {
-//			return super.getAt(position);
-//		}
-//
-//		@Override
-//		public T getAt(double... position) {
-//			return getAt(position);
-//		}
-//
-//		@Override
-//		public T getAt(RealLocalizable position) {
-//			return getAt(position);
-//		}
-//
 //		@Override
 //		public RandomAccess<T> randomAccess() {
-//			return new RealTransformRandomAccess();
+//			// FIXME: Wrong
+//			return RandomAccessibleOnRealRandomAccessible
 //		}
 //
 //		@Override
@@ -169,10 +141,16 @@
 //
 //			@Override
 //			public T get() {
+//				// FIXME: Rasterization strategy
 //				// FIXME: Reuse points?
-//				RealPoint point = new RealPoint(this);
-//				this.transformCopy.apply(this, point);
-//				return MetadataItemRealView.this.source.getAt(point);
+////				return
+////				Point point = new Point(this);
+////                for (int i = 0; i < this.numDimensions(); i++) {
+////                    long
+////                    point.setPosition
+////                }
+////				this.transformCopy.apply(this, point);
+////				return MetadataItemRealView.this.source.getAt(point.);
 //			}
 //
 //			public T getType() {

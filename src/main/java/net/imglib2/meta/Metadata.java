@@ -87,7 +87,7 @@ public final class Metadata {
 		return new VaryingItem<>(name, data, axes);
 	}
 
-	public static <T, U extends RealRandomAccessible<T>> MetadataItem<T> item(String name, U data, int numDims, int... dims) {
+	public static <T, U extends RealRandomAccessible<T>> RealMetadataItem<T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes);

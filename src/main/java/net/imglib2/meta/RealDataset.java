@@ -96,12 +96,6 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
         return wrap( Converters.convert2( delegate(), converterSupplier, targetSupplier ) , store() );
     }
 
-    @Override
-    default < U > U use( Function< ? super V, U > function )
-    {
-        return function.apply( (V) this );
-    }
-
     default T getType() {
         return this.delegate().getType();
     }
@@ -120,5 +114,12 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
     default RandomAccess<T> randomAccess(Interval interval) {
         return this.delegate().randomAccess(interval);
     }
+
+    @Override
+    default < U > U use( Function< ? super V, U > function )
+    {
+        return function.apply( (V) this );
+    }
+
 
 }
