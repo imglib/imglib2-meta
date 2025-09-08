@@ -31,14 +31,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.calibration;
 
 import net.imglib2.RandomAccessible;
-import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 public interface Axis {
 
+    // FIXME: This interface only allows for double values. String values might also make sense (e.g. for Channel axis).
     default double calibrated(final double raw){
         return data().getAt((int) raw).get();
     }

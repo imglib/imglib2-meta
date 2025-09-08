@@ -34,7 +34,6 @@
 package net.imglib2.meta.calibration;
 
 import net.imglib2.*;
-import net.imglib2.meta.Axis;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
@@ -144,7 +143,7 @@ public class DefaultCalibration implements Calibration {
 
 	@Override
 	public void setAxis(final Axis axis, final int d) {
-		metaData.add(AXIS_DATA, axis.data(), d);
+        metaData.add(AXIS_DATA, axis.data(), d);
 		metaData.add(AXIS_TYPE, axis.type(), d);
 	}
 

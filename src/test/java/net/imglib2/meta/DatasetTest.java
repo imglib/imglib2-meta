@@ -36,6 +36,7 @@ package net.imglib2.meta;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.meta.calibration.Axes;
+import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.type.numeric.real.DoubleType;

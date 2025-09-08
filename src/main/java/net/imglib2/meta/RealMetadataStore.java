@@ -56,7 +56,12 @@ public interface RealMetadataStore extends MetadataStore {
 	// TODO: It'd be great to have the generics work out such that we didn't have both...
 	@Override
 	default <T> void add(String name, RandomAccessible<T> data, int... d) {
-		throw new UnsupportedOperationException("Only real metadata can be added to a RealMetadataStore");
+        if (data instanceof RealRandomAccessible) {
+            add(name, (RealRandomAccessible<T>) data, d);
+        }
+        else {
+            throw new UnsupportedOperationException("Only real metadata can be added to a RealMetadataStore");
+        }
 	}
 
 	<T> void add(String name, RealRandomAccessible<T> data, int... d);

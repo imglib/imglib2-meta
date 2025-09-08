@@ -33,7 +33,6 @@
  */
 package net.imglib2.meta.calibration;
 
-import net.imglib2.meta.Axis;
 import net.imglib2.meta.HasMetadataStore;
 
 import java.util.Optional;

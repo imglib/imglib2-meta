@@ -33,14 +33,16 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.RandomAccessible;
+import net.imglib2.RealRandomAccessible;
+import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.position.FunctionRandomAccessible;
+import net.imglib2.meta.calibration.RealAxis;
+import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.function.Function;
 
-public class DefaultLinearAxis implements Axis{
+public class DefaultLinearAxis implements RealAxis {
 
     private final double scale;
     private final double offset;
@@ -60,8 +62,8 @@ public class DefaultLinearAxis implements Axis{
     }
 
     @Override
-    public RandomAccessible<DoubleType> data() {
-        return new FunctionRandomAccessible<>(
+    public RealRandomAccessible<DoubleType> data() {
+        return new FunctionRealRandomAccessible<>(
             1,
             () -> ((pos, out) -> out.set(func.apply(pos.getDoublePosition(0)))),
             DoubleType::new

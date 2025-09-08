@@ -46,14 +46,14 @@ import java.util.function.Supplier;
 
 public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, V>, RealRandomAccessibleView<T, V> {
     RealRandomAccessible<T> data();
-    MetadataStore store();
+    RealMetadataStore store();
 
     @Override
     default RealRandomAccessible<T> delegate() {
         return data();
     }
 
-    static <T, V extends RealDataset<T, V>> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, MetadataStore store) {
+    static <T, V extends RealDataset<T, V>> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, RealMetadataStore store) {
         return new RealDataset<T, V>() {
             @Override
             public RealRandomAccessible<T> data() {
@@ -61,17 +61,23 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
             }
 
             @Override
-            public MetadataStore store() {
+            public RealMetadataStore store() {
                 return store;
             }
         };
     }
 
+    static <T, V extends RealDataset<T, V>> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, MetadataStore store) {
+        return wrap(delegate, new MetadataStoreRealView(store));
+    }
+
     static <T> RealDataset<T, ?> wrap(RealDataset<T, ?> dataset, Mixed tform) {
-        return wrap(
-                dataset.delegate(),
-                new MetadataStoreView(dataset.store(), tform)
-        );
+        throw new UnsupportedOperationException("TODO");
+        // TODO: Wrap up the MetadataStore in a RealMetadataStore, somehow??
+//        return wrap(
+//                dataset.delegate(),
+//                new MetadataStoreRealView(dataset.store(), tform)
+//        );
     }
 
     @Override

@@ -34,9 +34,10 @@
 package net.imglib2.meta;
 
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,18 +53,41 @@ public class RealDatasetTest {
     private RealDataset<DoubleType, ?> dataset() {
         RealRandomAccessible<DoubleType> data = Data.realImage();
 
-        MetadataStore store = new SimpleMetadataStore(data.numDimensions());
+        RealMetadataStore store = new SimpleRealMetadataStore(data.numDimensions());
         Calibration calibration = store.info(Calibration.class);
         calibration.setAxis(axis(Axes.X), 0);
         calibration.setAxis(axis(Axes.Y), 1);
         calibration.setAxis(axis(Axes.Z), 2);
         calibration.setAxis(axis(Axes.CHANNEL), 3);
         calibration.setAxis(axis(Axes.TIME), 4);
+
+        FunctionRealRandomAccessible<StringBuffer> some_data = new FunctionRealRandomAccessible<>(
+            data.numDimensions(),
+            (pos, buf) -> {
+                buf.setLength(0);
+                for(int i = 0; i < pos.numDimensions(); i++) {
+                    if (i > 0) buf.append(",");
+                    buf.append(pos.getDoublePosition(i));
+                }
+            },
+            StringBuffer::new
+        );
+        store.add("some_data", some_data, 0,1,2,3,4);
+
         return RealDataset.wrap(data, store);
     }
 
     @Test
-    public void testRaster() {
+    public void testRealMetadataItem() {
+        RealMetadataItem<StringBuffer> rasterized = dataset().store().item("some_data", StringBuffer.class, 0, 1, 2, 3, 4);
+        Assert.assertEquals( //
+            "0.0,0.1,0.2,0.3,0.4", //
+            rasterized.getAt(0, 0.1, 0.2, 0.3, 0.4).toString() //
+        );
+    }
+
+    @Test
+    public void testCalibration() {
         Dataset<DoubleType, ?> rasterized = dataset().raster();
 
         Calibration calView = rasterized.store().info(Calibration.class);
@@ -74,7 +98,7 @@ public class RealDatasetTest {
         Assert.assertEquals(Axes.TIME, calView.axis(4).type());
     }
 
-    private Axis axis(AxisType axisType) {
+    private RealAxis axis(AxisType axisType) {
         return new DefaultLinearAxis(axisType, 1, 0);
     }
 }

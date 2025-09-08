@@ -179,12 +179,6 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}
 
-	@Override
-	default < U > U use( Function< ? super V, U > function )
-	{
-		return function.apply( (V) this );
-	}
-
 	default Dataset<T, V> view() {
 		return this;
 	}
