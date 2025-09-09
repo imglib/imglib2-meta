@@ -8,6 +8,14 @@ Brought to you by:
 * Tobias "Meta" Pietzsch
 * Christian "Space Tree" Dietz
 
+**Motivation**
+
+Metadata is incredibly important in scientific image processing. The ImgLib2 ecosystem has no formal mechanism for working with metadata. This repository aims to solve that.
+
+The main metadata stand-in throughout the Fiji ecosystem is the `Dataset` class of ImageJ2, used by e.g. SCIFIO. However, it has a number of issues:
+* It cannot operate within a type-safe environment. This hinders use within ImgLib2-algorithm, SciJava Ops, etc.
+* It requires the *massive* dependency of imagej-common.
+
 **Current Status**
 
 The current design is centered around a few interfaces:
@@ -22,7 +30,6 @@ The current design is centered around a few interfaces:
 * The `Dataset` class as the fundamental currency in metadata-rich data processing.
   * A union of a `MetadataStore` and a `RandomAccessible`
   * Viewable using the fluent views API. e.g. `Dataset new = old.permute(3, 2)` should be painless.
-  * Painless typing. Ideally just the one type variable for the 
 
 The pain points are:
 * `RealRandomAccessible` does not implement `RandomAccessible`
@@ -33,8 +40,3 @@ The pain points are:
   * The `V` type parameter of `RandomAccessibleView` is never something I'd want a user to have to type.
     * This type is present for the `RandomAccessibleView.use` method, which allows subinterfaces to get a specialized version for free (e.g `Dataset.use(Function<? super Dataset, U)`). Without that type variable this type of thing is basically impossible.
   * See [imglib/imglib2#379](https://github.com/imglib/imglib2/pull/379)
-* It would be nice to partition out discrete data+metadata from real data+metadata. To provide typesafety and a minimal API for each set, we need separate API i.e.
-  * A `MetadataStore`, containing `MetadataItem`s that can be queried in discrete space.
-  * A `RealMetadataStore`, containing `RealMetadataItem`s that can be queried in real space.
-  
-  However, much like `RealRandomAccessible`s should be `RandomAccessible`s, there are benefits to making `RealMetadataStore` a `MetadataStore` (including using the same API for e.g. our `MetadataStore` wrapper classes like `Attribution`, `Calibration`, etc.) This is actually pretty tricky due to the typing of the `MetadataStore`, specifically those `Optional` returns. I'd like to find a simpler return type, but we'll need *some* way to find out whether metadata exists within a `MetadataStore`. Could consider adding a `MetadataStore.contains`, or a default value parameter to the `MetadataStore.item` in the case no item satisfies the request.

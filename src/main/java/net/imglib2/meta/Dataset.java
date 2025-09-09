@@ -70,6 +70,17 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
 		return data();
 	}
 
+    /**
+     * Creates a new {@link Dataset} from a {@link RandomAccessible}. An empty {@link MetadataStore} is created.
+     *
+     * @param delegate the coupled {@link RandomAccessible}
+     * @return a {@link Dataset} wrapping {@code delegate}
+     * @param <T> the type of pixels contained within {@code delegate}
+     */
+    static <T, V extends Dataset<T, V>> Dataset<T, ?> wrap(RandomAccessible<T> delegate) {
+        return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
+    }
+
 	/**
 	 * Creates a new {@link Dataset} from a {@link RandomAccessible} and a {@link MetadataStore}.
 	 *
