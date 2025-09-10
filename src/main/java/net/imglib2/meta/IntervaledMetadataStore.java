@@ -33,12 +33,10 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.EuclideanSpace;
 import net.imglib2.RandomAccessible;
+import net.imglib2.RandomAccessibleInterval;
 
-import java.util.ServiceLoader;
-
-public interface MetadataStore extends EuclideanSpace {
+public interface IntervaledMetadataStore extends MetadataStore {
 
 
 	/**
@@ -47,7 +45,7 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param key the identifier of the metadata item
 	 * @return a metadata item matching {@code key}
 	 */
-	default MetadataItem<?> item(String key) {
+	default IntervaledMetadataItem<?> item(String key) {
 		return item(key, Object.class);
 	}
 
@@ -58,7 +56,7 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param ofType the type of the metadata item
 	 * @return a metadata item matching {@code key} of type {@code ofType}
 	 */
-	<T> MetadataItem<T> item(String key, Class<T> ofType);
+	<T> IntervaledMetadataItem<T> item(String key, Class<T> ofType);
 
 	/**
 	 * Find a metadata item associated with key {@code key} and axes {@code d}
@@ -66,7 +64,7 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param d the axes associated with the metadata item
 	 * @return a metadata item matching {@code key}
 	 */
-	default MetadataItem<?> item(String key, int... d) {
+	default IntervaledMetadataItem<?> item(String key, int... d) {
 		return item(key, Object.class, d);
 	}
 
@@ -78,19 +76,18 @@ public interface MetadataStore extends EuclideanSpace {
 	 * @param d the axes associated with the metadata item
 	 * @return a metadata item matching {@code key} of type {@code ofType}
 	 */
-	<T> MetadataItem<T> item(String key, Class<T> ofType, int... d);
+	<T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... d);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
-    default <T extends HasMetadataStore> T info(Class<T> infoClass) {
-        ServiceLoader<T> loader = ServiceLoader.load(infoClass);
-        T instance = loader.iterator().next();
-        instance.setStore(this);
-        return instance;
-    }
+	<T extends HasMetadataStore> T info(Class<T> infoClass);
 
 	/** Add simple metadata */
 	<T> void add(String name, T data, int... dims);
 
+	default <T> void add(String name, RandomAccessible<T> data, int... d) {
+        throw new UnsupportedOperationException("IntervaledMetadataStore does not support RandomAccessible metadata");
+    }
 
-	<T> void add(String name, RandomAccessible<T> data, int... d);
+    /** Add simple metadata */
+    <T> void add(String name, RandomAccessibleInterval<T> data, int... dims);
 }

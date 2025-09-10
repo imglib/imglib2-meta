@@ -109,7 +109,7 @@ public final class Metadata {
 //		return new MetadataStoreRealView(source, transform);
 //	}
 //
-	private static boolean[] makeAxisAttachmentArray(int numDims, int... dims) {
+	private static boolean[] makeAxisAttachmentArray(final int numDims, final int... dims) {
 		boolean[] attachedToAxes = new boolean[numDims];
 		for (int d=0; d<dims.length; d++) attachedToAxes[dims[d]] = true;
 		return attachedToAxes;

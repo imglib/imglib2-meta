@@ -47,14 +47,14 @@ import java.util.function.Supplier;
 
 public interface DatasetInterval<T, V extends DatasetInterval<T, V>> extends Dataset<T, V>, RandomAccessibleIntervalView<T, V> {
 	RandomAccessibleInterval<T> data();
-	MetadataStore store();
+	IntervaledMetadataStore store();
 
 	@Override
 	default RandomAccessibleInterval<T> delegate() {
 		return data();
 	}
 
-	static <T, V extends DatasetInterval<T, V>> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
+	static <T, V extends DatasetInterval<T, V>> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate, IntervaledMetadataStore store) {
 		return new DatasetInterval<T, V>() {
 			@Override
 			public RandomAccessibleInterval<T> data() {
@@ -62,16 +62,20 @@ public interface DatasetInterval<T, V extends DatasetInterval<T, V>> extends Dat
 			}
 
 			@Override
-			public MetadataStore store() {
+			public IntervaledMetadataStore store() {
 				return store;
 			}
 		};
 	}
 
+    static <T> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
+        return wrap(delegate, new MetadataStoreIntervalView(store, delegate));
+    }
+
 	static <T> DatasetInterval<T, ?> wrap(DatasetInterval<T, ?> dataset, Mixed tform, Interval interval) {
 		return wrap(
 			new IntervalView<>(new MixedTransformView<>(dataset.delegate(), tform), interval),
-			new MetadataStoreView(dataset.store(), tform)
+			new MetadataStoreIntervalView(dataset.store(), tform, interval)
 		);
 	}
 

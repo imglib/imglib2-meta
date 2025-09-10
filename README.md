@@ -1,20 +1,13 @@
 Caveat emptor: this is __experimental code__,
 which will be later merged elsewhere!
 
-Brought to you by:
-
-* Stephan "Convoluted" Saalfeld
-* Curtis "Typewriter" Rueden
-* Tobias "Meta" Pietzsch
-* Christian "Space Tree" Dietz
-
 **Motivation**
 
 Metadata is incredibly important in scientific image processing. The ImgLib2 ecosystem has no formal mechanism for working with metadata. This repository aims to solve that.
 
 The main metadata stand-in throughout the Fiji ecosystem is the `Dataset` class of ImageJ2, used by e.g. SCIFIO. However, it has a number of issues:
 * It cannot operate within a type-safe environment. This hinders use within ImgLib2-algorithm, SciJava Ops, etc.
-* It requires the *massive* dependency of imagej-common.
+* It requires the dependency of imagej-common.
 
 **Current Status**
 

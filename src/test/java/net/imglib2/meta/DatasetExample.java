@@ -1,7 +1,6 @@
 package net.imglib2.meta;
 
 import net.imglib2.RandomAccessible;
-import net.imglib2.loops.LoopBuilder;
 import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.position.FunctionRandomAccessible;
@@ -49,7 +48,7 @@ public class DatasetExample {
         Random rng = new Random(0xdeadbeef);
         FunctionRealRandomAccessible<IntType> labels = new FunctionRealRandomAccessible<>(
             2,
-            (pos, out) -> out.set(rng.nextInt(0, 10)),
+            (pos, out) -> out.set(rng.nextInt(10)),
             IntType::new
         );
         store.add("labels", labels, 0, 1);

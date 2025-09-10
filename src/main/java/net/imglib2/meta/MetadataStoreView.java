@@ -45,8 +45,8 @@ import java.util.Optional;
 
 class MetadataStoreView implements MetadataStore {
 
-	private final MetadataStore source;
-	private final MixedTransform transform;
+	protected final MetadataStore source;
+    protected final MixedTransform transform;
 	// We want the inverse of transform.component for slicing
 	private final int[] dim_map;
 
@@ -107,7 +107,17 @@ class MetadataStoreView implements MetadataStore {
 
 	@Override
 	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
-		throw new UnsupportedOperationException("View of metadata store is read-only");
+        // TODO: Abstract this logic somewhere
+        int[] targetDims = new int[dims.length];
+        for (int i = 0; i < targetDims.length; i++) {
+            if (dims[i] < 0 || dims[i] >= transform.numTargetDimensions()) {
+                throw new IllegalArgumentException("Dimension " + dims[i] + " out of bounds [0," + transform.numTargetDimensions() + ")");
+            }
+            else {
+                targetDims[i] = transform.getComponentMapping(dims[i]);
+            }
+        }
+        source.add(name, data, targetDims);
 	}
 
 	@Override
@@ -136,7 +146,15 @@ class MetadataStoreView implements MetadataStore {
 
 		@Override
 		public boolean[] attachedAxes() {
-			return new boolean[0];
+            boolean[] srcAxes = source.attachedAxes();
+            boolean[] destAxes = new boolean[transform.numSourceDimensions()];
+            // Note: If srcAxes.length < destAxes.length, the remaining destAxes are virtual
+            for(int i = 0; i < srcAxes.length; i++) {
+                int t = transform.getComponentMapping(i);
+                destAxes[t] = srcAxes[i];
+            }
+
+			return destAxes;
 		}
 
 		@Override

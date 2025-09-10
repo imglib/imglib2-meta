@@ -34,10 +34,6 @@
 package net.imglib2.meta;
 
 import net.imglib2.*;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
-import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformRealRandomAccessible;
-import net.imglib2.view.Views;
 
 /**
  * A {@link RealMetadataStore} wrapping a {@link MetadataStore}
