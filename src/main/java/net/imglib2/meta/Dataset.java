@@ -46,7 +46,6 @@ import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleView;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**

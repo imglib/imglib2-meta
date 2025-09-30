@@ -46,6 +46,7 @@ import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 public final class Metadata {
 
@@ -71,21 +72,46 @@ public final class Metadata {
 	 * Creates a {@link MetadataItem}.
 	 *
 	 * @param key the {@link String} key associated with the item
-	 * @param data
+	 * @param data the metadata value associated with the item. Constant across the metadata sapce.
 	 * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
 	 * @param dims the dimension indices to which this item pertains.
 	 * @return a {@link MetadataItem}
-	 * @param <T>
+	 * @param <T> the type of {@code data}
 	 */
 	public static <T> MetadataItem<T> item(String key, T data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
 		return new SimpleItem<>(key, data, axes);
 	}
 
-	public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String name, U data, int numDims, int... dims) {
+    /**
+     * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
+     *
+     * @param key the {@link String} key associated with the item
+     * @param data the metadata value associated with the item. May vary across the metadata space.
+     * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
+     * @param dims the dimension indices to which this item pertains.
+     * @return a {@link MetadataItem}
+     * @param <T> the type of {@code data}
+     */
+	public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		return new VaryingItem<>(name, data, axes);
+		return new VaryingItem<>(key, data, axes);
 	}
+
+    /**
+     * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
+     *
+     * @param key the {@link String} key associated with the item
+     * @param data the metadata value associated with the item. May vary across the metadata space.
+     * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
+     * @param dims the dimension indices to which this item pertains.
+     * @return a {@link MetadataItem}
+     * @param <T> the type of {@code data}
+     */
+    public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, BiConsumer<Localizable, T> setter, int... dims) {
+        boolean[] axes = makeAxisAttachmentArray(numDims, dims);
+        return new VaryingItem<>(key, data, setter, axes);
+    }
 
 	public static <T, U extends RealRandomAccessible<T>> RealMetadataItem<T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
@@ -101,14 +127,6 @@ public final class Metadata {
 		return new MetadataStoreView(source, transform);
 	}
 
-//	public static MetadataStore view(MetadataStore source, RealTransformRealRandomAccessible<?,?> view) {
-//		return view(source, view.getTransformToSource());
-//	}
-//
-//	public static MetadataStore view(MetadataStore source, RealTransform transform) {
-//		return new MetadataStoreRealView(source, transform);
-//	}
-//
 	private static boolean[] makeAxisAttachmentArray(final int numDims, final int... dims) {
 		boolean[] attachedToAxes = new boolean[numDims];
 		for (int d=0; d<dims.length; d++) attachedToAxes[dims[d]] = true;
@@ -127,9 +145,9 @@ public final class Metadata {
 	private static class SimpleItem<T> implements MetadataItem<T> {
 		final String name;
 
-		final T data;
+        final boolean[] attachedToAxes;
 
-		final boolean[] attachedToAxes;
+		T data;
 
 		public SimpleItem(final String name, final T data, final boolean[] attachedToAxes) {
 			this.name = name;
@@ -186,6 +204,21 @@ public final class Metadata {
 
 			return sb.toString();
 		}
+
+        @Override
+        public void setAt(T value, int... position) {
+            data = value;
+        }
+
+        @Override
+        public void setAt(T value, long... position) {
+            data = value;
+        }
+
+        @Override
+        public void setAt(T value, Localizable position) {
+            data = value;
+        }
 	}
 
 	private static Mixed transformFromAttachedAxes(boolean[] attachedToAxes) {
@@ -210,18 +243,31 @@ public final class Metadata {
 
 		final F data;
 
+        final ThreadLocal<Point> pointCache = ThreadLocal.withInitial(() -> new Point(numDimensions()));
+
+        final BiConsumer<Localizable, T> setter;
+
 		final boolean[] attachedToAxes;
 
 		public VaryingItem(final String name, final F data, final boolean[] attachedToAxes) {
 			this(name, data, transformFromAttachedAxes(attachedToAxes), attachedToAxes);
 		}
 
+        private VaryingItem(final String name, final F data, BiConsumer<Localizable, T> setter, boolean[] attachedToAxes) {
+            this(name, data, transformFromAttachedAxes(attachedToAxes), setter, attachedToAxes);
+        }
+
 		private VaryingItem(final String name, final F data, final Mixed tform, final boolean[] attachedToAxes) {
-			super(data, tform);
-			this.name = name;
-			this.data = data;
-			this.attachedToAxes = attachedToAxes;
+            this(name, data, tform, (pos, val) -> {}, attachedToAxes);
 		}
+
+        private VaryingItem(final String name, final F data, final Mixed tform, BiConsumer<Localizable, T> setter, boolean[] attachedToAxes) {
+            super(data, tform);
+            this.name = name;
+            this.data = data;
+            this.setter = setter;
+            this.attachedToAxes = attachedToAxes;
+        }
 
 		@Override
 		public String name() {
@@ -252,7 +298,31 @@ public final class Metadata {
 			return sb.toString();
 		}
 
-	}
+        @Override
+        public void setAt(T value, int... position) {
+            Point p = pointCache.get();
+            int[] dest = new int[getTransformToSource().numTargetDimensions()];
+            getTransformToSource().apply(position, dest);
+            p.setPosition(dest);
+            setter.accept(p, value);
+        }
+
+        @Override
+        public void setAt(T value, long... position) {
+            Point p = pointCache.get();
+            long[] dest = new long[getTransformToSource().numTargetDimensions()];
+            getTransformToSource().apply(position, dest);
+            p.setPosition(dest);
+            setter.accept(p, value);
+        }
+
+        @Override
+        public void setAt(T value, Localizable position) {
+            Point p = pointCache.get();
+            getTransformToSource().apply(position, p);
+            setter.accept(position, value);
+        }
+    }
 
 	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> extends RealTransformRealRandomAccessible<T, RealTransform> implements RealMetadataItem<T> {
 		final String name;

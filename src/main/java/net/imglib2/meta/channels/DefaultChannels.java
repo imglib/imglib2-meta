@@ -72,11 +72,11 @@ public class DefaultChannels implements Channels {
 			for (int i = 0; i < point.numDimensions(); i++) {
 				point.setPosition(axis.get() == i ? c : 0, i);
 			}
-			return metaData.item(AXIS_KEY, ColorTableHolder.class, axis.get()).getAt(point).get();
+			return metaData.item(AXIS_KEY, ColorTable.class, axis.get()).getAt(point);
 		}
 		else {
 			// One LUT for the whole image
-			return metaData.item(AXIS_KEY, ColorTable.class).value();
+			return metaData.item(AXIS_KEY, ColorTable.class).getAt(new long[metaData.numDimensions()]);
 		}
 	}
 
@@ -85,17 +85,25 @@ public class DefaultChannels implements Channels {
 		int axis = Metadata.calibration(this.metaData)
 				.indexOf(Axes.CHANNEL)
 				.orElseThrow(NO_CHANNEL_AXIS_YET);
-		// TODO: Clean up
-		MetadataItem<ColorTableHolder> item;
+		MetadataItem<ColorTable> item;
 		try {
-			item = metaData.item(AXIS_KEY, ColorTableHolder.class, axis);
+			item = metaData.item(AXIS_KEY, ColorTable.class, axis);
+            Point point = pointCache.get();
+            for (int i = 0; i < point.numDimensions(); i++) {
+                point.setPosition(axis == i ? c : 0, i);
+            }
+            item.setAt(lut, point);
 		}
 		catch (NoSuchElementException e) {
 			ColorTableRAI newLut = new ColorTableRAI();
-			metaData.add(AXIS_KEY, newLut, axis);
-			item = metaData.item(AXIS_KEY, ColorTableHolder.class, axis);
+            newLut.setLut(c, lut);
+			metaData.add(
+                AXIS_KEY,
+                newLut,
+                (pos, table) -> newLut.setLut(pos.getIntPosition(axis), table),
+                axis
+            );
 		}
-		item.getAt(0, 0, c).set(lut);
 	}
 
 	@Override

@@ -36,28 +36,20 @@ package net.imglib2.meta;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
 
-import java.util.Optional;
-
 public interface RealMetadataStore extends MetadataStore {
 
 	@Override
-	default RealMetadataItem<?> item(String key) {
-		return item(key, Object.class);
+	default RealMetadataItem<?> item(String key, int... dims) {
+		return item(key, Object.class, dims);
 	}
 	@Override
-	<T> RealMetadataItem<T> item(String key, Class<T> ofType);
-	@Override
-	default RealMetadataItem<?> item(String key, int... d) {
-		return item(key, Object.class, d);
-	}
-	@Override
-	<T> RealMetadataItem<T> item(String key, Class<T> ofType, int... d);
+	<T> RealMetadataItem<T> item(String key, Class<T> ofType, int... dims);
 
 	// TODO: It'd be great to have the generics work out such that we didn't have both...
 	@Override
-	default <T> void add(String name, RandomAccessible<T> data, int... d) {
+	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
         if (data instanceof RealRandomAccessible) {
-            add(name, (RealRandomAccessible<T>) data, d);
+            add(key, (RealRandomAccessible<T>) data, dims);
         }
         else {
             throw new UnsupportedOperationException("Only real metadata can be added to a RealMetadataStore");

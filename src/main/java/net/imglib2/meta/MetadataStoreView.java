@@ -41,7 +41,6 @@ import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 class MetadataStoreView implements MetadataStore {
 
@@ -77,18 +76,13 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
-		return source.item(key, ofType);
-	}
-
-	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... d) {
-		final int[] dd = new int[d.length];
+	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
+		final int[] dd = new int[dims.length];
 		for(int i = 0; i < dd.length; i++) {
-			if (dim_map.length <= d[i]) {
-				throw new IllegalArgumentException("Dimensions " + Arrays.toString(d) + " is not present in the source metadata.");
+			if (dim_map.length <= dims[i]) {
+				throw new IllegalArgumentException("Dimensions " + Arrays.toString(dims) + " is not present in the source metadata.");
 			}
-			dd[i] = dim_map[d[i]];
+			dd[i] = dim_map[dims[i]];
 		}
 		return itemView(source.item(key, ofType, dd));
 	}
@@ -101,12 +95,12 @@ class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, T data, int... dims) {
+	public <T> void add(String key, T data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
+	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
         // TODO: Abstract this logic somewhere
         int[] targetDims = new int[dims.length];
         for (int i = 0; i < targetDims.length; i++) {
@@ -117,7 +111,7 @@ class MetadataStoreView implements MetadataStore {
                 targetDims[i] = transform.getComponentMapping(dims[i]);
             }
         }
-        source.add(name, data, targetDims);
+        source.add(key, data, targetDims);
 	}
 
 	@Override

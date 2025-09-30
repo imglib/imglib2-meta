@@ -170,7 +170,7 @@ public class ImagePlusMetadataStoreTest {
         for(int i = 0; i < comp.getNChannels(); i++) {
             assertLUTEquals(comp.getLuts()[i], chan.lut(i));
         }
-        assertThrows(NoSuchElementException.class, () -> chan.lut(imp.getNChannels()));
+        assertThrows(IndexOutOfBoundsException.class, () -> chan.lut(imp.getNChannels()));
     }
 
     private LUT randomLUT(final long seed) {

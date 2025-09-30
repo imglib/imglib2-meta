@@ -42,8 +42,9 @@ import net.imglib2.display.ColorTable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
-public class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
+public class ColorTableRAI implements RandomAccessible<ColorTable> {
 
     private final Map<Integer, ColorTable> luts = new HashMap<>();
 
@@ -55,7 +56,7 @@ public class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
         }
     }
 
-    private class ColorTableRandomAccess extends Point implements RandomAccess<ColorTableHolder> {
+    private class ColorTableRandomAccess extends Point implements RandomAccess<ColorTable> {
 
         public ColorTableRandomAccess()
         {
@@ -63,13 +64,16 @@ public class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
         }
 
         @Override
-        public ColorTableHolder get()
+        public ColorTable get()
         {
-            return new ColorTableHolder(luts, getIntPosition(0));
+            int channel = getIntPosition(0);
+            if (!luts.containsKey(channel))
+                throw new IndexOutOfBoundsException("No LUT for channel " + channel);
+            return luts.get(channel);
         }
 
         @Override
-        public ColorTableHolder getType()
+        public ColorTable getType()
         {
             return get();
         }
@@ -82,12 +86,12 @@ public class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
     }
 
     @Override
-    public RandomAccess<ColorTableHolder> randomAccess() {
+    public RandomAccess<ColorTable> randomAccess() {
         return new ColorTableRandomAccess();
     }
 
     @Override
-    public RandomAccess<ColorTableHolder> randomAccess(Interval interval) {
+    public RandomAccess<ColorTable> randomAccess(Interval interval) {
         return randomAccess();
     }
 
@@ -97,7 +101,7 @@ public class ColorTableRAI implements RandomAccessible<ColorTableHolder> {
     }
 
     @Override
-    public ColorTableHolder getType() {
+    public ColorTable getType() {
         return randomAccess().getType();
     }
 

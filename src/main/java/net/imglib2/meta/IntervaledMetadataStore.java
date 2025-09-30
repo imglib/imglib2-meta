@@ -61,11 +61,11 @@ public interface IntervaledMetadataStore extends MetadataStore {
 	/**
 	 * Find a metadata item associated with key {@code key} and axes {@code d}
 	 * @param key the identifier of the metadata item
-	 * @param d the axes associated with the metadata item
+	 * @param dims the axes associated with the metadata item
 	 * @return a metadata item matching {@code key}
 	 */
-	default IntervaledMetadataItem<?> item(String key, int... d) {
-		return item(key, Object.class, d);
+	default IntervaledMetadataItem<?> item(String key, int... dims) {
+		return item(key, Object.class, dims);
 	}
 
 	/**
@@ -73,18 +73,18 @@ public interface IntervaledMetadataStore extends MetadataStore {
 	 *
 	 * @param key the identifier of the metadata item
 	 * @param ofType the type of the metadata item
-	 * @param d the axes associated with the metadata item
+	 * @param dims the axes associated with the metadata item
 	 * @return a metadata item matching {@code key} of type {@code ofType}
 	 */
-	<T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... d);
+	<T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... dims);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);
 
 	/** Add simple metadata */
-	<T> void add(String name, T data, int... dims);
+	<T> void add(String key, T data, int... dims);
 
-	default <T> void add(String name, RandomAccessible<T> data, int... d) {
+	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
         throw new UnsupportedOperationException("IntervaledMetadataStore does not support RandomAccessible metadata");
     }
 

@@ -62,7 +62,6 @@ import net.imglib2.*;
  * {@link #value()} will then return a value at an arbitrary position.
  * </p>
  *
- * TODO: Consider whether a RealRandomAccessible is more applicable
  * TODO: Add API for setting values (e.g. LUTs) after constructing one of these
  * TODO: Is there any time when access to the source RAI is useful?
  *
@@ -87,6 +86,16 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * dimensions in the data space.
 	 */
 	boolean[] attachedAxes();
+
+    default void setAt(T value, int... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
+    default void setAt(T value, long... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
+    default void setAt(T value, Localizable pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
 
 	// -- default utility methods -- //
 
@@ -124,11 +133,21 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * Returns the value of the metadata at an <em>arbitrary</em> position.
 	 * Convenient for constant metadata.
 	 *
-	 * @return the value of the metadata at {@code pos}
+	 * @return the value of the metadata at an arbitrary position.
 	 */
 	default T value() {
 		return getAt(new long[attachedAxes().length]);
 	}
+
+    /**
+     * Sets the value of the metadata at an <em>arbitrary</em> position.
+     * Convenient for constant metadata.
+     *
+     * @param value the new value of the metadata at an arbitrary position.
+     */
+    default void value(T value) {
+        setAt(value, new long[attachedAxes().length]);
+    }
 
 	// -- RandomAccessible Overrides -- //
 

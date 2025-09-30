@@ -66,13 +66,13 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
 	}
 
 	@Override
-	public <T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... d) {
-        MetadataItem<T> tformed = super.item(key, ofType, d);
+	public <T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... dims) {
+        MetadataItem<T> tformed = super.item(key, ofType, dims);
         return new MetadataItemIntervalView<>(tformed, interval);
 	}
 
 	@Override
-	public <T> void add(String name, T data, int... dims) {
+	public <T> void add(String key, T data, int... dims) {
         // TODO: Astract this logic somewhere
         int[] targetDims = new int[dims.length];
         for (int i = 0; i < targetDims.length; i++) {
@@ -83,7 +83,7 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
                 targetDims[i] = transform.getComponentMapping(dims[i]);
             }
         }
-        source.add(name, data, targetDims);
+        source.add(key, data, targetDims);
 	}
 
     @Override

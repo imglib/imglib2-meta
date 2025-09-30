@@ -34,51 +34,34 @@
 package net.imglib2.meta;
 
 import net.imglib2.EuclideanSpace;
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 
+import java.util.Locale;
 import java.util.ServiceLoader;
+import java.util.function.BiConsumer;
 
 public interface MetadataStore extends EuclideanSpace {
 
-
 	/**
-	 * Find a {@link Object} associated with key {@code key}.
-	 *
+	 * Find a metadata item associated with key {@code key} and axes {@code dims}
 	 * @param key the identifier of the metadata item
+	 * @param dims the axes associated with the metadata item
 	 * @return a metadata item matching {@code key}
 	 */
-	default MetadataItem<?> item(String key) {
-		return item(key, Object.class);
+	default MetadataItem<?> item(String key, int... dims) {
+		return item(key, Object.class, dims);
 	}
 
 	/**
-	 * Find a metadata item associated with key {@code key} of {@link Class} {@code ofType}.
+	 * Find a metadata item associated with key {@code key} and axes {@code dims} of {@link Class} {@code ofType}.
 	 *
 	 * @param key the identifier of the metadata item
 	 * @param ofType the type of the metadata item
+	 * @param dims the axes associated with the metadata item
 	 * @return a metadata item matching {@code key} of type {@code ofType}
 	 */
-	<T> MetadataItem<T> item(String key, Class<T> ofType);
-
-	/**
-	 * Find a metadata item associated with key {@code key} and axes {@code d}
-	 * @param key the identifier of the metadata item
-	 * @param d the axes associated with the metadata item
-	 * @return a metadata item matching {@code key}
-	 */
-	default MetadataItem<?> item(String key, int... d) {
-		return item(key, Object.class, d);
-	}
-
-	/**
-	 * Find a metadata item associated with key {@code key} and axes {@code d} of {@link Class} {@code ofType}.
-	 *
-	 * @param key the identifier of the metadata item
-	 * @param ofType the type of the metadata item
-	 * @param d the axes associated with the metadata item
-	 * @return a metadata item matching {@code key} of type {@code ofType}
-	 */
-	<T> MetadataItem<T> item(String key, Class<T> ofType, int... d);
+	<T> MetadataItem<T> item(String key, Class<T> ofType, int... dims);
 
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
     default <T extends HasMetadataStore> T info(Class<T> infoClass) {
@@ -88,9 +71,42 @@ public interface MetadataStore extends EuclideanSpace {
         return instance;
     }
 
-	/** Add simple metadata */
-	<T> void add(String name, T data, int... dims);
+	/**
+     * Adds metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * <p>
+     * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
+     * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
+     * </p>
+     * @param key the identifier of the metadata item
+     * @param data the metadata
+     * @param dims the axes associated with the metadata item
+     */
+	<T> void add(String key, T data, int... dims);
 
+    /**
+     * Adds metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * <p>
+     * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
+     * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
+     * </p>
+     * @param key the identifier of the metadata item
+     * @param data the metadata
+     * @param dims the axes associated with the metadata item
+     */
+	<T> void add(String key, RandomAccessible<T> data, int... dims);
 
-	<T> void add(String name, RandomAccessible<T> data, int... d);
+    /**
+     * Adds <em>mutable</em> metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * <p>
+     * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
+     * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
+     * </p>
+     * @param key the identifier of the metadata item
+     * @param data the metadata
+     * @param setter a function able to update the metadata value at a given position
+     * @param dims the axes associated with the metadata item
+     */
+    default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {
+        throw new UnsupportedOperationException("This MetadataStore is read-only!");
+    }
 }

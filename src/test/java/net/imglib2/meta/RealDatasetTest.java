@@ -34,7 +34,6 @@
 package net.imglib2.meta;
 
 import net.imglib2.RealRandomAccessible;
-import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;

@@ -33,10 +33,17 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.Interval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealRandomAccessible;
+import net.imglib2.*;
 
 public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
+
+    default void setAt(T value, float... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
+    default void setAt(T value, double... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
+    default void setAt(T value, RealLocalizable pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
+    }
 }

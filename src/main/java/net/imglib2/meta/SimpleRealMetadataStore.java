@@ -35,7 +35,9 @@ package net.imglib2.meta;
 
 import net.imglib2.RealRandomAccessible;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class SimpleRealMetadataStore implements RealMetadataStore {
 
@@ -48,39 +50,19 @@ public class SimpleRealMetadataStore implements RealMetadataStore {
 	}
 
 	@Override
-	public <T> RealMetadataItem<T> item(String key, Class<T> ofType) {
-		//noinspection unchecked
-		return items.stream() //
-			.filter(item -> item.name().equals(key))
-			.filter(item -> !item.isAttachedToAnyAxis())
-			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
-			.map(item -> (RealMetadataItem<T>) item)
-			.findFirst().orElseThrow(NoSuchElementException::new);
-	}
-
-	@Override
-	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... d) {
+	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... dims) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
-			.filter(item -> item.isAttachedTo(d)) //
+			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (RealMetadataItem<T>) item)
 			.findFirst().orElseThrow(NoSuchElementException::new);
 	}
 
-
 	@Override
-	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
-		ServiceLoader<T> loader = ServiceLoader.load(infoClass);
-		T instance = loader.iterator().next();
-		instance.setStore(this);
-		return instance;
-	}
-
-	@Override
-	public <T> void add(String name, T data, int... dims) {
-		items.add(RealMetadata.item(name, data, numDims, dims));
+	public <T> void add(String key, T data, int... dims) {
+		items.add(RealMetadata.item(key, data, numDims, dims));
 	}
 
 	@Override

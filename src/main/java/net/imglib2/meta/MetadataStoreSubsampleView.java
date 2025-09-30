@@ -36,8 +36,6 @@ package net.imglib2.meta;
 import net.imglib2.RandomAccessible;
 import net.imglib2.view.SubsampleView;
 
-import java.util.Optional;
-
 public class MetadataStoreSubsampleView implements MetadataStore {
 
 	private final MetadataStore source;
@@ -50,13 +48,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
-		return itemView(source.item(key, ofType));
-	}
-
-	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... d) {
-		return itemView(source.item(key, ofType, d));
+	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
+		return itemView(source.item(key, ofType, dims));
 	}
 
 	@Override
@@ -67,12 +60,12 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, T data, int... dims) {
+	public <T> void add(String key, T data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 
 	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... d) {
+	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
 		throw new UnsupportedOperationException("View of metadata store is read-only");
 	}
 

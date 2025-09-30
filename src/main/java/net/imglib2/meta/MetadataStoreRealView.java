@@ -47,12 +47,7 @@ class MetadataStoreRealView implements RealMetadataStore {
 	}
 
 	@Override
-	public <T> RealMetadataItem<T> item(String key, Class<T> ofType) {
-		return new MetadataItemRealView<>(source.item(key, ofType));
-	}
-
-	@Override
-	public <T> RealMetadataItem<T> item(String key, Class<T> ofType, int... d) {
+	public <T> RealMetadataItem<T> item(String key, Class<T> ofType, int... dims) {
 		throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
 	}
 
@@ -62,7 +57,7 @@ class MetadataStoreRealView implements RealMetadataStore {
 	}
 
 	@Override
-	public <T> void add(String name, T data, int... dims) {
+	public <T> void add(String key, T data, int... dims) {
 		throw new UnsupportedOperationException("RealView of metadata store is read-only");
 	}
 

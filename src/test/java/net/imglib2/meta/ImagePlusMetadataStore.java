@@ -35,18 +35,20 @@ package net.imglib2.meta;
 
 
 import ij.ImagePlus;
-import ij.process.LUT;
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.display.ColorTable;
 import net.imglib2.imagej.LUTToColorTable;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.channels.ColorTableHolder;
 import net.imglib2.meta.channels.ColorTableRAI;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class ImagePlusMetadataStore implements MetadataStore {
@@ -58,41 +60,43 @@ public class ImagePlusMetadataStore implements MetadataStore {
     }
 
     @Override
-    public <T> MetadataItem<T> item(String key, Class<T> ofType) {
+    @SuppressWarnings("unchecked")
+    public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
         if (key.equals("name") && is(ofType, String.class)) {
             return Metadata.item(key, (T) imp.getTitle(), numDimensions());
         }
         if (key.equals("channel") && is(ofType, ColorTable.class)) {
-            LUT[] luts = imp.getLuts();
-            if (luts.length > 0) {
-                return Metadata.item(
-                        key,
-                        (T) LUTToColorTable.wrap(luts[0]),
-                        numDimensions()
-                );
-            }
-        }
-        throw new NoSuchElementException("No metadata exists of key " + key + " that is type " + ofType.getName());
-    }
-
-    @Override
-    public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
-        // FIXME
-        int d = dims[0];
-        if (key.equals("channel") && is(ofType, ColorTableHolder.class)) {
-            if (axisType(d) == Axes.CHANNEL) {
-                List<ColorTable> tables = Arrays.stream(imp.getLuts()) //
+            List<ColorTable> tables = Arrays.stream(imp.getLuts()) //
                     .map(LUTToColorTable::wrap) //
                     .collect(Collectors.toList());
-                return Metadata.item(
-                    key,
-                    (RandomAccessible<T>) new ColorTableRAI(tables),
-                    numDimensions(),
-                    d
-                );
+            if (tables.isEmpty()) {
+                throw new NoSuchElementException("RGB images have no LUTs");
             }
+            if (dims.length == 0) {
+                if (tables.size() != 1) {
+                    throw new IllegalArgumentException("Color Tables must be associated with exactly one axis");
+                }
+                return Metadata.item(key, (T) tables.get(0), numDimensions());
+            }
+            if (dims.length == 1 && axisType(dims[0]) != Axes.CHANNEL) {
+                throw new IllegalArgumentException("Axis " + dims[0] + " is not the channel axis!");
+            }
+            if (tables.isEmpty()) {
+                throw new NoSuchElementException("No LUTs found");
+            }
+            ColorTableRAI ctable = new ColorTableRAI(tables);
+            BiConsumer<Localizable, ColorTable> setter = (pos, table) -> ctable.setLut(pos.getIntPosition(0), table);
+            return (MetadataItem<T>) Metadata.item(
+                key,
+                ctable,
+                numDimensions(),
+                setter,
+                dims
+            );
         }
         if (key.equals("axis_data") && is(ofType, DoubleType.class)) {
+            // FIXME
+            int d = dims[0];
             AxisType type = axisType(d);
             if (type != null) {
                 FunctionRandomAccessible<DoubleType> data = new FunctionRandomAccessible<>(
@@ -109,6 +113,8 @@ public class ImagePlusMetadataStore implements MetadataStore {
             }
         }
         if (key.equals("axis_type") && is(ofType, AxisType.class)) {
+            // FIXME
+            int d = dims[0];
             AxisType type = axisType(d);
             if (type != null) {
                 return Metadata.item(
@@ -123,20 +129,12 @@ public class ImagePlusMetadataStore implements MetadataStore {
     }
 
     @Override
-    public <T extends HasMetadataStore> T info(Class<T> infoClass) {
-        ServiceLoader<T> loader = ServiceLoader.load(infoClass);
-        T instance = loader.iterator().next();
-        instance.setStore(this);
-        return instance;
-    }
-
-    @Override
-    public <T> void add(String name, T data, int... dims) {
+    public <T> void add(String key, T data, int... dims) {
         throw new UnsupportedOperationException("Read-Only");
     }
 
     @Override
-    public <T> void add(String name, RandomAccessible<T> data, int... dims) {
+    public <T> void add(String key, RandomAccessible<T> data, int... dims) {
         throw new UnsupportedOperationException("Read-Only");
     }
 

@@ -122,6 +122,11 @@ Gabriel Selzer, Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwner
 			<artifactId>imagej</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>io.scif</groupId>
+            <artifactId>scifio</artifactId>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-imagej</artifactId>

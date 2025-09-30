@@ -33,9 +33,13 @@
  */
 package net.imglib2.meta;
 
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
 
 public class SimpleMetadataStore implements MetadataStore {
 
@@ -48,44 +52,30 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
 	@Override
-	public <T> MetadataItem<T> item(String key, Class<T> ofType) {
-		//noinspection unchecked
-		return items.stream() //
-			.filter(item -> item.name().equals(key))
-			.filter(item -> !item.isAttachedToAnyAxis())
-			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
-			.map(item -> (MetadataItem<T>) item)
-			.findFirst().orElseThrow(NoSuchElementException::new);
-	}
-
-	@Override
-	public <T> MetadataItem<T> item(String name, Class<T> ofType, int... d) {
+	public <T> MetadataItem<T> item(String name, Class<T> ofType, int... dims) {
 		//noinspection unchecked
 		return items.stream() //
 			.filter(item -> item.name().equals(name))
-			.filter(item -> item.isAttachedTo(d)) //
+			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
 			.findFirst().orElseThrow(NoSuchElementException::new);
 	}
 
-	@Override
-	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
-		ServiceLoader<T> loader = ServiceLoader.load(infoClass);
-		T instance = loader.iterator().next();
-		instance.setStore(this);
-		return instance;
+    @Override
+	public <T> void add(String key, T data, int... dims) {
+		items.add(Metadata.item(key, data, numDims, dims));
 	}
 
 	@Override
-	public <T> void add(String name, T data, int... dims) {
-		items.add(Metadata.item(name, data, numDims, dims));
+	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
+		items.add(Metadata.item(key, data, numDims, dims));
 	}
 
-	@Override
-	public <T> void add(String name, RandomAccessible<T> data, int... dims) {
-		items.add(Metadata.item(name, data, numDims, dims));
-	}
+    @Override
+    public <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {
+        items.add(Metadata.item(key, data, numDims, setter, dims));
+    }
 
 	@Override
 	public int numDimensions() {
