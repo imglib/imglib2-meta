@@ -33,8 +33,10 @@
  */
 package net.imglib2.meta.calibration;
 
-import net.imglib2.*;
-import net.imglib2.meta.Metadata;
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.position.FunctionRandomAccessible;
@@ -42,12 +44,9 @@ import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
-	private static final String AXIS_DATA = "axis_data";
-	private static final String AXIS_TYPE = "axis_type";
 
 	private static class UnknownData implements MetadataItem<DoubleType> {
 		private final boolean[] axisAttachments;
@@ -85,7 +84,7 @@ public class DefaultCalibration implements Calibration {
 			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
 		}
 
-	};
+	}
 
 
 
@@ -99,8 +98,6 @@ public class DefaultCalibration implements Calibration {
 		if (d >= metaData.numDimensions()) {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
-		// Search for Axis components
-		// FIXME: Decide
 		MetadataItem<DoubleType> data;
 		try{
 			 data = metaData.item(AXIS_DATA, DoubleType.class, d);
@@ -111,9 +108,6 @@ public class DefaultCalibration implements Calibration {
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {
-			private final Supplier<MetadataItem<AxisType>> unknownAxisSupplier = //
-					() -> Metadata.item(AXIS_TYPE, Axes.unknown(), metaData.numDimensions());
-
 			@Override
 			public double calibrated(double raw) {
 				long[] c = cs.get();
@@ -128,6 +122,11 @@ public class DefaultCalibration implements Calibration {
 						DoubleType::new
 				);
 			}
+
+            @Override
+            public String unit() {
+                return metaData.item(AXIS_UNITS, String.class, d).value();
+            }
 
 			@Override
 			public AxisType type() {
@@ -145,6 +144,7 @@ public class DefaultCalibration implements Calibration {
 	public void setAxis(final Axis axis, final int d) {
         metaData.add(AXIS_DATA, axis.data(), d);
 		metaData.add(AXIS_TYPE, axis.type(), d);
+        metaData.add(AXIS_UNITS, axis.unit(), d);
 	}
 
 	@Override

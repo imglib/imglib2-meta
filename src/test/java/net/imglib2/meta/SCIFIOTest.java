@@ -61,6 +61,7 @@ public class SCIFIOTest {
                 metaAxis.calibrated(1.0), //
                 1e-6 //
             );
+            assertEquals(ijAxis.unit(), metaAxis.unit());
         }
     }
 }

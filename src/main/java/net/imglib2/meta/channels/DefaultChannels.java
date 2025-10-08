@@ -72,11 +72,11 @@ public class DefaultChannels implements Channels {
 			for (int i = 0; i < point.numDimensions(); i++) {
 				point.setPosition(axis.get() == i ? c : 0, i);
 			}
-			return metaData.item(AXIS_KEY, ColorTable.class, axis.get()).getAt(point);
+			return metaData.item(CHANNEL, ColorTable.class, axis.get()).getAt(point);
 		}
 		else {
 			// One LUT for the whole image
-			return metaData.item(AXIS_KEY, ColorTable.class).getAt(new long[metaData.numDimensions()]);
+			return metaData.item(CHANNEL, ColorTable.class).getAt(new long[metaData.numDimensions()]);
 		}
 	}
 
@@ -87,7 +87,7 @@ public class DefaultChannels implements Channels {
 				.orElseThrow(NO_CHANNEL_AXIS_YET);
 		MetadataItem<ColorTable> item;
 		try {
-			item = metaData.item(AXIS_KEY, ColorTable.class, axis);
+			item = metaData.item(CHANNEL, ColorTable.class, axis);
             Point point = pointCache.get();
             for (int i = 0; i < point.numDimensions(); i++) {
                 point.setPosition(axis == i ? c : 0, i);
@@ -95,10 +95,11 @@ public class DefaultChannels implements Channels {
             item.setAt(lut, point);
 		}
 		catch (NoSuchElementException e) {
+            // FIXME: This should really be a ListImg, but we don't know the number of channels (yet)
 			ColorTableRAI newLut = new ColorTableRAI();
             newLut.setLut(c, lut);
 			metaData.add(
-                AXIS_KEY,
+                CHANNEL,
                 newLut,
                 (pos, table) -> newLut.setLut(pos.getIntPosition(axis), table),
                 axis

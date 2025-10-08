@@ -33,7 +33,8 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.*;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccessible;
 
 /**
  * A piece of metadata associated with an n-dimensional dataset.
@@ -61,9 +62,6 @@ import net.imglib2.*;
  * external n-dimensional space of the {@link Localizable}.
  * {@link #value()} will then return a value at an arbitrary position.
  * </p>
- *
- * TODO: Add API for setting values (e.g. LUTs) after constructing one of these
- * TODO: Is there any time when access to the source RAI is useful?
  *
  * @param <T> the type of metadata values.
  * @author Curtis Rueden

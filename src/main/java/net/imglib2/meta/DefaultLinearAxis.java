@@ -47,12 +47,18 @@ public class DefaultLinearAxis implements RealAxis {
     private final double scale;
     private final double offset;
     private final AxisType type;
+    private final String unit;
     private final Function<Double, Double> func;
 
     public DefaultLinearAxis(final AxisType type, final double scale, final double offset) {
+        this(type, scale, offset, "");
+    }
+
+    public DefaultLinearAxis(final AxisType type, final double scale, final double offset, final String unit) {
         this.type = type;
         this.offset = offset;
         this.scale = scale;
+        this.unit = unit;
         func = raw -> raw * this.scale + this.offset;
     }
 
@@ -70,6 +76,10 @@ public class DefaultLinearAxis implements RealAxis {
         );
     }
 
+    @Override
+    public String unit() {
+        return unit;
+    }
 
     @Override
     public AxisType type() {

@@ -38,19 +38,13 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.process.LUT;
 import net.imglib2.display.ColorTable;
-import net.imglib2.imagej.ImagePlusToImg;
-import net.imglib2.img.Img;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.*;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -80,6 +74,15 @@ public class ImagePlusMetadataStoreTest {
         Assert.assertEquals(Axes.CHANNEL, cal.axis(2).type());
         Assert.assertEquals(Axes.Z, cal.axis(3).type());
         Assert.assertEquals(Axes.TIME, cal.axis(4).type());
+
+        imp.getCalibration().setXUnit("m");
+        Assert.assertEquals("m", cal.axis(0).unit());
+        imp.getCalibration().setYUnit("mm");
+        Assert.assertEquals("mm", cal.axis(1).unit());
+        imp.getCalibration().setZUnit("nm");
+        Assert.assertEquals("nm", cal.axis(3).unit());
+        imp.getCalibration().setTimeUnit("s");
+        Assert.assertEquals("s", cal.axis(4).unit());
     }
 
     @Test

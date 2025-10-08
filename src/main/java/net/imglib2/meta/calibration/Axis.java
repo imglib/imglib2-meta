@@ -45,6 +45,8 @@ public interface Axis {
 
     RandomAccessible<DoubleType> data();
 
+    String unit();
+
     AxisType type();
 
 }

@@ -127,6 +127,11 @@ Gabriel Selzer, Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwner
             <artifactId>scifio</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.janelia.saalfeldlab</groupId>
+            <artifactId>n5-ij</artifactId>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-imagej</artifactId>
