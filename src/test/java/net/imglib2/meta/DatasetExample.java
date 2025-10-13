@@ -3,6 +3,7 @@ package net.imglib2.meta;
 import net.imglib2.RandomAccessible;
 import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.DefaultLinearAxis;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.integer.IntType;

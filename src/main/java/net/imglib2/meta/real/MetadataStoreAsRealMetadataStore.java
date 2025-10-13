@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,27 +31,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
-import net.imglib2.RandomAccessible;
-import net.imglib2.view.fluent.RandomAccessibleView;
+import net.imglib2.RealRandomAccessible;
+import net.imglib2.meta.HasMetadataStore;
+import net.imglib2.meta.MetadataStore;
 
-public class DefaultDataset<T> implements Dataset<T, DefaultDataset<T>> {
+/**
+ * A {@link RealMetadataStore} wrapping a {@link MetadataStore}.
+ * The name is verbose, but accurate.
+ *
+ * @author Gabriel Selzer
+ */
+class MetadataStoreAsRealMetadataStore implements RealMetadataStore {
 
-	private final RandomAccessible<T> data;
-	private final MetadataStore store;
+	private final MetadataStore source;
 
-	public DefaultDataset(RandomAccessible<T> data, MetadataStore store) {
-		this.data = data;
-		this.store = store;
+	public MetadataStoreAsRealMetadataStore(MetadataStore source) {
+		this.source = source;
 	}
+
 	@Override
-	public RandomAccessible<T> data() {
-		return data;
+	public <T> RealMetadataItem<T> item(String key, Class<T> ofType, int... dims) {
+		throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
 	}
 
 	@Override
-	public MetadataStore store() {
-		return store;
+	public <T extends HasMetadataStore> T info(Class<T> infoClass) {
+		return source.info(infoClass);
 	}
+
+	@Override
+	public <T> void add(String key, T data, int... dims) {
+		throw new UnsupportedOperationException("RealView of metadata store is read-only");
+	}
+
+	@Override
+	public <T> void add(String name, RealRandomAccessible<T> data, int... dims) {
+		throw new UnsupportedOperationException("RealView of metadata store is read-only");
+	}
+
+	@Override
+	public int numDimensions() {
+		return source.numDimensions();
+	}
+
 }

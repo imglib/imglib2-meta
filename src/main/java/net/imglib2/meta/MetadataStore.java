@@ -37,7 +37,6 @@ import net.imglib2.EuclideanSpace;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 
-import java.util.Locale;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 

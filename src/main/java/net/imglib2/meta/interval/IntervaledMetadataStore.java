@@ -31,10 +31,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.interval;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.meta.HasMetadataStore;
+import net.imglib2.meta.MetadataStore;
 
 public interface IntervaledMetadataStore extends MetadataStore {
 

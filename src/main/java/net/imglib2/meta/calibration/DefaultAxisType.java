@@ -34,8 +34,6 @@
 
 package net.imglib2.meta.calibration;
 
-import net.imglib2.meta.DefaultLinearAxis;
-
 import java.io.Serializable;
 
 /**

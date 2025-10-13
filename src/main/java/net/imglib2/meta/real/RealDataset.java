@@ -31,14 +31,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.transform.integer.Mixed;
+import net.imglib2.meta.Dataset;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Function;
@@ -67,17 +68,8 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
         };
     }
 
-    static <T, V extends RealDataset<T, V>> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, MetadataStore store) {
-        return wrap(delegate, new MetadataStoreRealView(store));
-    }
-
-    static <T> RealDataset<T, ?> wrap(RealDataset<T, ?> dataset, Mixed tform) {
-        throw new UnsupportedOperationException("TODO");
-        // TODO: Wrap up the MetadataStore in a RealMetadataStore, somehow??
-//        return wrap(
-//                dataset.delegate(),
-//                new MetadataStoreRealView(dataset.store(), tform)
-//        );
+    static <T> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, MetadataStore store) {
+        return wrap(delegate, new MetadataStoreAsRealMetadataStore(store));
     }
 
     @Override
@@ -122,6 +114,7 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     default < U > U use( Function< ? super V, U > function )
     {
         return function.apply( (V) this );

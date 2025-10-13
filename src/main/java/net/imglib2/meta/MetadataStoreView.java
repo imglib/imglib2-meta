@@ -42,7 +42,7 @@ import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
 
-class MetadataStoreView implements MetadataStore {
+public class MetadataStoreView implements MetadataStore {
 
 	protected final MetadataStore source;
     protected final MixedTransform transform;

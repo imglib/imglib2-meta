@@ -38,6 +38,8 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.real.RealDataset;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.util.Util;
 import net.imglib2.view.MixedTransformView;
@@ -76,7 +78,7 @@ public interface Dataset<T, V extends Dataset<T, V>> extends RandomAccessibleVie
      * @return a {@link Dataset} wrapping {@code delegate}
      * @param <T> the type of pixels contained within {@code delegate}
      */
-    static <T, V extends Dataset<T, V>> Dataset<T, ?> wrap(RandomAccessible<T> delegate) {
+    static <T> Dataset<T, ?> wrap(RandomAccessible<T> delegate) {
         return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
     }
 

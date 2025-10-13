@@ -37,6 +37,11 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
+import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.real.RealDataset;
+import net.imglib2.meta.real.RealMetadataItem;
+import net.imglib2.meta.real.RealMetadataStore;
+import net.imglib2.meta.real.RealSimpleMetadataStore;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.junit.Assert;
@@ -53,7 +58,7 @@ public class RealDatasetTest {
     private RealDataset<DoubleType, ?> dataset() {
         RealRandomAccessible<DoubleType> data = Data.realImage();
 
-        RealMetadataStore store = new SimpleRealMetadataStore(data.numDimensions());
+        RealMetadataStore store = new RealSimpleMetadataStore(data.numDimensions());
         Calibration calibration = store.info(Calibration.class);
         calibration.setAxis(axis(Axes.X), 0);
         calibration.setAxis(axis(Axes.Y), 1);

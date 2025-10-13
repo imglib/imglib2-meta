@@ -31,10 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.meta.MetadataStore;
 
 public interface RealMetadataStore extends MetadataStore {
 

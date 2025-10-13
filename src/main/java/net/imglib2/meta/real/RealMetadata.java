@@ -31,9 +31,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
 import net.imglib2.*;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.MetadataStoreView;
 import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
@@ -70,11 +73,11 @@ public final class RealMetadata {
 	 * Creates a {@link MetadataItem}.
 	 *
 	 * @param key the {@link String} key associated with the item
-	 * @param data
+	 * @param data the metadata
 	 * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
 	 * @param dims the dimension indices to which this item pertains.
 	 * @return a {@link MetadataItem}
-	 * @param <T>
+	 * @param <T> the type of the metadata
 	 */
 	public static <T> RealMetadataItem<T> item(String key, T data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
@@ -105,7 +108,7 @@ public final class RealMetadata {
 //
 	private static boolean[] makeAxisAttachmentArray(int numDims, int... dims) {
 		boolean[] attachedToAxes = new boolean[numDims];
-		for (int d=0; d<dims.length; d++) attachedToAxes[dims[d]] = true;
+        for (int dim : dims) attachedToAxes[dim] = true;
 		return attachedToAxes;
 	}
 
@@ -170,12 +173,12 @@ public final class RealMetadata {
 				final int[] axes = flagsToAxisList(attachedToAxes);
 				sb.append(axes[0]);
 				for (int i = 1; i < axes.length; ++i)
-					sb.append(", " + axes[i]);
+					sb.append(", ").append(axes[i]);
 				sb.append("}; ");
 			} else
 				sb.append("not attached to any axis; ");
 
-			sb.append("value = " + data);
+			sb.append("value = ").append(data);
 
 			return sb.toString();
 		}

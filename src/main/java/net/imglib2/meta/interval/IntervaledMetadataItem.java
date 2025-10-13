@@ -31,11 +31,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.interval;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.meta.MetadataItem;
 
 /**
  * A piece of metadata associated with an n-dimensional dataset.

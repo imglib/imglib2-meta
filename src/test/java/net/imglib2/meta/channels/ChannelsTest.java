@@ -33,10 +33,9 @@
  */
 package net.imglib2.meta.channels;
 
-import jnr.ffi.annotations.Meta;
 import net.imagej.display.ColorTables;
 import net.imglib2.Localizable;
-import net.imglib2.meta.DefaultLinearAxis;
+import net.imglib2.meta.calibration.DefaultLinearAxis;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.SimpleMetadataStore;

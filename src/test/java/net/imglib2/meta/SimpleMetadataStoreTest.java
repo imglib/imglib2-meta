@@ -41,6 +41,10 @@ import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.DefaultLinearAxis;
+import net.imglib2.meta.real.RealMetadataItem;
+import net.imglib2.meta.real.RealMetadataStore;
+import net.imglib2.meta.real.RealSimpleMetadataStore;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineRealRandomAccessible;
@@ -137,7 +141,7 @@ public class SimpleMetadataStoreTest {
 
         // Populate some metadata.
 
-        RealMetadataStore store = new SimpleRealMetadataStore(5);
+        RealMetadataStore store = new RealSimpleMetadataStore(5);
 
         RealRandomAccessible<StringBuilder> coordStrings = makeCoordStrings();
         store.add("coords", coordStrings, 0, 1, 2);

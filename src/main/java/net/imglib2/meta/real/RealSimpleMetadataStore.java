@@ -31,19 +31,54 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
-import net.imglib2.*;
+import net.imglib2.RealRandomAccessible;
 
-public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-    default void setAt(T value, float... pos) {
-        throw new UnsupportedOperationException("This MetadataItem is read-only!");
-    }
-    default void setAt(T value, double... pos) {
-        throw new UnsupportedOperationException("This MetadataItem is read-only!");
-    }
-    default void setAt(T value, RealLocalizable pos) {
-        throw new UnsupportedOperationException("This MetadataItem is read-only!");
-    }
+/**
+ * A simple implementation of {@link RealMetadataStore} that keeps all metadata
+ * items in a list.
+ *
+ * @author Gabriel Selzer
+ */
+public class RealSimpleMetadataStore implements RealMetadataStore {
+
+	private final List<RealMetadataItem<?>> items;
+	private final int numDims;
+
+	public RealSimpleMetadataStore(int n) {
+		this.items = new ArrayList<>();
+		this.numDims = n;
+	}
+
+	@Override
+	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... dims) {
+		//noinspection unchecked
+		return items.stream() //
+			.filter(item -> item.name().equals(name))
+			.filter(item -> item.isAttachedTo(dims)) //
+			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
+			.map(item -> (RealMetadataItem<T>) item)
+			.findFirst().orElseThrow(NoSuchElementException::new);
+	}
+
+	@Override
+	public <T> void add(String key, T data, int... dims) {
+		items.add(RealMetadata.item(key, data, numDims, dims));
+	}
+
+	@Override
+	public <T> void add(String name, RealRandomAccessible<T> data, int... d) {
+		items.add(RealMetadata.item(name, data, numDims, d));
+	}
+
+	@Override
+	public int numDimensions() {
+		return numDims;
+	}
+
 }

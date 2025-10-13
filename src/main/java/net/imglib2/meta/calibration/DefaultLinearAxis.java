@@ -31,48 +31,55 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.calibration;
 
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.position.FunctionRealRandomAccessible;
+import net.imglib2.type.numeric.real.DoubleType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.function.Function;
 
-public class SimpleRealMetadataStore implements RealMetadataStore {
+public class DefaultLinearAxis implements RealAxis {
 
-	private final List<RealMetadataItem<?>> items;
-	private final int numDims;
+    private final double scale;
+    private final double offset;
+    private final AxisType type;
+    private final String unit;
+    private final Function<Double, Double> func;
 
-	public SimpleRealMetadataStore(int n) {
-		this.items = new ArrayList<>();
-		this.numDims = n;
-	}
+    public DefaultLinearAxis(final AxisType type, final double scale, final double offset) {
+        this(type, scale, offset, "");
+    }
 
-	@Override
-	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... dims) {
-		//noinspection unchecked
-		return items.stream() //
-			.filter(item -> item.name().equals(name))
-			.filter(item -> item.isAttachedTo(dims)) //
-			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
-			.map(item -> (RealMetadataItem<T>) item)
-			.findFirst().orElseThrow(NoSuchElementException::new);
-	}
+    public DefaultLinearAxis(final AxisType type, final double scale, final double offset, final String unit) {
+        this.type = type;
+        this.offset = offset;
+        this.scale = scale;
+        this.unit = unit;
+        func = raw -> raw * this.scale + this.offset;
+    }
 
-	@Override
-	public <T> void add(String key, T data, int... dims) {
-		items.add(RealMetadata.item(key, data, numDims, dims));
-	}
+    @Override
+    public double calibrated(final double raw) {
+        return func.apply(raw);
+    }
 
-	@Override
-	public <T> void add(String name, RealRandomAccessible<T> data, int... d) {
-		items.add(RealMetadata.item(name, data, numDims, d));
-	}
+    @Override
+    public RealRandomAccessible<DoubleType> data() {
+        return new FunctionRealRandomAccessible<>(
+            1,
+            () -> ((pos, out) -> out.set(func.apply(pos.getDoublePosition(0)))),
+            DoubleType::new
+        );
+    }
 
-	@Override
-	public int numDimensions() {
-		return numDims;
-	}
+    @Override
+    public String unit() {
+        return unit;
+    }
 
+    @Override
+    public AxisType type() {
+        return type;
+    }
 }

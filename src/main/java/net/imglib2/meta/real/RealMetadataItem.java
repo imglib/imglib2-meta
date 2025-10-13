@@ -31,58 +31,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.real;
 
+import net.imglib2.RealLocalizable;
 import net.imglib2.RealRandomAccessible;
-import net.imglib2.meta.calibration.Axis;
-import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.RealAxis;
-import net.imglib2.position.FunctionRealRandomAccessible;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.meta.MetadataItem;
 
-import java.util.function.Function;
+public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
 
-public class DefaultLinearAxis implements RealAxis {
-
-    private final double scale;
-    private final double offset;
-    private final AxisType type;
-    private final String unit;
-    private final Function<Double, Double> func;
-
-    public DefaultLinearAxis(final AxisType type, final double scale, final double offset) {
-        this(type, scale, offset, "");
+    default void setAt(T value, float... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
     }
-
-    public DefaultLinearAxis(final AxisType type, final double scale, final double offset, final String unit) {
-        this.type = type;
-        this.offset = offset;
-        this.scale = scale;
-        this.unit = unit;
-        func = raw -> raw * this.scale + this.offset;
+    default void setAt(T value, double... pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
     }
-
-    @Override
-    public double calibrated(final double raw) {
-        return func.apply(raw);
-    }
-
-    @Override
-    public RealRandomAccessible<DoubleType> data() {
-        return new FunctionRealRandomAccessible<>(
-            1,
-            () -> ((pos, out) -> out.set(func.apply(pos.getDoublePosition(0)))),
-            DoubleType::new
-        );
-    }
-
-    @Override
-    public String unit() {
-        return unit;
-    }
-
-    @Override
-    public AxisType type() {
-        return type;
+    default void setAt(T value, RealLocalizable pos) {
+        throw new UnsupportedOperationException("This MetadataItem is read-only!");
     }
 }
