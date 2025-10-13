@@ -1,6 +1,9 @@
-package net.imglib2.meta;
+package net.imglib2.meta.n5;
 
 import net.imglib2.RandomAccessible;
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;

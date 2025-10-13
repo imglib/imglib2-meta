@@ -143,7 +143,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      *
      * @param value the new value of the metadata at an arbitrary position.
      */
-    default void value(T value) {
+    default void setValue(T value) {
         setAt(value, new long[attachedAxes().length]);
     }
 

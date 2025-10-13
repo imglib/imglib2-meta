@@ -31,13 +31,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.ij;
 
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.LUT;
 import net.imglib2.display.ColorTable;
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;

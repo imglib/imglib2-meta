@@ -1,14 +1,21 @@
-package net.imglib2.meta;
+package net.imglib2.meta.scifio;
 
+import io.scif.img.ImgUtilityService;
 import io.scif.img.SCIFIOImgPlus;
+import io.scif.img.converters.PlaneConverterService;
 import io.scif.services.DatasetIOService;
+import io.scif.services.InitializeService;
 import net.imagej.Dataset;
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.general.General;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.scijava.Context;
+import org.scijava.app.StatusService;
+import org.scijava.io.handle.DataHandleService;
 import org.scijava.io.location.FileLocation;
 
 import java.io.IOException;
@@ -35,7 +42,7 @@ public class SCIFIOTest {
         // to the repository root.
         Context ctx = new Context();
         DatasetIOService dio = ctx.getService(DatasetIOService.class);
-        Dataset data = dio.open(new FileLocation("mitosis.ics"));
+        Dataset data = dio.open(new FileLocation("tubhiswt-4D/tubhiswt_C0_TP0.ome.tif"));
         img = (SCIFIOImgPlus<?>) data.getImgPlus();
         store = new SCIFIOMetadataStore(img);
     }

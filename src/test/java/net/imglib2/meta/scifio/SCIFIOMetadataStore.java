@@ -1,9 +1,12 @@
-package net.imglib2.meta;
+package net.imglib2.meta.scifio;
 
 import io.scif.ImageMetadata;
 import io.scif.img.SCIFIOImgPlus;
 import net.imglib2.*;
 import net.imglib2.display.ColorTable;
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
