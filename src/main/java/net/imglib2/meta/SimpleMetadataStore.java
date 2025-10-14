@@ -38,7 +38,6 @@ import net.imglib2.RandomAccessible;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 
 public class SimpleMetadataStore implements MetadataStore {
@@ -59,7 +58,15 @@ public class SimpleMetadataStore implements MetadataStore {
 			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
-			.findFirst().orElseThrow(NoSuchElementException::new);
+			.findFirst().orElseGet(() -> {
+                boolean[] attachedToAxes = new boolean[numDims];
+                for (int dim : dims) {
+                    if (dim >= 0 && dim < numDims) {
+                        attachedToAxes[dim] = true;
+                    }
+                }
+                return MetadataItem.absent(name, attachedToAxes);
+            });
 	}
 
     @Override

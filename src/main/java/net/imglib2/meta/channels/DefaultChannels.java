@@ -85,35 +85,31 @@ public class DefaultChannels implements Channels {
 		int axis = Metadata.calibration(this.metaData)
 				.indexOf(Axes.CHANNEL)
 				.orElseThrow(NO_CHANNEL_AXIS_YET);
-		MetadataItem<ColorTable> item;
-		try {
-			item = metaData.item(CHANNEL, ColorTable.class, axis);
-            Point point = pointCache.get();
-            for (int i = 0; i < point.numDimensions(); i++) {
-                point.setPosition(axis == i ? c : 0, i);
-            }
-            item.setAt(lut, point);
-		}
-		catch (NoSuchElementException e) {
+		MetadataItem<ColorTable> item = metaData.item(CHANNEL, ColorTable.class, axis).or(() -> {
+            // Create the item if it doesn't exist yet, and returnthat.
             // FIXME: This should really be a ListImg, but we don't know the number of channels (yet)
-			ColorTableRAI newLut = new ColorTableRAI();
+            ColorTableRAI newLut = new ColorTableRAI();
+            // FIXME: Ideally we wouldn't do this here, but ColorTableRAI needs getType to work.
+            // getType requires an element already in the map for that to work.
             newLut.setLut(c, lut);
-			metaData.add(
+            // FIXME: This is kind of a HACK :)
+            metaData.add(
                 CHANNEL,
                 newLut,
                 (pos, table) -> newLut.setLut(pos.getIntPosition(axis), table),
-                axis
-            );
-		}
+                axis);
+            return metaData.item(CHANNEL, ColorTable.class, axis);
+        });
+        Point point = pointCache.get();
+        for (int i = 0; i < point.numDimensions(); i++) {
+            point.setPosition(axis == i ? c : 0, i);
+        }
+        item.setAt(lut, point);
 	}
 
 	@Override
 	public boolean isRGB() {
-		try {
-			return metaData.item(RGB_KEY, Boolean.class).value();
-		} catch (NoSuchElementException e) {
-			return false;
-		}
+        return metaData.item(RGB_KEY, Boolean.class).valueOr(Boolean.FALSE);
 	}
 
 	@Override

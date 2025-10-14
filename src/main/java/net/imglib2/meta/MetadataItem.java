@@ -33,8 +33,11 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccessible;
+import net.imglib2.*;
+
+import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 
 /**
  * A piece of metadata associated with an n-dimensional dataset.
@@ -68,6 +71,69 @@ import net.imglib2.RandomAccessible;
  * @author Gabriel Selzer
  */
 public interface MetadataItem<T> extends RandomAccessible<T> {
+
+    static <T> MetadataItem<T> absent(String name, boolean[] attachedAxes) {
+        return new MetadataItem<T>() {
+
+            @Override
+            public String name() {
+                return name;
+            }
+
+            @Override
+            public boolean[] attachedAxes() {
+                return attachedAxes;
+            }
+
+
+            @Override
+            public RandomAccess<T> randomAccess() {
+                return new AbsentRandomAccess();
+            }
+
+            @Override
+            public RandomAccess<T> randomAccess(Interval interval) {
+                return randomAccess();
+            }
+
+            @Override
+            public T getAt(int... pos) {
+                return new AbsentRandomAccess().get();
+            }
+
+            @Override
+            public T getAt(long... pos) {
+                return new AbsentRandomAccess().get();
+            }
+
+            @Override
+            public T getAt(Localizable pos) {
+                return new AbsentRandomAccess().get();
+            }
+
+            @Override
+            public T valueOr(T defaultItem) {
+                return defaultItem;
+            }
+
+            @Override
+            public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
+                return defaultSupplier.get();
+            }
+
+            class AbsentRandomAccess extends Point implements RandomAccess<T> {
+                @Override
+                public T get() {
+                    throw new NoSuchElementException("No metadata exists of key " + name + " attached to axes " + Arrays.toString(attachedAxes) + "!");
+                }
+
+                @Override
+                public RandomAccess<T> copy() {
+                    return new AbsentRandomAccess();
+                }
+            }
+        };
+    }
 
 	/**
 	 * Returns the key identifying this piece of metadata
@@ -136,6 +202,47 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	default T value() {
 		return getAt(new long[attachedAxes().length]);
 	}
+
+    /**
+     * Returns the value of the metadata at an <em>arbitrary</em> position.
+     * If this metadata is absent, returns {@code defaultValue}.
+     * Convenient for constant metadata.
+     *
+     * @param defaultValue the value to return if this metadata is absent.
+     * @return the value of the metadata at an arbitrary position.
+     */
+    default T valueOr(T defaultValue) {
+        try {
+            return value();
+        } catch (NoSuchElementException e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns {@code this}, unless this {@link MetadataItem} is absent (in which case {@code defaultItem} is returned).
+     *
+     * @param defaultItem the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
+     * @return the value of the metadata at an arbitrary position.
+     * @see MetadataItem#absent(String, boolean[])
+     */
+    default MetadataItem<T> or(MetadataItem<T> defaultItem) {
+        return or(() -> defaultItem);
+    }
+
+    /**
+     * Returns {@code this}, unless this {@link MetadataItem} is absent (in which case {@code defaultItem} is returned).
+     * <p>
+     * This version is useful as it avoids creating the default item unless it is needed.
+     * </p>
+     *
+     * @param defaultSupplier the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
+     * @return the value of the metadata at an arbitrary position.
+     * @see MetadataItem#absent(String, boolean[])
+     */
+    default MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
+        return this;
+    }
 
     /**
      * Sets the value of the metadata at an <em>arbitrary</em> position.

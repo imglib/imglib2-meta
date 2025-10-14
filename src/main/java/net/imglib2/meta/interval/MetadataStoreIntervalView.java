@@ -43,6 +43,8 @@ import net.imglib2.meta.real.RealMetadataStore;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 
+import java.util.function.Supplier;
+
 /**
  * A {@link RealMetadataStore} wrapping a {@link MetadataStore}
  */
@@ -142,6 +144,21 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
         @Override
         public RandomAccess<T> randomAccess(Interval interval) {
             return source.randomAccess(interval);
+        }
+
+        @Override
+        public T valueOr(T defaultValue) {
+            return source.valueOr(defaultValue);
+        }
+
+        @Override
+        public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
+            // Return this, unless what we're wrapping is absent
+            MetadataItem<T> sourceOr = source.or(defaultSupplier);
+            if (sourceOr == source) {
+                return this;
+            }
+            return sourceOr;
         }
     }
 }

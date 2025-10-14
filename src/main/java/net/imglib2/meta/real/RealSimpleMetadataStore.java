@@ -63,7 +63,13 @@ public class RealSimpleMetadataStore implements RealMetadataStore {
 			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (RealMetadataItem<T>) item)
-			.findFirst().orElseThrow(NoSuchElementException::new);
+            .findFirst().orElseGet(() -> {
+                boolean[] attachedToAxes = new boolean[numDims];
+                for (int dim : dims) {
+                    attachedToAxes[dim] = true;
+                }
+                return RealMetadataItem.absent(name, attachedToAxes);
+            });
 	}
 
 	@Override

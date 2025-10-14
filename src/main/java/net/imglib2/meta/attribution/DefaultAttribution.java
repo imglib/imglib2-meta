@@ -47,21 +47,11 @@ public class DefaultAttribution implements Attribution {
 
 	@Override
 	public String author() {
-		try {
-			return metaData.item(AUTHOR, String.class).value();
-		}
-		catch (NoSuchElementException e) {
-			return null;
-		}
+        return metaData.item(AUTHOR, String.class).valueOr(null);
 	}
 
 	@Override
 	public String citation() {
-		try {
-			return metaData.item(CITATION, String.class).value();
-		}
-		catch (NoSuchElementException e) {
-			return null;
-		}
+        return metaData.item(CITATION, String.class).valueOr(null);
 	}
 }

@@ -41,6 +41,7 @@ import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class MetadataStoreView implements MetadataStore {
 
@@ -166,5 +167,24 @@ public class MetadataStoreView implements MetadataStore {
 			transform.apply(pos, p);
 			return source.getAt(p);
 		}
+
+        @Override
+        public T valueOr(T defaultValue) {
+            return source.valueOr(defaultValue);
+        }
+
+        @Override
+        public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
+            // If the source is present, sourceOr will just return itself
+            MetadataItem<T> sourceOr = source.or(defaultSupplier);
+            if (sourceOr == source) {
+                // The source is not absent
+                return this;
+            }
+            else {
+                // The source is absent
+                return sourceOr;
+            }
+        }
 	}
 }

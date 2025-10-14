@@ -98,13 +98,9 @@ public class DefaultCalibration implements Calibration {
 		if (d >= metaData.numDimensions()) {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
-		MetadataItem<DoubleType> data;
-		try{
-			 data = metaData.item(AXIS_DATA, DoubleType.class, d);
-		} catch (NoSuchElementException e) {
-			data = new UnknownData(metaData.numDimensions());
-		}
-		final MetadataItem<DoubleType> finalData = data;
+		MetadataItem<DoubleType> data = metaData //
+            .item(AXIS_DATA, DoubleType.class, d) //
+            .or(() -> new UnknownData(metaData.numDimensions()));
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {
@@ -112,7 +108,7 @@ public class DefaultCalibration implements Calibration {
 			public double calibrated(double raw) {
 				long[] c = cs.get();
 				c[d] = (long) raw;
-				return finalData.getAt(c).get();
+				return data.getAt(c).get();
 			}
 			@Override
 			public RandomAccessible<DoubleType> data() {
@@ -130,11 +126,7 @@ public class DefaultCalibration implements Calibration {
 
 			@Override
 			public AxisType type() {
-				try {
-					return metaData.item(AXIS_TYPE, AxisType.class, d).getType();
-				} catch (NoSuchElementException e) {
-					return Axes.unknown();
-				}
+                return metaData.item(AXIS_TYPE, AxisType.class, d).valueOr(Axes.unknown());
 			}
 		};
 	}

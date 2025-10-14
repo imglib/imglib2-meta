@@ -103,6 +103,7 @@ public interface MetadataStore extends EuclideanSpace {
      * @param key the identifier of the metadata item
      * @param data the metadata
      * @param setter a function able to update the metadata value at a given position
+     * TODO: This parameter is <b>REALLY</b> unfortunate. Very interested in better designs.
      * @param dims the axes associated with the metadata item
      */
     default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {

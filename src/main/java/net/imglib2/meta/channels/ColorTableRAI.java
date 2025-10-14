@@ -75,7 +75,7 @@ public class ColorTableRAI implements RandomAccessible<ColorTable> {
         @Override
         public ColorTable getType()
         {
-            return get();
+            return luts.values().stream().findAny().get();
         }
 
         @Override
