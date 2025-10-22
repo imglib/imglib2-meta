@@ -15,7 +15,6 @@ import net.imglib2.meta.general.General;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
-import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -63,13 +62,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             case Channels.CHANNEL:
                 return (MetadataItem<T>) handleChannel(ofType, dims);
             default:
-                boolean[] attachedToAxes = new boolean[numDimensions()];
-                for (int dim : dims) {
-                    if (dim >= 0 && dim < numDimensions()) {
-                        attachedToAxes[dim] = true;
-                    }
-                }
-                return MetadataItem.absent(key, attachedToAxes);
+                return MetadataItem.absent(key, numDimensions(), dims);
         }
     }
 

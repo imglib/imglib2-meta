@@ -84,14 +84,7 @@ public class Example06Interfaces {
             if (key.equals("description") && ofType.isAssignableFrom(String.class)) {
                 return (MetadataItem<T>) Metadata.item(key, "An awesome description from my custom metadata", numDimensions(), dims);
             }
-            // TODO: This code is repeated in N5MetadataStore. Can we improve Metadata.absent() to avoid it?
-            boolean[] attachedToAxes = new boolean[numDimensions()];
-            for (int dim : dims) {
-                if (dim >= 0 && dim < numDimensions()) {
-                    attachedToAxes[dim] = true;
-                }
-            }
-            return MetadataItem.absent(key, attachedToAxes);
+            return MetadataItem.absent(key, numDimensions(), dims);
         }
 
         // TODO: Should this be a default method?

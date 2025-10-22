@@ -58,15 +58,7 @@ public class SimpleMetadataStore implements MetadataStore {
 			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
-			.findFirst().orElseGet(() -> {
-                boolean[] attachedToAxes = new boolean[numDims];
-                for (int dim : dims) {
-                    if (dim >= 0 && dim < numDims) {
-                        attachedToAxes[dim] = true;
-                    }
-                }
-                return MetadataItem.absent(name, attachedToAxes);
-            });
+			.findFirst().orElseGet(() -> MetadataItem.absent(name, numDimensions(), dims));
 	}
 
     @Override

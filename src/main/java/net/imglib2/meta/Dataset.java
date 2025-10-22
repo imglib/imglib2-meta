@@ -52,10 +52,6 @@ import java.util.function.Supplier;
 
 /**
  * A coupled {@link RandomAccessible} and associated {@link MetadataStore}.
- * <p>
- * TODO: Consider a type variable {@code V} as the second argument to {@code RandomAccessibleView}.
- * This would be useful for extension should extension be needed, although we'd want to solve the problems
- * described <a href="https://github.com/imglib/imglib2/issues/377">here</a> first.
  *
  * @param <T> the type of pixels contained within the {@link RandomAccessible}
  * @author Gabriel Selzer

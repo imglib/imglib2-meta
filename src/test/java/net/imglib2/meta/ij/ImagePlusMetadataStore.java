@@ -107,13 +107,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
             case Channels.CHANNEL:
                 return (MetadataItem<T>) handleChannel(ofType, dims);
             default:
-                boolean[] attachedToAxes = new boolean[numDimensions()];
-                for (int dim : dims) {
-                    if (dim >= 0 && dim < numDimensions()) {
-                        attachedToAxes[dim] = true;
-                    }
-                }
-                return MetadataItem.absent(key, attachedToAxes);
+                return MetadataItem.absent(key, numDimensions(), dims);
         }
     }
 

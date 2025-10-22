@@ -72,7 +72,13 @@ import java.util.function.Supplier;
  */
 public interface MetadataItem<T> extends RandomAccessible<T> {
 
-    static <T> MetadataItem<T> absent(String name, boolean[] attachedAxes) {
+    static <T> MetadataItem<T> absent(String name, int numDimensions, int... attachedAxes) {
+        boolean [] attached = new boolean[numDimensions];
+        for (int d : attachedAxes) {
+            if (d >= 0 && d < numDimensions) {
+                attached[d] = true;
+            }
+        }
         return new MetadataItem<T>() {
 
             @Override
@@ -82,7 +88,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 
             @Override
             public boolean[] attachedAxes() {
-                return attachedAxes;
+                return attached;
             }
 
 
@@ -145,6 +151,9 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * Returns a boolean array [b<sub>1</sub>, b<sub>2</sub>, ..., b<sub>n</sub>].
 	 * This {@link MetadataItem} is considered "attached" to dimension {@code i}
 	 * iff b<sub>i</sub> is {@code true}.
+     * <p>
+     *     TODO: I'm not
+     * </p>
 	 *
 	 * @return a {@code boolean[]} denoting attachment to each of the {@code n}
 	 * dimensions in the data space.
@@ -224,7 +233,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      *
      * @param defaultItem the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
      * @return the value of the metadata at an arbitrary position.
-     * @see MetadataItem#absent(String, boolean[])
+     * @see MetadataItem#absent(String, int, int[])
      */
     default MetadataItem<T> or(MetadataItem<T> defaultItem) {
         return or(() -> defaultItem);
@@ -238,7 +247,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      *
      * @param defaultSupplier the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
      * @return the value of the metadata at an arbitrary position.
-     * @see MetadataItem#absent(String, boolean[])
+     * @see MetadataItem#absent(String, int, int[])
      */
     default MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
         return this;
