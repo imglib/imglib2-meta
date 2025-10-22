@@ -35,39 +35,17 @@ package net.imglib2.meta.real;
 
 import net.imglib2.*;
 import net.imglib2.meta.MetadataItem;
-import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.MetadataStoreView;
-import net.imglib2.meta.attribution.Attribution;
-import net.imglib2.meta.calibration.Calibration;
-import net.imglib2.meta.channels.Channels;
-import net.imglib2.meta.general.General;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformRealRandomAccessible;
-import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.ConstantUtils;
-import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 
 public final class RealMetadata {
 
 	private RealMetadata() { }
-
-	public static Attribution attribution(MetadataStore store) {
-		return store.info(Attribution.class);
-	}
-
-	public static Calibration calibration(MetadataStore store) {
-		return store.info(Calibration.class);
-	}
-
-	public static General general(MetadataStore store) {
-		return store.info(General.class);
-	}
-
-	public static Channels channels(MetadataStore store) {
-		return store.info(Channels.class);
-	}
 
 	/**
 	 * Creates a {@link MetadataItem}.
@@ -80,46 +58,94 @@ public final class RealMetadata {
 	 * @param <T> the type of the metadata
 	 */
 	public static <T> RealMetadataItem<T> item(String key, T data, int numDims, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		return new SimpleRealItem<>(key, data, axes);
+		return new SimpleRealItem<>(key, data, numDims, dims);
 	}
 
 	public static <T, U extends RealRandomAccessible<T>> RealMetadataItem<T> item(String name, U data, int numDims, int... dims) {
 		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		// TODO: What if varying axes and attached axes are not the same?
 		return new VaryingRealItem<>(name, data, axes);
 	}
 
-	public static MetadataStore view(MetadataStore source, MixedTransformView<?> view) {
-		return view(source, view.getTransformToSource());
-	}
-
-	public static MetadataStore view(MetadataStore source, MixedTransform transform) {
-		return new MetadataStoreView(source, transform);
-	}
-
-//	public static MetadataStore view(MetadataStore source, RealTransformRealRandomAccessible<?,?> view) {
-//		return view(source, view.getTransformToSource());
-//	}
-//
-//	public static MetadataStore view(MetadataStore source, RealTransform transform) {
-//		return new MetadataStoreRealView(source, transform);
-//	}
-//
 	private static boolean[] makeAxisAttachmentArray(int numDims, int... dims) {
 		boolean[] attachedToAxes = new boolean[numDims];
         for (int dim : dims) attachedToAxes[dim] = true;
 		return attachedToAxes;
 	}
 
-	private static int[] flagsToAxisList( final boolean[] flags ) {
-		final int[] tmp = new int[ flags.length ];
-		int i = 0;
-		for ( int d = 0; d < flags.length; ++d )
-			if ( flags[ d ] )
-				tmp[ i++ ] = d;
-		return Arrays.copyOfRange( tmp, 0, i );
-	}
+
+    public static <T> RealMetadataItem<T> absent(String name, int numDimensions, int... attachedAxes) {
+        return new AbsentRealMetadataItem<>(name, numDimensions, attachedAxes);
+    }
+
+    private static class AbsentRealMetadataItem<T> implements RealMetadataItem<T> {
+
+        final String name;
+        final int numDimensions;
+        final int[] attachedAxes;
+
+        public AbsentRealMetadataItem(String name, int numDimensions, int... attachedAxes) {
+            this.name = name;
+            this.numDimensions = numDimensions;
+            this.attachedAxes = attachedAxes;
+        }
+
+        @Override
+        public int numDimensions() {
+            return numDimensions;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            return false;
+        }
+
+        @Override
+        public RealRandomAccess<T> realRandomAccess() {
+            return new AbsentRealRandomAccess();
+        }
+
+        @Override
+        public RealRandomAccess<T> realRandomAccess(RealInterval interval) {
+            return new AbsentRealRandomAccess();
+        }
+
+        @Override
+        public T getAt(int... pos) {
+            return new AbsentRealRandomAccess().get();
+        }
+
+        @Override
+        public T getAt(long... pos) {
+            return new AbsentRealRandomAccess().get();
+        }
+
+        @Override
+        public T getAt(Localizable pos) {
+            return new AbsentRealRandomAccess().get();
+        }
+
+        @Override
+        public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultItem) {
+            return defaultItem.get();
+        }
+
+        class AbsentRealRandomAccess extends RealPoint implements RealRandomAccess<T> {
+            @Override
+            public T get() {
+                throw new NoSuchElementException("No metadata exists of key " + name + " attached to axes " + Arrays.toString(attachedAxes) + "!");
+            }
+
+            @Override
+            public RealRandomAccess<T> copy() {
+                return new AbsentRealRandomAccess();
+            }
+        }
+    }
 
 	/**
 	 * A {@link RealMetadataItem} that constructs
@@ -130,16 +156,15 @@ public final class RealMetadata {
 
 		final T data;
 
-		final boolean[] attachedToAxes;
+		final int numDimensions;
 
-		public SimpleRealItem(final String name, final T data, final boolean[] attachedToAxes) {
+        final int[] attachedAxes;
+
+		public SimpleRealItem(final String name, final T data, final int numDimensions, final int... attachedAxes) {
 			this.name = name;
 			this.data = data;
-			this.attachedToAxes = attachedToAxes;
-		}
-
-		public boolean[] attachedAxes() {
-			return attachedToAxes;
+            this.numDimensions = numDimensions;
+            this.attachedAxes = attachedAxes;
 		}
 
 		@Override
@@ -147,7 +172,24 @@ public final class RealMetadata {
 			return name;
 		}
 
-		@Override
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int dim : dims) {
+                boolean found = false;
+                for (int attachedAx : attachedAxes) {
+                    if (dim == attachedAx) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
 		public RealRandomAccess<T> realRandomAccess() {
 			return ConstantUtils.constantRealRandomAccessible(data, numDimensions()).realRandomAccess();
 		}
@@ -159,29 +201,28 @@ public final class RealMetadata {
 
 		@Override
 		public int numDimensions() {
-			return attachedToAxes.length;
+			return numDimensions;
 		}
 
 		@Override
 		public String toString() {
-			final StringBuilder sb = new StringBuilder("SimpleItem \"");
+			final StringBuilder sb = new StringBuilder("SimpleRealItem \"");
 			sb.append(name);
 			sb.append("\"; ");
 
-			if (isAttachedToAnyAxis()) {
-				sb.append("attached to axes {");
-				final int[] axes = flagsToAxisList(attachedToAxes);
-				sb.append(axes[0]);
-				for (int i = 1; i < axes.length; ++i)
-					sb.append(", ").append(axes[i]);
-				sb.append("}; ");
-			} else
-				sb.append("not attached to any axis; ");
+            if (attachedAxes.length > 0) {
+                sb.append("attached to axes {");
+                sb.append(attachedAxes[0]);
+                for (int i = 1; i < attachedAxes.length; ++i)
+                    sb.append(", ").append(attachedAxes[i]);
+                sb.append("}; ");
+            } else
+                sb.append("not attached to any axis; ");
 
-			sb.append("value = ").append(data);
+            sb.append("value = ").append(data);
 
-			return sb.toString();
-		}
+            return sb.toString();
+        }
 	}
 
 	private static RealTransform transformFromAttachedAxes(boolean[] attachedToAxes) {
@@ -253,28 +294,19 @@ public final class RealMetadata {
 			return name;
 		}
 
-		@Override
-		public boolean[] attachedAxes() {
-			return attachedToAxes;
-		}
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int dim : dims) {
+                if (!attachedToAxes[dim]) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-		@Override
+        @Override
 		public String toString() {
-			final StringBuilder sb = new StringBuilder("VaryingItem \"");
-			sb.append(name);
-			sb.append("\"; ");
-
-			if (isAttachedToAnyAxis()) {
-				sb.append("attached to axes {");
-				final int[] axes = flagsToAxisList(attachedToAxes);
-				sb.append(axes[0]);
-				for (int i = 1; i < axes.length; ++i)
-					sb.append(", ").append(axes[i]);
-				sb.append("}; ");
-			} else
-				sb.append("not attached to any axis; ");
-
-			return sb.toString();
+            return "VaryingRealItem \"" + name + "\"; ";
 		}
 
 	}

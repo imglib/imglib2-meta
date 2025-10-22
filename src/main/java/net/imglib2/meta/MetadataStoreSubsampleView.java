@@ -95,20 +95,10 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 			return source.name();
 		}
 
-		@Override
-		public boolean[] attachedAxes() {
-			return source.attachedAxes();
-		}
-
-//		@Override
-//		public T getAt(Localizable pos) {
-//			// TODO: Don't create a new Point every time. ThreadLocal?
-//			final Point p = new Point(steps.length);
-//			for(int i = 0; i < pos.numDimensions(); i++) {
-//				p.setPosition(pos.getLongPosition(i) * steps[i], i);
-//			}
-//			return source.getAt(p);
-//		}
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            return source.isAttachedTo(dims);
+        }
 	}
 }
 

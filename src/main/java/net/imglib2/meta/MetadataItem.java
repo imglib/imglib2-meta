@@ -72,93 +72,11 @@ import java.util.function.Supplier;
  */
 public interface MetadataItem<T> extends RandomAccessible<T> {
 
-    static <T> MetadataItem<T> absent(String name, int numDimensions, int... attachedAxes) {
-        boolean [] attached = new boolean[numDimensions];
-        for (int d : attachedAxes) {
-            if (d >= 0 && d < numDimensions) {
-                attached[d] = true;
-            }
-        }
-        return new MetadataItem<T>() {
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public boolean[] attachedAxes() {
-                return attached;
-            }
-
-
-            @Override
-            public RandomAccess<T> randomAccess() {
-                return new AbsentRandomAccess();
-            }
-
-            @Override
-            public RandomAccess<T> randomAccess(Interval interval) {
-                return randomAccess();
-            }
-
-            @Override
-            public T getAt(int... pos) {
-                return new AbsentRandomAccess().get();
-            }
-
-            @Override
-            public T getAt(long... pos) {
-                return new AbsentRandomAccess().get();
-            }
-
-            @Override
-            public T getAt(Localizable pos) {
-                return new AbsentRandomAccess().get();
-            }
-
-            @Override
-            public T valueOr(T defaultItem) {
-                return defaultItem;
-            }
-
-            @Override
-            public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
-                return defaultSupplier.get();
-            }
-
-            class AbsentRandomAccess extends Point implements RandomAccess<T> {
-                @Override
-                public T get() {
-                    throw new NoSuchElementException("No metadata exists of key " + name + " attached to axes " + Arrays.toString(attachedAxes) + "!");
-                }
-
-                @Override
-                public RandomAccess<T> copy() {
-                    return new AbsentRandomAccess();
-                }
-            }
-        };
-    }
-
 	/**
 	 * Returns the key identifying this piece of metadata
 	 * @return the key
 	 */
 	String name();
-
-	/**
-	 * Returns a boolean array [b<sub>1</sub>, b<sub>2</sub>, ..., b<sub>n</sub>].
-	 * This {@link MetadataItem} is considered "attached" to dimension {@code i}
-	 * iff b<sub>i</sub> is {@code true}.
-     * <p>
-     *     TODO: I'm not
-     * </p>
-	 *
-	 * @return a {@code boolean[]} denoting attachment to each of the {@code n}
-	 * dimensions in the data space.
-	 */
-	boolean[] attachedAxes();
 
     default void setAt(T value, int... pos) {
         throw new UnsupportedOperationException("This MetadataItem is read-only!");
@@ -169,18 +87,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
     default void setAt(T value, Localizable pos) {
         throw new UnsupportedOperationException("This MetadataItem is read-only!");
     }
-
 	// -- default utility methods -- //
-
-	/**
-	 * Describes whether this {@link MetadataItem} is attached to <em>any</em> dimensions.
-	 * @return {@code true} iff this {@link MetadataItem} pertains to any dimension.
-	 * TODO: Could we remove this in favor of an empty array to {@link #isAttachedTo(int...)}?
-	 */
-	default boolean isAttachedToAnyAxis() {
-		for(boolean b: attachedAxes()) if (b) return true;
-		return false;
-	}
 
 	/**
 	 * Describes whether all dimensions in {@code dims} are in {d<sub>1</sub>, d<sub>2</sub>, ..., d<sub>m</sub>}.
@@ -188,19 +95,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * @return {@code true} iff this {@link MetadataItem} pertains to all
 	 * 		dimensional indices in {@code dims}.
 	 */
-	default boolean isAttachedTo(final int... dims) {
-		boolean[] attachedAxes = attachedAxes();
-		for(int i: dims) {
-			// Cannot be attached to a dimension beyond the data space.
-			if (i < 0 || attachedAxes.length <= i) {
-				return false;
-			}
-			if (!attachedAxes[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
+	boolean isAttachedTo(final int... dims);
 
 	/**
 	 * Returns the value of the metadata at an <em>arbitrary</em> position.
@@ -209,7 +104,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 	 * @return the value of the metadata at an arbitrary position.
 	 */
 	default T value() {
-		return getAt(new long[attachedAxes().length]);
+		return getAt(new long[numDimensions()]);
 	}
 
     /**
@@ -233,7 +128,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      *
      * @param defaultItem the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
      * @return the value of the metadata at an arbitrary position.
-     * @see MetadataItem#absent(String, int, int[])
+     * @see Metadata#absent(String, int, int[])
      */
     default MetadataItem<T> or(MetadataItem<T> defaultItem) {
         return or(() -> defaultItem);
@@ -247,7 +142,7 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      *
      * @param defaultSupplier the {@link MetadataItem} to return if this {@link MetadataItem} is absent.
      * @return the value of the metadata at an arbitrary position.
-     * @see MetadataItem#absent(String, int, int[])
+     * @see Metadata#absent(String, int, int[])
      */
     default MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
         return this;
@@ -260,14 +155,10 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
      * @param value the new value of the metadata at an arbitrary position.
      */
     default void setValue(T value) {
-        setAt(value, new long[attachedAxes().length]);
+        setAt(value, new long[numDimensions()]);
     }
 
 	// -- RandomAccessible Overrides -- //
-
-	default int numDimensions() {
-		return attachedAxes().length;
-	}
 
 	default T getType() {
         return value();

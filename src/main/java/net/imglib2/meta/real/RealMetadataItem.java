@@ -42,64 +42,6 @@ import java.util.function.Supplier;
 
 public interface RealMetadataItem<T> extends MetadataItem<T>, RealRandomAccessible<T> {
 
-    static <T> RealMetadataItem<T> absent(String name, boolean[] attachedAxes) {
-        return new RealMetadataItem<T>() {
-
-            @Override
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public boolean[] attachedAxes() {
-                return attachedAxes;
-            }
-
-
-            @Override
-            public RealRandomAccess<T> realRandomAccess() {
-                return new AbsentRealRandomAccess();
-            }
-
-            @Override
-            public RealRandomAccess<T> realRandomAccess(RealInterval interval) {
-                return new AbsentRealRandomAccess();
-            }
-
-            @Override
-            public T getAt(int... pos) {
-                return new AbsentRealRandomAccess().get();
-            }
-
-            @Override
-            public T getAt(long... pos) {
-                return new AbsentRealRandomAccess().get();
-            }
-
-            @Override
-            public T getAt(Localizable pos) {
-                return new AbsentRealRandomAccess().get();
-            }
-
-            @Override
-            public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultItem) {
-                return defaultItem.get();
-            }
-
-            class AbsentRealRandomAccess extends RealPoint implements RealRandomAccess<T> {
-                @Override
-                public T get() {
-                    throw new NoSuchElementException("No metadata exists of key " + name + " attached to axes " + Arrays.toString(attachedAxes) + "!");
-                }
-
-                @Override
-                public RealRandomAccess<T> copy() {
-                    return new AbsentRealRandomAccess();
-                }
-            }
-        };
-    }
-
 
     default void setAt(T value, float... pos) {
         throw new UnsupportedOperationException("This MetadataItem is read-only!");

@@ -116,12 +116,7 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
 			return source.name();
 		}
 
-		@Override
-		public boolean[] attachedAxes() {
-            return source.attachedAxes();
-		}
-
-		@Override
+        @Override
 		public boolean isAttachedTo(int... dims) {
 			throw new UnsupportedOperationException("RealView of metadata store does not know dimensional axis attachments");
 		}
@@ -159,6 +154,11 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
                 return this;
             }
             return sourceOr;
+        }
+
+        @Override
+        public int numDimensions() {
+            return source.numDimensions();
         }
     }
 }

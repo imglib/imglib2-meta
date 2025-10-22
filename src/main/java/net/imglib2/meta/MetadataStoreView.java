@@ -140,19 +140,6 @@ public class MetadataStoreView implements MetadataStore {
 		}
 
 		@Override
-		public boolean[] attachedAxes() {
-            boolean[] srcAxes = source.attachedAxes();
-            boolean[] destAxes = new boolean[transform.numSourceDimensions()];
-            // Note: If srcAxes.length < destAxes.length, the remaining destAxes are virtual
-            for(int i = 0; i < srcAxes.length; i++) {
-                int t = transform.getComponentMapping(i);
-                destAxes[t] = srcAxes[i];
-            }
-
-			return destAxes;
-		}
-
-		@Override
 		public boolean isAttachedTo(int... dims) {
 			int[] dd = new int[dims.length];
 			for(int i = 0; i < dims.length; i++) {

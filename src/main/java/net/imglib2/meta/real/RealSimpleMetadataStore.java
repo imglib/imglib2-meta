@@ -37,11 +37,10 @@ import net.imglib2.RealRandomAccessible;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
- * A simple implementation of {@link RealMetadataStore} that keeps all metadata
- * items in a list.
+ * A <b>real</b>ly simple implementation of {@link RealMetadataStore} that keeps all metadata
+ * items in a list...
  *
  * @author Gabriel Selzer
  */
@@ -63,13 +62,7 @@ public class RealSimpleMetadataStore implements RealMetadataStore {
 			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (RealMetadataItem<T>) item)
-            .findFirst().orElseGet(() -> {
-                boolean[] attachedToAxes = new boolean[numDims];
-                for (int dim : dims) {
-                    attachedToAxes[dim] = true;
-                }
-                return RealMetadataItem.absent(name, attachedToAxes);
-            });
+            .findFirst().orElseGet(() -> RealMetadata.absent(name, numDims, dims));
 	}
 
 	@Override

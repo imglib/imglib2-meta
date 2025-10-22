@@ -80,47 +80,7 @@ public interface IntervaledMetadataItem<T> extends RandomAccessibleInterval<T>, 
 	 */
 	String name();
 
-	/**
-	 * Returns a boolean array [b<sub>1</sub>, b<sub>2</sub>, ..., b<sub>n</sub>].
-	 * This {@link IntervaledMetadataItem} is considered "attached" to dimension {@code i}
-	 * iff b<sub>i</sub> is {@code true}.
-	 *
-	 * @return a {@code boolean[]} denoting attachment to each of the {@code n}
-	 * dimensions in the data space.
-	 */
-	boolean[] attachedAxes();
-
 	// -- default utility methods -- //
-
-	/**
-	 * Describes whether this {@link IntervaledMetadataItem} is attached to <em>any</em> dimensions.
-	 * @return {@code true} iff this {@link IntervaledMetadataItem} pertains to any dimension.
-	 * TODO: Could we remove this in favor of an empty array to {@link #isAttachedTo(int...)}?
-	 */
-	default boolean isAttachedToAnyAxis() {
-		for(boolean b: attachedAxes()) if (b) return true;
-		return false;
-	}
-
-	/**
-	 * Describes whether all dimensions in {@code dims} are in {d<sub>1</sub>, d<sub>2</sub>, ..., d<sub>m</sub>}.
-	 * @param dims a list of dimensional indices
-	 * @return {@code true} iff this {@link IntervaledMetadataItem} pertains to all
-	 * 		dimensional indices in {@code dims}.
-	 */
-	default boolean isAttachedTo(final int... dims) {
-		boolean[] attachedAxes = attachedAxes();
-		for(int i: dims) {
-			// Cannot be attached to a dimension beyond the data space.
-			if (i < 0 || attachedAxes.length <= i) {
-				return false;
-			}
-			if (!attachedAxes[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
 
 	/**
 	 * Returns the value of the metadata at an <em>arbitrary</em> position.
@@ -129,14 +89,10 @@ public interface IntervaledMetadataItem<T> extends RandomAccessibleInterval<T>, 
 	 * @return the value of the metadata at {@code pos}
 	 */
 	default T value() {
-		return getAt(new long[attachedAxes().length]);
+		return getAt(new long[numDimensions()]);
 	}
 
 	// -- RandomAccessible Overrides -- //
-
-	default int numDimensions() {
-		return attachedAxes().length;
-	}
 
 	default T getType() {
         return value();

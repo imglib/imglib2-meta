@@ -49,16 +49,17 @@ public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
 
 	private static class UnknownData implements MetadataItem<DoubleType> {
-		private final boolean[] axisAttachments;
 
-		public UnknownData(int numDimensions) {
-			axisAttachments = new boolean[numDimensions];
+        private final int dim;
+
+		public UnknownData(int dim) {
+            this.dim = dim;
 		}
 
 		@Override
 		public RandomAccess<DoubleType> randomAccess() {
 			return new FunctionRandomAccessible<>(
-				axisAttachments.length,
+				1,
 				(loc, out) -> out.set(getAt(loc)),
 				DoubleType::new
 			).randomAccess();
@@ -74,17 +75,26 @@ public class DefaultCalibration implements Calibration {
 			return AXIS_DATA;
 		}
 
-		@Override
-		public boolean[] attachedAxes() {
-			return axisAttachments;
-		}
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int d : dims) {
+                if (d != dim) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-		@Override
+        @Override
 		public DoubleType getAt(Localizable pos) {
 			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
 		}
 
-	}
+        @Override
+        public int numDimensions() {
+            return 0;
+        }
+    }
 
 
 
@@ -100,7 +110,7 @@ public class DefaultCalibration implements Calibration {
 		}
 		MetadataItem<DoubleType> data = metaData //
             .item(AXIS_DATA, DoubleType.class, d) //
-            .or(() -> new UnknownData(metaData.numDimensions()));
+            .or(() -> new UnknownData(d));
 		// Construct a
 		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
 		return new Axis() {

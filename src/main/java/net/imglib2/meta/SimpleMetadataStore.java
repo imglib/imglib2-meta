@@ -58,7 +58,7 @@ public class SimpleMetadataStore implements MetadataStore {
 			.filter(item -> item.isAttachedTo(dims)) //
 			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
 			.map(item -> (MetadataItem<T>) item)
-			.findFirst().orElseGet(() -> MetadataItem.absent(name, numDimensions(), dims));
+			.findFirst().orElseGet(() -> Metadata.absent(name, numDimensions(), dims));
 	}
 
     @Override

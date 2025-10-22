@@ -62,7 +62,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             case Channels.CHANNEL:
                 return (MetadataItem<T>) handleChannel(ofType, dims);
             default:
-                return MetadataItem.absent(key, numDimensions(), dims);
+                return Metadata.absent(key, numDimensions(), dims);
         }
     }
 

@@ -84,7 +84,7 @@ public class Example06Interfaces {
             if (key.equals("description") && ofType.isAssignableFrom(String.class)) {
                 return (MetadataItem<T>) Metadata.item(key, "An awesome description from my custom metadata", numDimensions(), dims);
             }
-            return MetadataItem.absent(key, numDimensions(), dims);
+            return Metadata.absent(key, numDimensions(), dims);
         }
 
         // TODO: Should this be a default method?

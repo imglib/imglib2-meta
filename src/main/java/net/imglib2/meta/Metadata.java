@@ -38,16 +38,15 @@ import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
-import net.imglib2.meta.real.RealMetadataItem;
-import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformRealRandomAccessible;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public final class Metadata {
 
@@ -80,13 +79,15 @@ public final class Metadata {
 	 * @param <T> the type of {@code data}
 	 */
 	public static <T> MetadataItem<T> item(String key, T data, int numDims, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		return new SimpleItem<>(key, data, axes);
+		return new SimpleItem<>(key, data, numDims, dims);
 	}
 
     /**
      * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
-     *
+     * <p>
+     * TODO: This API could have problems for creating a SimpleItem from a RandomAccessible.
+     * One use for this is a thumbnail image.
+     * </p>
      * @param key the {@link String} key associated with the item
      * @param data the metadata value associated with the item. May vary across the metadata space.
      * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
@@ -95,8 +96,7 @@ public final class Metadata {
      * @param <T> the type of {@code data}
      */
 	public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		return new VaryingItem<>(key, data, axes);
+		return new VaryingItem<>(key, data, numDims, dims);
 	}
 
     /**
@@ -110,15 +110,8 @@ public final class Metadata {
      * @param <T> the type of {@code data}
      */
     public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, BiConsumer<Localizable, T> setter, int... dims) {
-        boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-        return new VaryingItem<>(key, data, setter, axes);
+        return new VaryingItem<>(key, data, setter, numDims, dims);
     }
-
-	public static <T, U extends RealRandomAccessible<T>> RealMetadataItem<T> item(String name, U data, int numDims, int... dims) {
-		boolean[] axes = makeAxisAttachmentArray(numDims, dims);
-		// TODO: What if varying axes and attached axes are not the same?
-		return new VaryingRealItem<>(name, data, axes);
-	}
 
 	public static MetadataStore view(MetadataStore source, MixedTransformView<?> view) {
 		return view(source, view.getTransformToSource());
@@ -128,36 +121,112 @@ public final class Metadata {
 		return new MetadataStoreView(source, transform);
 	}
 
-	private static boolean[] makeAxisAttachmentArray(final int numDims, final int... dims) {
-		boolean[] attachedToAxes = new boolean[numDims];
-		for (int d=0; d<dims.length; d++) attachedToAxes[dims[d]] = true;
-		return attachedToAxes;
-	}
+    public static <T> MetadataItem<T> absent(String name, int numDimensions, int... attachedAxes) {
+        return new AbsentMetadataItem<>(name, numDimensions, attachedAxes);
+    }
 
-	private static int[] flagsToAxisList( final boolean[] flags ) {
-		final int[] tmp = new int[ flags.length ];
-		int i = 0;
-		for ( int d = 0; d < flags.length; ++d )
-			if ( flags[ d ] )
-				tmp[ i++ ] = d;
-		return Arrays.copyOfRange( tmp, 0, i );
-	}
+    private static class AbsentMetadataItem<T> implements MetadataItem<T> {
 
-	private static class SimpleItem<T> implements MetadataItem<T> {
+        final String name;
+        final int numDimensions;
+        final int[] attachedAxes;
+
+        public AbsentMetadataItem(String name, int numDimensions, int... attachedAxes) {
+            this.name = name;
+            this.numDimensions = numDimensions;
+            this.attachedAxes = attachedAxes;
+        }
+
+
+        @Override
+        public int numDimensions() {
+            return numDimensions;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int d: dims) {
+                boolean found = false;
+                for (int attached: attachedAxes) {
+                    if (d == attached) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+        @Override
+        public RandomAccess<T> randomAccess() {
+            return new AbsentRandomAccess();
+        }
+
+        @Override
+        public RandomAccess<T> randomAccess(Interval interval) {
+            return randomAccess();
+        }
+
+        @Override
+        public T getAt(int... pos) {
+            return new AbsentRandomAccess().get();
+        }
+
+        @Override
+        public T getAt(long... pos) {
+            return new AbsentRandomAccess().get();
+        }
+
+        @Override
+        public T getAt(Localizable pos) {
+            return new AbsentRandomAccess().get();
+        }
+
+        @Override
+        public T valueOr(T defaultItem) {
+            return defaultItem;
+        }
+
+        @Override
+        public MetadataItem<T> or(Supplier<MetadataItem<T>> defaultSupplier) {
+            return defaultSupplier.get();
+        }
+
+        class AbsentRandomAccess extends Point implements RandomAccess<T> {
+            @Override
+            public T get() {
+                throw new NoSuchElementException("No metadata exists of key " + name + " attached to axes " + Arrays.toString(attachedAxes) + "!");
+            }
+
+            @Override
+            public RandomAccess<T> copy() {
+                return new AbsentRandomAccess();
+            }
+        }
+    }
+
+
+    private static class SimpleItem<T> implements MetadataItem<T> {
 		final String name;
+        T data;
 
-        final boolean[] attachedToAxes;
+        final int numDimensions;
+        final int[] attachedAxes;
 
-		T data;
-
-		public SimpleItem(final String name, final T data, final boolean[] attachedToAxes) {
+		public SimpleItem(final String name, final T data, final int numDimensions, final int... attachedAxes) {
 			this.name = name;
 			this.data = data;
-			this.attachedToAxes = attachedToAxes;
-		}
-
-		public boolean[] attachedAxes() {
-			return attachedToAxes;
+            this.numDimensions = numDimensions;
+			this.attachedAxes = attachedAxes;
 		}
 
 		@Override
@@ -182,7 +251,7 @@ public final class Metadata {
 
 		@Override
 		public int numDimensions() {
-			return attachedToAxes.length;
+			return numDimensions;
 		}
 
 		@Override
@@ -191,17 +260,16 @@ public final class Metadata {
 			sb.append(name);
 			sb.append("\"; ");
 
-			if (isAttachedToAnyAxis()) {
+			if (attachedAxes.length > 0) {
 				sb.append("attached to axes {");
-				final int[] axes = flagsToAxisList(attachedToAxes);
-				sb.append(axes[0]);
-				for (int i = 1; i < axes.length; ++i)
-					sb.append(", " + axes[i]);
+				sb.append(attachedAxes[0]);
+				for (int i = 1; i < attachedAxes.length; ++i)
+					sb.append(", ").append(attachedAxes[i]);
 				sb.append("}; ");
 			} else
 				sb.append("not attached to any axis; ");
 
-			sb.append("value = " + data);
+			sb.append("value = ").append(data);
 
 			return sb.toString();
 		}
@@ -220,22 +288,28 @@ public final class Metadata {
         public void setAt(T value, Localizable position) {
             data = value;
         }
-	}
 
-	private static Mixed transformFromAttachedAxes(boolean[] attachedToAxes) {
-		int srcDims = attachedToAxes.length, targetDims = 0;
-		for (boolean b: attachedToAxes) if (b) targetDims++;
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int dim : dims) {
+                boolean found = false;
+                for (int attachedAx : attachedAxes) {
+                    if (dim == attachedAx) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 
-		int[] componentMapping = new int[targetDims];
-		int mapIdx = 0;
-		for (int i = 0; i < attachedToAxes.length; i++ ){
-			if (attachedToAxes[i]){
-				componentMapping[mapIdx++] = i;
-			}
-		}
-
-		MixedTransform transform = new MixedTransform(srcDims, targetDims);
-		transform.setComponentMapping(componentMapping);
+	private static Mixed transformFromAttachedAxes(int numDimensions, int[] attachedAxes) {
+        MixedTransform transform = new MixedTransform(numDimensions, attachedAxes.length);
+		transform.setComponentMapping(attachedAxes);
 		return transform;
 	}
 
@@ -248,26 +322,23 @@ public final class Metadata {
 
         final BiConsumer<Localizable, T> setter;
 
-		final boolean[] attachedToAxes;
-
-		public VaryingItem(final String name, final F data, final boolean[] attachedToAxes) {
-			this(name, data, transformFromAttachedAxes(attachedToAxes), attachedToAxes);
+		public VaryingItem(final String name, final F data, final int numDimensions, final int... dims) {
+			this(name, data, transformFromAttachedAxes(numDimensions, dims));
 		}
 
-        private VaryingItem(final String name, final F data, BiConsumer<Localizable, T> setter, boolean[] attachedToAxes) {
-            this(name, data, transformFromAttachedAxes(attachedToAxes), setter, attachedToAxes);
+        private VaryingItem(final String name, final F data, BiConsumer<Localizable, T> setter, final int numDimensions, final int... dims) {
+            this(name, data, transformFromAttachedAxes(numDimensions, dims), setter);
         }
 
-		private VaryingItem(final String name, final F data, final Mixed tform, final boolean[] attachedToAxes) {
-            this(name, data, tform, (pos, val) -> {}, attachedToAxes);
+		private VaryingItem(final String name, final F data, final Mixed tform) {
+            this(name, data, tform, (pos, val) -> {});
 		}
 
-        private VaryingItem(final String name, final F data, final Mixed tform, BiConsumer<Localizable, T> setter, boolean[] attachedToAxes) {
+        private VaryingItem(final String name, final F data, final Mixed tform, BiConsumer<Localizable, T> setter) {
             super(data, tform);
             this.name = name;
             this.data = data;
             this.setter = setter;
-            this.attachedToAxes = attachedToAxes;
         }
 
 		@Override
@@ -276,25 +347,20 @@ public final class Metadata {
 		}
 
 		@Override
-		public boolean[] attachedAxes() {
-			return attachedToAxes;
-		}
-
-		@Override
 		public String toString() {
 			final StringBuilder sb = new StringBuilder("VaryingItem \"");
 			sb.append(name);
 			sb.append("\"; ");
 
-			if (isAttachedToAnyAxis()) {
-				sb.append("attached to axes {");
-				final int[] axes = flagsToAxisList(attachedToAxes);
-				sb.append(axes[0]);
-				for (int i = 1; i < axes.length; ++i)
-					sb.append(", ").append(axes[i]);
-				sb.append("}; ");
-			} else
-				sb.append("not attached to any axis; ");
+            sb.append("attached to axes {");
+            for(int i = 0; i < getTransformToSource().numTargetDimensions(); i++) {
+                int axis = getTransformToSource().getComponentMapping(i);
+                sb.append(axis);
+                if (i < getTransformToSource().numTargetDimensions() - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append("}");
 
 			return sb.toString();
 		}
@@ -323,131 +389,23 @@ public final class Metadata {
             getTransformToSource().apply(position, p);
             setter.accept(position, value);
         }
+
+        @Override
+        public boolean isAttachedTo(int... dims) {
+            for (int dim : dims) {
+                boolean found = false;
+                for (int j = 0; j < getTransformToSource().numTargetDimensions(); j++) {
+                    if (dim == getTransformToSource().getComponentMapping(j)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
-	private static class VaryingRealItem<T, U extends RealRandomAccessible<T>> extends RealTransformRealRandomAccessible<T, RealTransform> implements RealMetadataItem<T> {
-		final String name;
-
-		final U data;
-
-		final boolean[] attachedToAxes;
-
-		public VaryingRealItem(final String name, final U data, final boolean[] attachedToAxes) {
-			super(data, realTransformFromAttachedToAxes(attachedToAxes));
-			this.name = name;
-			this.data = data;
-			this.attachedToAxes = attachedToAxes;
-		}
-
-		private static RealTransform realTransformFromAttachedToAxes(boolean[] attachedToAxes) {
-			int attachedDims = 0;
-			for (boolean b: attachedToAxes) if (b) attachedDims++;
-			final int targetDims = attachedDims;
-
-			final int[] componentMapping = new int[targetDims];
-			int mapIdx = 0;
-			for (int i = 0; i < attachedToAxes.length; i++ ){
-				if (attachedToAxes[i]){
-					componentMapping[mapIdx++] = i;
-				}
-			}
-
-			return new RealTransform(){
-
-				@Override
-				public int numSourceDimensions() {
-					return attachedToAxes.length;
-				}
-
-				@Override
-				public int numTargetDimensions() {
-					return targetDims;
-				}
-
-				@Override
-				public void apply(double[] doubles, double[] doubles1) {
-					for(int i = 0; i < targetDims; i++) {
-						doubles1[i] = doubles[componentMapping[i]];
-					}
-				}
-
-				@Override
-				public void apply(RealLocalizable realLocalizable, RealPositionable realPositionable) {
-					for(int i = 0; i < targetDims; i++) {
-						realPositionable.setPosition(realLocalizable.getDoublePosition(componentMapping[i]), i);
-					}
-				}
-
-				@Override
-				public RealTransform copy() {
-					return realTransformFromAttachedToAxes(attachedToAxes);
-				}
-			};
-		}
-
-		public boolean isAttachedToAxes() {
-			return attachedToAxes != null;
-		}
-//
-//		@Override
-//		public T getAt(final RealLocalizable pos) {
-//			final RealRandomAccess<T> access = data.realRandomAccess();
-//			for (int d = 0, i = 0; d < variesWithAxes.length; ++d)
-//				if (variesWithAxes[d])
-//					access.setPosition(pos.getDoublePosition(d), i++);
-//			return access.get();
-//		}
-
-		@Override
-		public String name() {
-			return name;
-		}
-
-		@Override
-		public boolean[] attachedAxes() {
-			return attachedToAxes;
-		}
-
-		@Override
-		public boolean isAttachedTo(int... dims) {
-			if (attachedToAxes == null) {
-				return false;
-			}
-			for (int i: dims) {
-				if (attachedToAxes.length <= i || !attachedToAxes[i]) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		@Override
-		public String toString() {
-			final StringBuilder sb = new StringBuilder("VaryingRealItem \"");
-			sb.append(name);
-			sb.append("\"; ");
-
-			if (isAttachedToAxes()) {
-				sb.append("attached to axes {");
-				final int[] axes = flagsToAxisList(attachedToAxes);
-				sb.append(axes[0]);
-				for (int i = 1; i < axes.length; ++i)
-					sb.append(", ").append(axes[i]);
-				sb.append("}; ");
-			} else
-				sb.append("not attached to any axis; ");
-
-			return sb.toString();
-		}
-
-//		@Override
-//		public RandomAccess<T> randomAccess() {
-//			return ;
-//		}
-//
-//		@Override
-//		public RandomAccess<T> randomAccess(Interval interval) {
-//			return null;
-//		}
-	}
 }
