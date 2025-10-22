@@ -68,6 +68,10 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
         };
     }
 
+    static <T> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate) {
+        return wrap(delegate, new RealSimpleMetadataStore(delegate.numDimensions()));
+    }
+
     static <T> RealDataset<T, ?> wrap(RealRandomAccessible<T> delegate, MetadataStore store) {
         return wrap(delegate, new MetadataStoreAsRealMetadataStore(store));
     }

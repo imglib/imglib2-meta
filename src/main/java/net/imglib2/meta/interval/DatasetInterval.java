@@ -38,6 +38,7 @@ import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.meta.Dataset;
 import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.SimpleMetadataStore;
 import net.imglib2.meta.MetadataStoreSubsampleView;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
@@ -70,6 +71,10 @@ public interface DatasetInterval<T, V extends DatasetInterval<T, V>> extends Dat
 			}
 		};
 	}
+
+    static <T> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate) {
+        return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
+    }
 
     static <T> DatasetInterval<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
         return wrap(delegate, new MetadataStoreIntervalView(store, delegate));

@@ -44,5 +44,10 @@ public class DefaultGeneral implements General{
     }
 
     @Override
+    public String description() {
+        return metaData.item("description", String.class).valueOr(null);
+    }
+
+    @Override
     public void setStore(MetadataStore metaData) {this.metaData = metaData;}
 }

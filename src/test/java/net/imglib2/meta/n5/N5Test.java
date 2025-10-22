@@ -1,11 +1,13 @@
 package net.imglib2.meta.n5;
 
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.meta.Dataset;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.general.General;
+import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.janelia.saalfeldlab.n5.N5Reader;
 import org.janelia.saalfeldlab.n5.imglib2.N5Utils;
@@ -26,14 +28,15 @@ public class N5Test {
     public static final String n5Dataset = n5Group + "/s4";
 
     public static N5Reader n5;
-    public static RandomAccessibleInterval<UnsignedShortType> data;
+    public static DatasetInterval<UnsignedShortType, ?> data;
     public static MetadataStore store;
 
     @Before
     public void setUp() {
         n5 = new N5Factory().openReader(n5Url);
-        data = N5Utils.open(n5, n5Dataset);
         store = new N5MetadataStore(n5, n5Group, n5Dataset);
+        RandomAccessibleInterval<UnsignedShortType> n5RAI = N5Utils.open(n5, n5Dataset);
+        data = DatasetInterval.wrap(n5RAI, store);
     }
 
     @Test

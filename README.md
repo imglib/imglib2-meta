@@ -32,4 +32,15 @@ The pain points are:
   * This makes it difficult to subclass `Dataset`, if we want a `DatasetInterval` or a `RealDataset`
   * The `V` type parameter of `RandomAccessibleView` is never something I'd want a user to have to type.
     * This type is present for the `RandomAccessibleView.use` method, which allows subinterfaces to get a specialized version for free (e.g `Dataset.use(Function<? super Dataset, U)`). Without that type variable this type of thing is basically impossible.
+    * We could make a `DatasetView` interface that extends `RandomAccessibleView` but removes the `V` type parameter, and have `Dataset.view()` return one of those instead of returning itself.
   * See [imglib/imglib2#379](https://github.com/imglib/imglib2/pull/379)
+* Creating mutable `MetadataItem`s are tedious.
+  * `RandomAccessibleInterval`s are tricky to mutate - they rely on element mutability.
+    * Many common-sense metadata types (e.g. String, `ColorTable`) are not mutable.
+  * Do we even need metadata mutability?
+
+**Future Work**
+Where do we go from here?
+* Spec out `HasMetadataStore` interfaces for OME-NGFF metadata?
+* Get those imglib PRs merged? (Note that [imglib/imglib2#379](https://github.com/imglib/imglib2/pull/379) is technically a breaking change).
+* Package review?
