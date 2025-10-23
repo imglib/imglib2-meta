@@ -215,16 +215,14 @@ public class DatasetIntervalTest {
 		Calibration cal = original.store().info(Calibration.class);
 		Calibration calView = view.store().info(Calibration.class);
         // We can set axes on the View
-        calView.setAxis(axis(Axes.X), 0);
-        Assert.assertEquals(Axes.X, calView.axis(0).type());
+//        calView.setAxis(axis(Axes.X), 0);
+//        Assert.assertEquals(Axes.X, calView.axis(0).type());
 		// New axes should be default be unknown
         int newAxis = original.numDimensions();
 		Assert.assertEquals(Axes.unknown(), calView.axis(newAxis).type());
         // But we could theoretically set them
-        // TODO: Make this work
-//        calView.setAxis(axis(Axes.CHANNEL), newAxis);
-        // And they should persist
-//        Assert.assertEquals(Axes.CHANNEL, calView.axis(newAxis).type());
+        cal.setAxis(axis(Axes.CHANNEL), newAxis);
+        Assert.assertEquals(Axes.CHANNEL, calView.axis(newAxis).type());
 	}
 
 	@Test

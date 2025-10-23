@@ -80,7 +80,10 @@ public interface MetadataStore extends EuclideanSpace {
      * @param data the metadata
      * @param dims the axes associated with the metadata item
      */
-	<T> void add(String key, T data, int... dims);
+	default <T> void add(String key, T data, int... dims) {
+        // Implementations may override to implement metadata writes
+        throw new UnsupportedOperationException(getClass() + " is Read-only!");
+    }
 
     /**
      * Adds metadata {@code data} associated with key {@code key} and axes {@code dims}.
@@ -92,7 +95,10 @@ public interface MetadataStore extends EuclideanSpace {
      * @param data the metadata
      * @param dims the axes associated with the metadata item
      */
-	<T> void add(String key, RandomAccessible<T> data, int... dims);
+	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
+        // Implementations may override to implement metadata writes
+        throw new UnsupportedOperationException(getClass() + " is Read-only!");
+    }
 
     /**
      * Adds <em>mutable</em> metadata {@code data} associated with key {@code key} and axes {@code dims}.

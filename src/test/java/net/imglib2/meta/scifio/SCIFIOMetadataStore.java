@@ -33,16 +33,6 @@ public class SCIFIOMetadataStore implements MetadataStore{
     }
 
     @Override
-    public <T> void add(String key, T data, int... dims) {
-        throw new UnsupportedOperationException("Read-Only");
-    }
-
-    @Override
-    public <T> void add(String key, RandomAccessible<T> data, int... dims) {
-        throw new UnsupportedOperationException("Read-Only");
-    }
-
-    @Override
     public int numDimensions() {
         return img.getImageMetadata().getAxes().size();
     }

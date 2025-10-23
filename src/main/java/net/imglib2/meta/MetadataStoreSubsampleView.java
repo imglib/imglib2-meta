@@ -61,12 +61,16 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 
 	@Override
 	public <T> void add(String key, T data, int... dims) {
-		throw new UnsupportedOperationException("View of metadata store is read-only");
+        // This theoretically would work...but it could have unintended consequences
+        // if the caller does not know it is a view. It's probably best to keep it read-only.
+        // If it is known to be a view, it's probably feasible to add the metadata to the source directly.
+		throw new UnsupportedOperationException("Subsample views on metadata are read-only");
 	}
 
 	@Override
 	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
-		throw new UnsupportedOperationException("View of metadata store is read-only");
+        // Assigning this data to the source would require interpolation of sorts.
+        throw new UnsupportedOperationException("Subsample views on metadata are read-only");
 	}
 
 
@@ -81,13 +85,10 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 
 	private static class MetadataItemSubsampleView<T> extends SubsampleView<T> implements MetadataItem<T> {
 		private final MetadataItem<T> source;
-//		private final long[] steps;
 
 		public MetadataItemSubsampleView(MetadataItem<T> source, long[] steps) {
 			super(source, steps);
 			this.source = source;
-			// FIXME: The RA here is only <=N-dimensional not necessarily N-dimensional.
-//			this.steps = steps;
 		}
 
 		@Override

@@ -21,7 +21,7 @@ import org.janelia.saalfeldlab.n5.universe.N5Factory;
  *
  * @author Gabriel Selzer
  */
-public class Example06Interfaces {
+public class Example07Interfaces {
 
     /* make an N5 reader, we start with a public container on AWS S3 */
     public static final String n5Url = "https://janelia-cosem.s3.amazonaws.com/jrc_hela-2/jrc_hela-2.n5";
@@ -85,18 +85,6 @@ public class Example06Interfaces {
                 return (MetadataItem<T>) Metadata.item(key, "An awesome description from my custom metadata", numDimensions(), dims);
             }
             return Metadata.absent(key, numDimensions(), dims);
-        }
-
-        // TODO: Should this be a default method?
-        @Override
-        public <T> void add(String key, T data, int... dims) {
-            throw new UnsupportedOperationException("This is a read-only MetadataStore");
-        }
-
-        // TODO: Should this be a default method?
-        @Override
-        public <T> void add(String key, RandomAccessible<T> data, int... dims) {
-            throw new UnsupportedOperationException("This is a read-only MetadataStore");
         }
 
         @Override

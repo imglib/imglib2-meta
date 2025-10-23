@@ -83,9 +83,6 @@ public interface IntervaledMetadataStore extends MetadataStore {
 	/** Get a window into a bundle of metadata, in a nice type-safe way, according to the specified interface. */
 	<T extends HasMetadataStore> T info(Class<T> infoClass);
 
-	/** Add simple metadata */
-	<T> void add(String key, T data, int... dims);
-
 	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
         throw new UnsupportedOperationException("IntervaledMetadataStore does not support RandomAccessible metadata");
     }

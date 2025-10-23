@@ -79,22 +79,18 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
 
 	@Override
 	public <T> void add(String key, T data, int... dims) {
-        // TODO: Astract this logic somewhere
-        int[] targetDims = new int[dims.length];
-        for (int i = 0; i < targetDims.length; i++) {
-            if (dims[i] < 0 || dims[i] >= transform.numTargetDimensions()) {
-                throw new IllegalArgumentException("Dimension " + dims[i] + " out of bounds [0," + transform.numTargetDimensions() + ")");
-            }
-            else {
-                targetDims[i] = transform.getComponentMapping(dims[i]);
-            }
-        }
-        source.add(key, data, targetDims);
+        // This theoretically would work...but it could have unintended consequences
+        // if the caller does not know it is a view. It's probably best to keep it read-only.
+        // If it is known to be a view, it's probably feasible to add the metadata to the source directly.
+        throw new UnsupportedOperationException("Views on metadata are read-only");
 	}
 
     @Override
     public <T> void add(String name, RandomAccessibleInterval<T> data, int... dims) {
-        throw new UnsupportedOperationException("View of metadata store is read-only");
+        // This theoretically would work...but it could have unintended consequences
+        // if the caller does not know it is a view. It's probably best to keep it read-only.
+        // If it is known to be a view, it's probably feasible to add the metadata to the source directly.
+        throw new UnsupportedOperationException("Views on metadata are read-only");
     }
 
     @Override

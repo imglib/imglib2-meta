@@ -1,6 +1,5 @@
 package net.imglib2.meta.n5;
 
-import net.imglib2.RandomAccessible;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
@@ -25,16 +24,6 @@ public class N5MetadataStore implements MetadataStore {
         this.reader = reader;
         this.group = group;
         this.dataset = dataset;
-    }
-
-    @Override
-    public <T> void add(String key, T data, int... dims) {
-        throw new UnsupportedOperationException("Read-Only");
-    }
-
-    @Override
-    public <T> void add(String key, RandomAccessible<T> data, int... dims) {
-        throw new UnsupportedOperationException("Read-Only");
     }
 
     @Override

@@ -88,7 +88,6 @@ public interface DatasetInterval<T, V extends DatasetInterval<T, V>> extends Dat
 	}
 
 	default DatasetInterval<T, ?> interval(Interval interval) {
-		// TODO: Consider an interval on the metadata?
 		return wrap(
 				this,
 				new MixedTransform(numDimensions(), numDimensions()),
