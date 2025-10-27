@@ -5,6 +5,14 @@ which will be later merged elsewhere!
 
 Metadata is incredibly important in scientific image processing. The ImgLib2 ecosystem has no formal mechanism for working with metadata. This repository aims to solve that.
 
+**Goals**
+
+The library goals are:
+* Compatibility with existing ImgLib2 types: data+metadata should behave like standard `RandomAccessible` / `RandomAccessibleInterval` objects.
+* Transform-aware metadata: views or transforms applied to data should automatically apply to associated metadata as well.
+* Type-safe, interface-driven access: a small, well-typed API for querying and composing metadata without unnecessary copying.
+* Convenient structured metadata access for common formats (for example, OME).
+
 The main metadata stand-in throughout the Fiji ecosystem is the `Dataset` class of ImageJ2, used by e.g. SCIFIO. However, it has a number of issues:
 * It cannot operate within a type-safe environment. This hinders use within ImgLib2-algorithm, SciJava Ops, etc.
 * It requires the dependency of imagej-common.

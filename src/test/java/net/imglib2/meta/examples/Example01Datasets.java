@@ -11,32 +11,7 @@ import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
- * Imglib2-meta exists to provide a standardized way to associate metadata with imglib2 data structures,
- * enabling <b>metadata-aware</b> and <b>metadata-preserving</b> image processing.
- *
- * <p>
- * The library goals are:
- * <ul>
- *   <li>Compatibility with existing ImgLib2 types: data+metadata should behave like
- *       standard {@link RandomAccessible} / {@link RandomAccessibleInterval} objects.</li>
- *   <li>Transform-aware metadata: views or transforms applied to data should
- *       automatically apply to associated metadata as well.</li>
- *   <li>Type-safe, interface-driven access: a small, well-typed API for
- *       querying and composing metadata without unnecessary copying.</li>
- *   <li>Convenient structured metadata access for common formats (for example, OME).</li>
- * </ul>
- * </p>
- * <p>
- * There are alternatives within the Fiji ecosystem for storing metadata alongside images, including
- * <ul>
- * <li>imagej-common's {@code Dataset}, provides none of the above goals</li>
- * <li>SCIFIO's {@code SCIFIOImgPlus}, which is not transform aware,</li>
- * </ul>
- * </p>
- *
- * <p>
- *     This example introduces the fundamental concept of a Dataset, and how it's just a {@link RandomAccessible}.
- * </p>
+ * This example introduces the fundamental concept of a Dataset, and how it's just a {@link RandomAccessible}.
  *
  * @author Gabriel Selzer
  */

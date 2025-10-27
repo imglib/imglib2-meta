@@ -22,7 +22,14 @@ public class Example02Metadata {
     private static MetadataStore exampleStore() {
         // This is a simple read/write metadata store.
         MetadataStore store = new SimpleMetadataStore(2);
-        // You can add metadata items to it as you like.
+        /*
+         * You can add metadata items to it as you like.
+         *
+         * MetadataItems have:
+         * - a key
+         * - a set of axis keys
+         * - a metadata value
+         */
         store.add("name", "An Example Dataset");
         store.add("author", "John Doe");
         store.add("axis_type", Axes.X, 0);
