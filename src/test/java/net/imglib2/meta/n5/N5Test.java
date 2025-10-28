@@ -28,7 +28,7 @@ public class N5Test {
     public static final String n5Dataset = n5Group + "/s4";
 
     public static N5Reader n5;
-    public static DatasetInterval<UnsignedShortType, ?> data;
+    public static DatasetInterval<UnsignedShortType> data;
     public static MetadataStore store;
 
     @Before

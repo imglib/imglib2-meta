@@ -46,7 +46,7 @@ public class Example02Metadata {
             (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
             DoubleType::new //
         );
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData, exampleStore());
+        Dataset<DoubleType> dataset = Dataset.wrap(someData, exampleStore());
         MetadataStore store = dataset.store();
 
         /*

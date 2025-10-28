@@ -43,7 +43,7 @@ public class Example06MutatingMetadata {
                 (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
                 DoubleType::new //
         );
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData, exampleStore());
+        Dataset<DoubleType> dataset = Dataset.wrap(someData, exampleStore());
 
         /*
          * To add metadata, the MetadataStore interface provides an add() method.
@@ -68,6 +68,7 @@ public class Example06MutatingMetadata {
          * unless the backing metadata store has been designed to allow writing.
          *
          * TODO: Consider a MetadataItem.setValue() convenience
+         * TODO: Consider a MetadataItem.mutable() function or something similar to ask if writing allowed before trying it.
          */
         MetadataItem<String> fooItem = dataset.store().item("foo", String.class, 0);
         fooItem.setAt("A different foo value", 0, 0, 0);
@@ -78,7 +79,7 @@ public class Example06MutatingMetadata {
          * This prevents accidental modification of metadata that may be shared.
          * TODO: Consider the ramifications of this decision
          */
-        DatasetInterval<DoubleType, ?> view = dataset.interval(new FinalInterval(10, 10, 3));
+        DatasetInterval<DoubleType> view = dataset.view().interval(new FinalInterval(10, 10, 3));
         // This line will throw an error when uncommented
         // view.store().add("foo", "Some new foo value", 0);
         IntervaledMetadataItem<String> fooItemView = view.store().item("foo", String.class, 0);
@@ -99,7 +100,7 @@ public class Example06MutatingMetadata {
         assert expected == c.lut(0);
     }
 
-    private static void printFoo(Dataset<DoubleType, ?> dataset) {
+    private static void printFoo(Dataset<DoubleType> dataset) {
         System.out.println(dataset.store().item("foo", String.class, 0).value());
     }
 }

@@ -19,7 +19,7 @@ import java.util.Random;
 
 public class DatasetExample {
 
-    private static DatasetInterval<DoubleType, ?> loadDataset() {
+    private static DatasetInterval<DoubleType> loadDataset() {
         // Datasets require a RandomAccessible data source. This is usually the easy part.
         RandomAccessible<DoubleType> data = new FunctionRandomAccessible<>(
             2,
@@ -29,7 +29,7 @@ public class DatasetExample {
 
         // Datasets can wrap arbitrary RandomAccessible data. If no existing MetadataStore is provided,
         // a default empty one is created. Datasets wrap a RandomAccessible and a MetadataStore.
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(data);
+        Dataset<DoubleType> dataset = Dataset.wrap(data);
 
         // Metadata itself is a set of key-value pairs.
         // Each pair is defined by:
@@ -57,7 +57,7 @@ public class DatasetExample {
         );
         store.add("labels", labels, 0, 1);
 
-        return dataset.interval(new FinalInterval(100, 100));
+        return dataset.view().interval(new FinalInterval(100, 100));
     }
 
     public static void main(String[] args) {
@@ -66,7 +66,7 @@ public class DatasetExample {
         //      For example, DatasetInterval extending Dataset
         //      I don't think developers will be more hinered than before.
         //      I think most users are scripting anyways and won't encounter the type vars.
-        DatasetInterval<DoubleType, ?> data = loadDataset();
+        DatasetInterval<DoubleType> data = loadDataset();
 
         // Perk 1 of design: Datasets are TYPE-SAFE and INTEROPERABLE with existing imglib2 code written for RAs
         System.out.println(someExistingFunctionality(data));
@@ -74,7 +74,7 @@ public class DatasetExample {
 
         // Perk 2 of design: Datasets can be fluently viewed, and their metadata goes with.
         System.out.println("Axis 0 on the dataset is " + Metadata.calibration(data.store()).axis(0).type());
-        Dataset<DoubleType, ?> view = data.permute(0, 1);
+        Dataset<DoubleType> view = data.view().permute(0, 1);
         System.out.println("Axis 0 on the view is " + Metadata.calibration(view.store()).axis(0).type());
 
         // Perk 3 of design: MetadataItems are RAs and can be looped over along with their data.

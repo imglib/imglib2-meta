@@ -22,7 +22,9 @@ import java.util.function.Supplier;
 /**
  * Wraps a SCIFIO {@link io.scif.Metadata} and {@link ImageMetadata} to provide
  * a read-only {@link MetadataStore} implementation.
- *
+ * <p>
+ * TODO: Probably should be an {@link net.imglib2.meta.interval.IntervaledMetadataStore}
+ * </p>
  * @author Gabriel Selzer
  */
 public class SCIFIOMetadataStore implements MetadataStore{

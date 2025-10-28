@@ -93,7 +93,7 @@ public class RealDatasetTest {
 
     @Test
     public void testCalibration() {
-        Dataset<DoubleType, ?> rasterized = dataset().raster();
+        Dataset<DoubleType> rasterized = dataset().raster();
 
         Calibration calView = rasterized.store().info(Calibration.class);
         Assert.assertEquals(Axes.X, calView.axis(0).type());

@@ -31,10 +31,10 @@ public class Example05MissingMetadata {
             (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
             DoubleType::new //
         );
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData, exampleStore());
+        Dataset<DoubleType> dataset = Dataset.wrap(someData, exampleStore());
 
         /*
-         * Datasets will ALWAYS return a MetadataItem for any request.
+         * MetadataStore will ALWAYS return a MetadataItem for any request.
          * This means that it is up to the metadata user to check whether the result is meaningful.
          */
         // FIXME: Datasets "should ALWAYS"?

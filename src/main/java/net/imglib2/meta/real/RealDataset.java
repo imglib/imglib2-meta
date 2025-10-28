@@ -38,14 +38,14 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.meta.Dataset;
+import net.imglib2.meta.DatasetView;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, V>, RealRandomAccessibleView<T, V> {
+public interface RealDataset<T, V extends RealDataset<T, V>> extends DatasetView<T, V>, RealRandomAccessibleView<T, V> {
     RealRandomAccessible<T> data();
     RealMetadataStore store();
 
@@ -77,7 +77,7 @@ public interface RealDataset<T, V extends RealDataset<T, V>> extends Dataset<T, 
     }
 
     @Override
-    default Dataset< T, ? > raster()
+    default DatasetView< T, ? > raster()
     {
         return this;
     }

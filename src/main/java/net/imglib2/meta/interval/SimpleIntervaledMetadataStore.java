@@ -33,59 +33,61 @@
  */
 package net.imglib2.meta.interval;
 
+import net.imglib2.Interval;
+import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.meta.HasMetadataStore;
-import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.*;
 
-public interface IntervaledMetadataStore extends MetadataStore {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
+public class SimpleIntervaledMetadataStore implements IntervaledMetadataStore {
 
-	/**
-	 * Find a {@link Object} associated with key {@code key}.
-	 *
-	 * @param key the identifier of the metadata item
-	 * @return a metadata item matching {@code key}
-	 */
-	default IntervaledMetadataItem<?> item(String key) {
-		return item(key, Object.class);
+	private final List<IntervaledMetadataItem<?>> items;
+    private final Interval interval;
+
+	public SimpleIntervaledMetadataStore(Interval interval) {
+        this.items = new ArrayList<>();
+        this.interval = interval;
 	}
 
-	/**
-	 * Find a metadata item associated with key {@code key} of {@link Class} {@code ofType}.
-	 *
-	 * @param key the identifier of the metadata item
-	 * @param ofType the type of the metadata item
-	 * @return a metadata item matching {@code key} of type {@code ofType}
-	 */
-	default <T> IntervaledMetadataItem<T> item(String key, Class<T> ofType) {
-        return item(key, ofType, new int[0]);
-    }
-
-	/**
-	 * Find a metadata item associated with key {@code key} and axes {@code d}
-	 * @param key the identifier of the metadata item
-	 * @param dims the axes associated with the metadata item
-	 * @return a metadata item matching {@code key}
-	 */
-	default IntervaledMetadataItem<?> item(String key, int... dims) {
-		return item(key, Object.class, dims);
+    @Override
+	public <T> IntervaledMetadataItem<T> item(String name, Class<T> ofType, int... dims) {
+		//noinspection unchecked
+		return items.stream() //
+			.filter(item -> item.name().equals(name))
+			.filter(item -> item.isAttachedTo(dims)) //
+			.filter(item -> ofType == null || ofType.isInstance(item.getType()))
+			.map(item -> (IntervaledMetadataItem<T>) item)
+			.findFirst().orElseGet(() -> IntervaledMetadata.absent(name, interval, numDimensions(), dims));
 	}
 
-	/**
-	 * Find a metadata item associated with key {@code key} and axes {@code d} of {@link Class} {@code ofType}.
-	 *
-	 * @param key the identifier of the metadata item
-	 * @param ofType the type of the metadata item
-	 * @param dims the axes associated with the metadata item
-	 * @return a metadata item matching {@code key} of type {@code ofType}
-	 */
-	<T> IntervaledMetadataItem<T> item(String key, Class<T> ofType, int... dims);
 
-	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
-        throw new UnsupportedOperationException("IntervaledMetadataStore does not support RandomAccessible metadata");
+    @Override
+	public <T> void add(String key, T data, int... dims) {
+		items.add(IntervaledMetadata.item(key, data, interval, numDimensions(), dims));
+	}
+
+	@Override
+	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
+        items.add(IntervaledMetadata.item(key, data, interval, numDimensions(), dims));
+	}
+
+    @Override
+    public <T> void add(String name, RandomAccessibleInterval<T> data, int... dims) {
+
     }
 
-    /** Add simple metadata */
-    <T> void add(String name, RandomAccessibleInterval<T> data, int... dims);
+    @Override
+    public <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {
+        items.add(IntervaledMetadata.item(key, data, interval, numDimensions(), dims));
+    }
+
+	@Override
+	public int numDimensions() {
+		return interval.numDimensions();
+	}
+
 }

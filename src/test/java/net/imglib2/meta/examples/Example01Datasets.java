@@ -27,8 +27,7 @@ public class Example01Datasets {
             (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
             DoubleType::new //
         );
-        // TODO: Issue #1 - that wildcard! See the Views example for more discussion.
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData);
+        Dataset<DoubleType> dataset = Dataset.wrap(someData);
 
         /*
          * Datasets are just RandomAccessible, which means that you can pass them as-is to all existing imglib functionality
@@ -51,7 +50,7 @@ public class Example01Datasets {
          * Naturally, to complement Dataset are DatasetIntervals, which wrap RandomAccessibleIntervals...
          */
         RandomAccessibleInterval<DoubleType> someInterval = someData.view().interval(new FinalInterval(10, 10));
-        DatasetInterval<DoubleType, ?> datasetInterval = DatasetInterval.wrap(someInterval);
+        DatasetInterval<DoubleType> datasetInterval = DatasetInterval.wrap(someInterval);
         /*
          * ...and RealDatasets, which wrap RealRandomAccessibles.
          */

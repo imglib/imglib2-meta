@@ -38,7 +38,7 @@ public class Example07Interfaces {
             (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
             DoubleType::new //
         );
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData, new MyMetadataStore());
+        Dataset<DoubleType> dataset = Dataset.wrap(someData, new MyMetadataStore());
 
         /*
          * Now we can access our custom metadata via the standard Metadata APIs
@@ -52,7 +52,7 @@ public class Example07Interfaces {
         N5Reader n5 = new N5Factory().openReader(n5Url);
         MetadataStore store = new N5MetadataStore(n5, n5Group, n5Dataset);
         RandomAccessibleInterval<UnsignedShortType> n5RAI = N5Utils.open(n5, n5Dataset);
-        DatasetInterval<UnsignedShortType, ?> n5Dataset = DatasetInterval.wrap(n5RAI, store);
+        DatasetInterval<UnsignedShortType> n5Dataset = DatasetInterval.wrap(n5RAI, store);
         General n5General = Metadata.general(n5Dataset.store());
         // FIXME: This name might actually be wrong :)
         System.out.println("N5 Dataset Name: " + n5General.name());

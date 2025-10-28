@@ -14,6 +14,13 @@ import org.janelia.saalfeldlab.n5.N5Reader;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An example implementation of {@link MetadataStore} that wraps metadata stored in an N5 dataset.
+ * <p>
+ * TODO: Probably should be an {@link net.imglib2.meta.interval.IntervaledMetadataStore}
+ * </p>
+ * @author Gabriel Selzer
+ */
 public class N5MetadataStore implements MetadataStore {
 
     private final N5Reader reader;

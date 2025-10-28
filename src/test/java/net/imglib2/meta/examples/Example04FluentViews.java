@@ -39,7 +39,7 @@ public class Example04FluentViews {
             (loc, out) -> out.set(loc.getLongPosition(0) + loc.getLongPosition(1)), //
             DoubleType::new //
         );
-        Dataset<DoubleType, ?> dataset = Dataset.wrap(someData, exampleStore());
+        Dataset<DoubleType> dataset = Dataset.wrap(someData, exampleStore());
 
         /*
          * Datasets also implement the RandomAccessibleView interface, meaning a host of zero-copy transforms
@@ -48,7 +48,7 @@ public class Example04FluentViews {
         Calibration untransformed = Metadata.calibration(dataset.store());
         System.out.println("Axis 0 is the " + untransformed.axis(0).type() + " axis");
         // Switch axes 0 and 1
-        Dataset<DoubleType, ?> permutedData = dataset.permute(0, 1);
+        Dataset<DoubleType> permutedData = dataset.view().permute(0, 1);
         Calibration permuted = Metadata.calibration(permutedData.store());
         System.out.println("Axis 0 (permuted) is the " + permuted.axis(0).type() + " axis");
 
@@ -59,7 +59,7 @@ public class Example04FluentViews {
         Calibration calibration = Metadata.calibration(dataset.store());
         Axis axis0 = calibration.axis(0);
         System.out.println("Position 1 along axis 0 is at " + axis0.calibrated(1) + " " + axis0.unit());
-        Dataset<DoubleType, ?> subsampled = dataset.subsample(2, 2);
+        Dataset<DoubleType> subsampled = dataset.view().subsample(2, 2);
         Calibration subsampledCalibration = Metadata.calibration(subsampled.store());
         Axis subsampledAxis0 = subsampledCalibration.axis(0);
         System.out.println("Position 1 along subsampled (step=2) axis 0 is at " + subsampledAxis0.calibrated(1) + " " + subsampledAxis0.unit());
