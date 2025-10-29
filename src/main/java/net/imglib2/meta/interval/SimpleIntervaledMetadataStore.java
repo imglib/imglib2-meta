@@ -37,9 +37,9 @@ import net.imglib2.Interval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.meta.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -63,6 +63,11 @@ public class SimpleIntervaledMetadataStore implements IntervaledMetadataStore {
 			.map(item -> (IntervaledMetadataItem<T>) item)
 			.findFirst().orElseGet(() -> IntervaledMetadata.absent(name, interval, numDimensions(), dims));
 	}
+
+    @Override
+    public Collection<? extends IntervaledMetadataItem<?>> items() {
+        return items;
+    }
 
 
     @Override

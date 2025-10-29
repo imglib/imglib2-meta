@@ -37,6 +37,7 @@ import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -50,7 +51,12 @@ public class SimpleMetadataStore implements MetadataStore {
 		this.numDims = n;
 	}
 
-	@Override
+    @Override
+    public Collection<? extends MetadataItem<?>> items() {
+        return items;
+    }
+
+    @Override
 	public <T> MetadataItem<T> item(String name, Class<T> ofType, int... dims) {
 		//noinspection unchecked
 		return items.stream() //

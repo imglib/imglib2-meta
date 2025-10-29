@@ -35,7 +35,11 @@ package net.imglib2.meta.real;
 
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.meta.HasMetadataStore;
+import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * A {@link RealMetadataStore} wrapping a {@link MetadataStore}.
@@ -51,8 +55,27 @@ class MetadataStoreAsRealMetadataStore implements RealMetadataStore {
 		this.source = source;
 	}
 
+    @Override
+    public Collection<? extends RealMetadataItem<?>> items() {
+        // Wrap all items from source MetadataStore as RealMetadataItems
+        return source.items().stream()
+                .filter(MetadataItem::isAttachedTo)
+                .map(item -> //
+                    RealMetadata.item( //
+                        item.name(), //
+                        item.value(), //
+                        source.numDimensions() //
+                    )) //
+                .collect(Collectors.toList());
+    }
+
 	@Override
 	public <T> RealMetadataItem<T> item(String key, Class<T> ofType, int... dims) {
+        if (dims.length == 0) {
+            T data = source.item(key, ofType).value();
+            return RealMetadata.item(key, data, numDimensions());
+        }
+        // TODO: We can probably do better here
 		throw new UnsupportedOperationException("RealView of metadata store cannot query dimension-specific metadata");
 	}
 

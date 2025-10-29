@@ -16,6 +16,10 @@ import org.janelia.saalfeldlab.n5.N5Reader;
 import org.janelia.saalfeldlab.n5.imglib2.N5Utils;
 import org.janelia.saalfeldlab.n5.universe.N5Factory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * This example introduces how MetadataStores can wrap arbitrary sources of metadata.
  *
@@ -63,6 +67,19 @@ public class Example07Interfaces {
      */
     private static class MyMetadataStore implements MetadataStore {
 
+        private final List<MetadataItem<?>> items;
+
+        public MyMetadataStore() {
+            items = new ArrayList<>();
+            items.add(Metadata.item(General.NAME, "A great name from my custom metadata", numDimensions()));
+            items.add(Metadata.item(General.DESCRIPTION, "An awesome description from my custom metadata", numDimensions()));
+        }
+
+        @Override
+        public Collection<? extends MetadataItem<?>> items() {
+            return items;
+        }
+
         /**
          * Converts user requests for metadata items into actual {@link MetadataItem}s.
          * <p>
@@ -75,16 +92,14 @@ public class Example07Interfaces {
          * @param <T> the type of the metadata item elements
          */
         @Override
+        @SuppressWarnings("unchecked")
         public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
-            if (key.equals("name") && ofType.isAssignableFrom(String.class)) {
-                // TODO: These casts are frequent in implementations and cause warnings.
-                // Can we think of an alternate design that avoids the issue?
-                return (MetadataItem<T>) Metadata.item(key, "A great name from my custom metadata", numDimensions(), dims);
-            }
-            if (key.equals("description") && ofType.isAssignableFrom(String.class)) {
-                return (MetadataItem<T>) Metadata.item(key, "An awesome description from my custom metadata", numDimensions(), dims);
-            }
-            return Metadata.absent(key, numDimensions(), dims);
+            return items.stream() //
+                    .filter(item -> item.name().equals(key))
+                    .filter(item -> item.isAttachedTo(dims)) //
+                    .filter(item -> ofType == null || ofType.isInstance(item.getType()))
+                    .map(item -> (MetadataItem<T>) item)
+                    .findFirst().orElseGet(() -> Metadata.absent(key, numDimensions(), dims));
         }
 
         @Override

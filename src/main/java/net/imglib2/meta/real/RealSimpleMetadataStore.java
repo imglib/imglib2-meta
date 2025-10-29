@@ -36,6 +36,7 @@ package net.imglib2.meta.real;
 import net.imglib2.RealRandomAccessible;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,6 +54,12 @@ public class RealSimpleMetadataStore implements RealMetadataStore {
 		this.items = new ArrayList<>();
 		this.numDims = n;
 	}
+
+    @Override
+    public Collection<? extends RealMetadataItem<?>> items() {
+        // Wrap all items from source MetadataStore as RealMetadataItems
+        return items;
+    }
 
 	@Override
 	public <T> RealMetadataItem<T> item(String name, Class<T> ofType, int... dims) {

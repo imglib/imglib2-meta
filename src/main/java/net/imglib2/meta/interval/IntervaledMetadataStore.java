@@ -38,7 +38,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.meta.HasMetadataStore;
 import net.imglib2.meta.MetadataStore;
 
+import java.util.Collection;
+
 public interface IntervaledMetadataStore extends MetadataStore {
+
+    @Override
+    Collection<? extends IntervaledMetadataItem<?>> items();
 
 
 	/**

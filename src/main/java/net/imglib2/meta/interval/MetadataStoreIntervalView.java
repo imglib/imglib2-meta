@@ -43,7 +43,9 @@ import net.imglib2.meta.real.RealMetadataStore;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 
+import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A {@link RealMetadataStore} wrapping a {@link MetadataStore}
@@ -65,7 +67,14 @@ class MetadataStoreIntervalView extends MetadataStoreView implements IntervaledM
         this.interval = interval;
 	}
 
-	@Override
+    @Override
+    public Collection<? extends IntervaledMetadataItem<?>> items() {
+        return source.items().stream() //
+            .map(item -> new MetadataItemIntervalView<>(item, interval)) //
+            .collect(Collectors.toList());
+    }
+
+    @Override
 	public <T> IntervaledMetadataItem<T> item(String key, Class<T> ofType) {
         MetadataItem<T> tformed = super.item(key, ofType);
 		return new MetadataItemIntervalView<>(tformed, interval);

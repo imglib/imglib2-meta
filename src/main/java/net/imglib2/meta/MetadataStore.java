@@ -37,10 +37,17 @@ import net.imglib2.EuclideanSpace;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
 
+import java.util.Collection;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 
 public interface MetadataStore extends EuclideanSpace {
+
+    /**
+     * Get all metadata items stored in this {@link MetadataStore}.
+     * @return all metadata items
+     */
+    Collection<? extends MetadataItem<?>> items();
 
 	/**
 	 * Find a metadata item associated with key {@code key} and axes {@code dims}

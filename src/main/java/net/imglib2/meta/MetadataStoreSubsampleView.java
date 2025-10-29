@@ -36,6 +36,9 @@ package net.imglib2.meta;
 import net.imglib2.RandomAccessible;
 import net.imglib2.view.SubsampleView;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 public class MetadataStoreSubsampleView implements MetadataStore {
 
 	private final MetadataStore source;
@@ -46,6 +49,13 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		this.source = store;
 		this.steps = steps;
 	}
+
+    @Override
+    public Collection<? extends MetadataItem<?>> items() {
+        return source.items().stream() //
+                .map(this::itemView) //
+                .collect(Collectors.toList());
+    }
 
 	@Override
 	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {

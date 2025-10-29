@@ -35,7 +35,6 @@ package net.imglib2.meta.ij;
 
 
 import ij.ImagePlus;
-import net.imglib2.RandomAccessible;
 import net.imglib2.display.ColorTable;
 import net.imglib2.imagej.LUTToColorTable;
 import net.imglib2.img.list.ListImg;
@@ -50,13 +49,23 @@ import net.imglib2.meta.general.General;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * A {@link MetadataStore} wrapping metadata pulled from an {@link ImagePlus}.
+ * <p>
+ * This implementation is written for lazy, read-only metadata retrieval.
+ * It's good to evaluate the pros and cons of this approach.
+ * <h4>Pros:</h4>
+ * <ul>
+ *     <li>minimal memory footprint</li>
+ *     <li>Always up-to-date with the wrapped ImagePlus (e.g. if axes change)</li>
+ * </ul>
+ * <h4>Cons:</h4>
+ * <ul>
+ *     <li>Adding new metadata is WET - you need to report it in {@link #items()} and in {@link #item(String, Class, int...)}</li>
+ * </p>
  *
  * @author Gabriel Selzer
  */
@@ -79,6 +88,26 @@ public class ImagePlusMetadataStore implements MetadataStore {
         // T
         if (imp.getNFrames() > 1) axes++;
         return axes;
+    }
+
+    @Override
+    public Collection<? extends MetadataItem<?>> items() {
+        List<MetadataItem<?>> items = new ArrayList<>();
+        items.add(item(General.NAME, String.class));
+        int channelAxis = -1;
+        for(int i = 0; i < numDimensions(); i++) {
+            MetadataItem<AxisType> axisTypeItem = item(Calibration.AXIS_TYPE, AxisType.class, i);
+            if (axisTypeItem.value() == Axes.CHANNEL) {
+                channelAxis = i;
+            }
+            items.add(axisTypeItem);
+            items.add(item(Calibration.AXIS_UNITS, String.class, i));
+            items.add(item(Calibration.AXIS_DATA, DoubleType.class, i));
+        }
+        if (channelAxis != -1) {
+            items.add(item(Channels.CHANNEL, ColorTable.class, channelAxis));
+        }
+        return items;
     }
 
     @Override

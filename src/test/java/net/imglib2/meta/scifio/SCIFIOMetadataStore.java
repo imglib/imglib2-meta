@@ -15,6 +15,9 @@ import net.imglib2.meta.general.General;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -24,6 +27,18 @@ import java.util.function.Supplier;
  * a read-only {@link MetadataStore} implementation.
  * <p>
  * TODO: Probably should be an {@link net.imglib2.meta.interval.IntervaledMetadataStore}
+ * </p>
+ * <p>
+ * This implementation is written for lazy, read-only metadata retrieval.
+ * It's good to evaluate the pros and cons of this approach.
+ * <h4>Pros:</h4>
+ * <ul>
+ *     <li>minimal memory footprint</li>
+ *     <li>Always up-to-date with the wrapped ImagePlus (e.g. if axes change)</li>
+ * </ul>
+ * <h4>Cons:</h4>
+ * <ul>
+ *     <li>Adding new metadata is WET - you need to report it in {@link #items()} and in {@link #item(String, Class, int...)}</li>
  * </p>
  * @author Gabriel Selzer
  */
@@ -37,6 +52,26 @@ public class SCIFIOMetadataStore implements MetadataStore{
     @Override
     public int numDimensions() {
         return img.getImageMetadata().getAxes().size();
+    }
+
+    @Override
+    public Collection<? extends MetadataItem<?>> items() {
+        List<MetadataItem<?>> items = new ArrayList<>();
+        items.add(item(General.NAME, String.class));
+        int channelAxis = -1;
+        for(int i = 0; i < numDimensions(); i++) {
+            MetadataItem<AxisType> axisTypeItem = item(Calibration.AXIS_TYPE, AxisType.class, i);
+            if (axisTypeItem.value() == Axes.CHANNEL) {
+                channelAxis = i;
+            }
+            items.add(axisTypeItem);
+            items.add(item(Calibration.AXIS_UNITS, String.class, i));
+            items.add(item(Calibration.AXIS_DATA, DoubleType.class, i));
+        }
+        if (channelAxis != -1) {
+            items.add(item(Channels.CHANNEL, ColorTable.class, channelAxis));
+        }
+        return items;
     }
 
     @Override

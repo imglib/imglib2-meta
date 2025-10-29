@@ -33,9 +33,9 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.*;
+import net.imglib2.Localizable;
+import net.imglib2.RandomAccessible;
 
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
@@ -91,6 +91,10 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
 
 	/**
 	 * Describes whether all dimensions in {@code dims} are in {d<sub>1</sub>, d<sub>2</sub>, ..., d<sub>m</sub>}.
+     * <p>
+     * FIXME: This API currently can answer the question ("Is this metadata attached to all of the passed dimensions?"),
+     *    but not ("Is this metadata attached to EXACTLY these dimensions?"). The latter is also (more?) useful.
+     * </p>
 	 * @param dims a list of dimensional indices
 	 * @return {@code true} iff this {@link MetadataItem} pertains to all
 	 * 		dimensional indices in {@code dims}.

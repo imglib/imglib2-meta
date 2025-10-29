@@ -41,7 +41,9 @@ import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class MetadataStoreView implements MetadataStore {
 
@@ -75,6 +77,13 @@ public class MetadataStoreView implements MetadataStore {
 			this.dim_map[i] = i;
 		}
 	}
+
+    @Override
+    public Collection<? extends MetadataItem<?>> items() {
+        return source.items().stream() //
+                .map(this::itemView) //
+                .collect(Collectors.toList());
+    }
 
 	@Override
 	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
