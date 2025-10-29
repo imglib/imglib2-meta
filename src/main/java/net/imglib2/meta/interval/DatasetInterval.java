@@ -37,14 +37,15 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.meta.Dataset;
 import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.SimpleMetadataStore;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 
 public interface DatasetInterval<T> extends Dataset<T>, RandomAccessibleInterval<T> {
 	RandomAccessibleInterval<T> data();
-	IntervaledMetadataStore store();
+	MetadataStore store();
 
-	static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate, IntervaledMetadataStore store) {
+	static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
 		return new DatasetInterval<T>() {
 			@Override
 			public RandomAccessibleInterval<T> data() {
@@ -52,18 +53,14 @@ public interface DatasetInterval<T> extends Dataset<T>, RandomAccessibleInterval
 			}
 
 			@Override
-			public IntervaledMetadataStore store() {
+			public MetadataStore store() {
 				return store;
 			}
 		};
 	}
 
     static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate) {
-        return wrap(delegate, new SimpleIntervaledMetadataStore(delegate));
-    }
-
-    static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
-        return wrap(delegate, new MetadataStoreIntervalView(store, delegate));
+        return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
     }
 
 	/** RandomAccessibleInterval Overrides */

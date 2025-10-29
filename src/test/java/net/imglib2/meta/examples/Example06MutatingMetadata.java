@@ -4,17 +4,12 @@ import net.imagej.display.ColorTables;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.display.ColorTable;
-import net.imglib2.meta.Metadata;
-import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.*;
 import net.imglib2.meta.calibration.Axes;
-import net.imglib2.meta.SimpleMetadataStore;
-import net.imglib2.meta.Dataset;
-import net.imglib2.meta.MetadataItem;
-import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultLinearAxis;
 import net.imglib2.meta.channels.Channels;
-import net.imglib2.meta.interval.IntervaledMetadataItem;
+import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 
@@ -82,7 +77,7 @@ public class Example06MutatingMetadata {
         DatasetInterval<DoubleType> view = dataset.view().interval(new FinalInterval(10, 10, 3));
         // This line will throw an error when uncommented
         // view.store().add("foo", "Some new foo value", 0);
-        IntervaledMetadataItem<String> fooItemView = view.store().item("foo", String.class, 0);
+        MetadataItem<String> fooItemView = view.store().item("foo", String.class, 0);
         // This line will also throw an error when uncommented
         // fooItemView.setAt("A different foo value", 0, 0, 0);
 

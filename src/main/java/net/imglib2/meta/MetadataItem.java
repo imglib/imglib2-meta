@@ -163,8 +163,12 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
     }
 
 	// -- RandomAccessible Overrides -- //
+    @Override
+    default MetadataItemView<T> view() {
+        return new MetadataItemView<>(this);
+    }
 
-	default T getType() {
+    default T getType() {
         return value();
 	}
 }

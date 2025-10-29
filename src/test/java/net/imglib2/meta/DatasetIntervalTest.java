@@ -33,19 +33,18 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.FinalInterval;
-import net.imglib2.RandomAccessible;
+import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.interval.DatasetInterval;
-import net.imglib2.meta.interval.IntervaledMetadataItem;
-import net.imglib2.type.numeric.real.AbstractRealType;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.Views;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link DatasetInterval}.
@@ -60,7 +59,7 @@ public class DatasetIntervalTest {
 	 * @return a fully calibrated {@link DatasetInterval}
 	 */
 	private DatasetInterval<DoubleType> calibratedDataset() {
-		RandomAccessible<DoubleType> data = Data.image();
+		RandomAccessibleInterval<DoubleType> data = ArrayImgs.doubles(2, 2, 2, 2, 2);
 
 		MetadataStore store = new SimpleMetadataStore(data.numDimensions());
 		Calibration calibration = store.info(Calibration.class);
@@ -69,21 +68,25 @@ public class DatasetIntervalTest {
 		calibration.setAxis(axis(Axes.Z), 2);
 		calibration.setAxis(axis(Axes.CHANNEL), 3);
 		calibration.setAxis(axis(Axes.TIME), 4);
-		RandomAccessibleInterval<DoubleType> intervaled = Views.interval(data, new FinalInterval(5, 5, 5, 5, 5));
-		return DatasetInterval.wrap(intervaled, store);
+		return DatasetInterval.wrap(data, store);
 	}
 
     @Test
     public void testLoopBuilder() {
         // Slim down the image :)
         DatasetInterval<DoubleType> dataset = calibratedDataset();
-        // TODO: Calibration should own the conventional keys
-        IntervaledMetadataItem<DoubleType> x_axis = dataset.store().item("axis_data", DoubleType.class, 0);
+        MetadataItem<DoubleType> x_axis = dataset.store().item(Calibration.AXIS_DATA, DoubleType.class, 0);
         // Pass the data along with our metadata to LoopBuilder
-        LoopBuilder.setImages(dataset, x_axis).forEachPixel(AbstractRealType::set);
+        LoopBuilder.setImages(dataset, x_axis.view().interval(dataset)).forEachPixel((data, x_cal) -> data.set(x_cal.get()));
+        Cursor<DoubleType> dataCursor = dataset.data().cursor();
+        // Assert that the loopBuilder iteration looped over the data.
+        while (dataCursor.hasNext()) {
+            dataCursor.fwd();
+            assertEquals(dataCursor.get().get(), x_axis.getAt(dataCursor).get(), 0.0);
+        }
     }
 
 	private Axis axis(AxisType axisType) {
-		return new DefaultLinearAxis(axisType, 1, 0);
+		return new DefaultLinearAxis(axisType, 2, 0);
 	}
 }

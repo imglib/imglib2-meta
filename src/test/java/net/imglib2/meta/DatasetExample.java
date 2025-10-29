@@ -8,7 +8,6 @@ import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultLinearAxis;
 import net.imglib2.meta.interval.DatasetInterval;
-import net.imglib2.meta.interval.IntervaledMetadataItem;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.integer.IntType;
@@ -78,8 +77,8 @@ public class DatasetExample {
         System.out.println("Axis 0 on the view is " + Metadata.calibration(view.store()).axis(0).type());
 
         // Perk 3 of design: MetadataItems are RAs and can be looped over along with their data.
-        IntervaledMetadataItem<IntType> labels = data.store().item("labels", IntType.class, 0, 1);
-        LoopBuilder.setImages(data, labels).forEachPixel((d, l) -> {
+        MetadataItem<IntType> labels = data.store().item("labels", IntType.class, 0, 1);
+        LoopBuilder.setImages(data, labels.view().interval(data)).forEachPixel((d, l) -> {
             if (l.get() == 1) {
                 System.out.println("Found a 1-valued label at data value " + d);
             }

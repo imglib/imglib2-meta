@@ -39,6 +39,7 @@ import net.imglib2.converter.Converters;
 import net.imglib2.meta.DatasetView;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.MetadataStoreSubsampleView;
+import net.imglib2.meta.MetadataStoreView;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.Intervals;
@@ -50,14 +51,14 @@ import java.util.function.Supplier;
 
 public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> extends DatasetView<T, V>, RandomAccessibleIntervalView<T, V>, DatasetInterval<T> {
 	RandomAccessibleInterval<T> data();
-	IntervaledMetadataStore store();
+	MetadataStore store();
 
 	@Override
 	default RandomAccessibleInterval<T> delegate() {
 		return data();
 	}
 
-	static <T, V extends DatasetIntervalView<T, V>> DatasetIntervalView<T, ?> wrap(RandomAccessibleInterval<T> delegate, IntervaledMetadataStore store) {
+	static <T, V extends DatasetIntervalView<T, V>> DatasetIntervalView<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
 		return new DatasetIntervalView<T, V>() {
 			@Override
 			public RandomAccessibleInterval<T> data() {
@@ -65,20 +66,16 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 			}
 
 			@Override
-			public IntervaledMetadataStore store() {
+			public MetadataStore store() {
 				return store;
 			}
 		};
 	}
 
-    static <T> DatasetIntervalView<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
-        return wrap(delegate, new MetadataStoreIntervalView(store, delegate));
-    }
-
 	static <T> DatasetIntervalView<T, ?> wrap(DatasetInterval<T> dataset, Mixed tform, Interval interval) {
 		return wrap(
 			new IntervalView<>(new MixedTransformView<>(dataset.data(), tform), interval),
-			new MetadataStoreIntervalView(dataset.store(), tform, interval)
+            new MetadataStoreView(dataset.store(), tform)
 		);
 	}
 

@@ -36,13 +36,12 @@ package net.imglib2.meta;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.loops.LoopBuilder;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.interval.*;
+import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.interval.DatasetIntervalView;
 import net.imglib2.meta.real.RealDataset;
-import net.imglib2.type.numeric.real.AbstractRealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleIntervalView;
@@ -68,7 +67,7 @@ public class DatasetIntervalViewTest {
         RandomAccessible<DoubleType> data = Data.image();
 
         FinalInterval interval = new FinalInterval(10, 20, 30, 40, 50);
-        IntervaledMetadataStore store = new SimpleIntervaledMetadataStore(interval);
+        MetadataStore store = new SimpleMetadataStore(interval.numDimensions());
         RandomAccessibleInterval<DoubleType> intervaled = Views.interval(data, interval);
         return DatasetInterval.wrap(intervaled, store);
     }
@@ -273,16 +272,6 @@ public class DatasetIntervalViewTest {
         Assert.assertEquals(Axes.Z, calView.axis(2).type());
         Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
         Assert.assertEquals(Axes.TIME, calView.axis(4).type());
-    }
-
-    @Test
-    public void testLoopBuilder() {
-        // Slim down the image :)
-        DatasetInterval<DoubleType> dataset = calibratedDataset().view().interval(new FinalInterval(5, 5, 5, 5, 5));
-        // TODO: Calibration should own the conventional keys
-        IntervaledMetadataItem<DoubleType> x_axis = dataset.store().item("axis_data", DoubleType.class, 0);
-        // Pass the data along with our metadata to LoopBuilder
-        LoopBuilder.setImages(dataset, x_axis).forEachPixel(AbstractRealType::set);
     }
 
     private Axis axis(AxisType axisType) {
