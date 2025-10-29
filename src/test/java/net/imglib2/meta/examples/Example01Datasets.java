@@ -3,9 +3,7 @@ package net.imglib2.meta.examples;
 import net.imglib2.*;
 import net.imglib2.meta.Dataset;
 import net.imglib2.meta.interval.DatasetInterval;
-import net.imglib2.meta.real.RealDataset;
 import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -47,19 +45,10 @@ public class Example01Datasets {
 //        DoubleType someOtherResult = someExistingUnusableFunctionality(dataset);
 
         /*
-         * Naturally, to complement Dataset are DatasetIntervals, which wrap RandomAccessibleIntervals...
+         * Naturally, to complement Dataset are DatasetIntervals, which wrap RandomAccessibleIntervals
          */
         RandomAccessibleInterval<DoubleType> someInterval = someData.view().interval(new FinalInterval(10, 10));
         DatasetInterval<DoubleType> datasetInterval = DatasetInterval.wrap(someInterval);
-        /*
-         * ...and RealDatasets, which wrap RealRandomAccessibles.
-         */
-        RealRandomAccessible<DoubleType> someRealData = new FunctionRealRandomAccessible<>( //
-            2, //
-            (pos, out) -> out.set(pos.getDoublePosition(0) * pos.getDoublePosition(1)), //
-            DoubleType::new //
-        );
-        RealDataset<DoubleType, ?> datasetReal = RealDataset.wrap(someRealData);
     }
 
     private static <T extends RealType<T>> T localMeanAround(RandomAccessible<T> rai, Point point) {

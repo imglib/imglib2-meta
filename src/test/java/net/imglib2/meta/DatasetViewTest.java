@@ -39,10 +39,8 @@ import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.interval.DatasetInterval;
-import net.imglib2.meta.real.RealDataset;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.fluent.RandomAccessibleIntervalView;
-import net.imglib2.view.fluent.RandomAccessibleView;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -240,21 +238,6 @@ public class DatasetViewTest {
 		Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
 		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
 	}
-
-	@Test
-	public void testInterpolate() {
-		RealDataset<DoubleType, ?> interpolated = dataset().view() //
-				.interpolate(RandomAccessibleView.Interpolation.nearestNeighbor()); //
-
-		// Assert axes unchanged
-		Calibration calView = interpolated.store().info(Calibration.class);
-		Assert.assertEquals(Axes.X, calView.axis(0).type());
-		Assert.assertEquals(Axes.Y, calView.axis(1).type());
-		Assert.assertEquals(Axes.Z, calView.axis(2).type());
-		Assert.assertEquals(Axes.CHANNEL, calView.axis(3).type());
-		Assert.assertEquals(Axes.TIME, calView.axis(4).type());
-	}
-
 	private Axis axis(AxisType axisType) {
 		return new DefaultLinearAxis(axisType, 1, 0);
 	}

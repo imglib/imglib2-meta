@@ -6,7 +6,6 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.meta.interval.DatasetIntervalView;
-import net.imglib2.meta.real.RealDataset;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.util.Util;
 import net.imglib2.view.MixedTransformView;
@@ -14,6 +13,7 @@ import net.imglib2.view.SubsampleView;
 import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.Views;
 import net.imglib2.view.fluent.RandomAccessibleView;
+import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Supplier;
 
@@ -120,8 +120,9 @@ public interface DatasetView<T, V extends DatasetView<T, V>> extends RandomAcces
     }
 
     @Override
-    default RealDataset<T, ?> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
-        return RealDataset.wrap(RandomAccessibleView.super.interpolate(interpolation), store());
+    default RealRandomAccessibleView<T, ?> interpolate(RandomAccessibleView.Interpolation<T> interpolation) {
+        // TODO: Return a RealDataset
+        return RandomAccessibleView.super.interpolate(interpolation);
     }
 
     // FIXME: Dataset wildcard bound
