@@ -57,7 +57,7 @@ public class Example05MissingMetadata {
          *
          * The syntax here is just or():
          */
-        MetadataItem<String> defaultFoo = Metadata.item("foo", "Default foo MetadataItem", 2);
+        MetadataItem<String> defaultFoo = Metadata.constant("foo", "Default foo MetadataItem", 2);
         System.out.println(foo.or(defaultFoo));
 
         /*

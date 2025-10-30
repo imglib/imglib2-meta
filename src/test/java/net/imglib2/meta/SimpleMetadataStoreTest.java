@@ -76,7 +76,7 @@ public class SimpleMetadataStoreTest {
         calibration.setAxis(new DefaultLinearAxis(Axes.TIME, 1, 0), 4);
 
         ListImg<String> tables = new ListImg<>(Arrays.asList("red", "green", "blue"), 3);
-        store.add("lut", tables, 3);
+        store.add("lut", tables, new int[]{3}, new int[] {});
 
         // Query metadata type-unsafely (using key strings).
         Object authorObject = store.item("author").value();
@@ -98,14 +98,16 @@ public class SimpleMetadataStoreTest {
         assertSame(Axes.X, axis0Type);
         assertSame(Axes.Z, axis2Type);
 
-        MetadataItem<?> lutItem = store.item("lut", 3);
+        MetadataItem<?> lutItem = store.item("lut");
+        assertArrayEquals(new int[] {3}, lutItem.varyingAxes());
         assertEquals("red", lutItem.getAt(0, 0, 0, 0, 0));
         assertEquals("green", lutItem.getAt(0, 0, 0, 1, 0));
         assertEquals("blue", lutItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
         MetadataStore storeView = Metadata.view(store, v);
-        lutItem = storeView.item("lut", 2);
+        lutItem = storeView.item("lut");
+        assertArrayEquals(new int[] {2}, lutItem.varyingAxes());
         assertEquals("red", lutItem.getAt(0, 0, 0, 0, 0));
         assertEquals("green", lutItem.getAt(0, 0, 1, 0, 0));
         assertEquals("blue", lutItem.getAt(0, 0, 2, 0, 0));

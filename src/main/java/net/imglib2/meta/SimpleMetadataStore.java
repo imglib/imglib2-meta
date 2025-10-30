@@ -69,17 +69,17 @@ public class SimpleMetadataStore implements MetadataStore {
 
     @Override
 	public <T> void add(String key, T data, int... dims) {
-		items.add(Metadata.item(key, data, numDims, dims));
+		items.add(Metadata.constant(key, data, numDims, dims));
 	}
 
 	@Override
-	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
-		items.add(Metadata.item(key, data, numDims, dims));
+	public <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
+		items.add(Metadata.variant(key, data, numDims, varyingAxes, attachedAxes));
 	}
 
     @Override
-    public <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {
-        items.add(Metadata.item(key, data, numDims, setter, dims));
+    public <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
+        items.add(Metadata.variant(key, data, numDims, setter, varyingAxes, attachedAxes));
     }
 
 	@Override

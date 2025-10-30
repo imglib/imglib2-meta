@@ -99,7 +99,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
         }
 
         if (dims.length == 0) {
-            return Metadata.item("channel", img.getColorTable(0), numDimensions());
+            return Metadata.constant("channel", img.getColorTable(0), numDimensions());
         }
         if (dims.length == 1 && metaAxis(dims[0]) != Axes.CHANNEL) {
             throw new IllegalArgumentException("Axis " + dims[0] + " is not the channel axis!");
@@ -109,7 +109,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             pos -> img.getColorTable(pos.getIntPosition(0))
         );
         BiConsumer<Localizable, ColorTable> setter = (pos, table) -> img.setColorTable(table, pos.getIntPosition(dims[0]));
-        return Metadata.item(
+        return Metadata.variant(
             Channels.CHANNEL,
             imgView,
             numDimensions(),
@@ -122,7 +122,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
         if (isNot(ofType, String.class)) {
             throw new IllegalArgumentException("name must be of type String");
         }
-        return Metadata.item(General.NAME, img.getMetadata().getDatasetName(), numDimensions());
+        return Metadata.constant(General.NAME, img.getMetadata().getDatasetName(), numDimensions());
     }
 
     private <T> MetadataItem<AxisType> handleAxisType(Class<T> ofType, int... d) {
@@ -133,7 +133,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             throw new IllegalArgumentException("axis_type must be associated with exactly one axis (got " + (d == null ? 0 : d.length) + ")");
         }
         int axisIndex = d[0];
-        return Metadata.item(
+        return Metadata.constant(
             Calibration.AXIS_TYPE,
             metaAxis(axisIndex),
             numDimensions(),
@@ -155,7 +155,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             () -> (pos, out) -> out.set(ax.calibratedValue(pos.getIntPosition(0))),
             DoubleType::new
         );
-        return Metadata.item(Calibration.AXIS_DATA, data, numDimensions(), d);
+        return Metadata.variant(Calibration.AXIS_DATA, data, numDimensions(), d);
     }
 
     private <T> MetadataItem<String> handleAxisUnits(Class<T> ofType, int... d) {
@@ -167,7 +167,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
         }
         int axisIndex = d[0];
         net.imagej.axis.CalibratedAxis ax = img.getImageMetadata().getAxis(axisIndex);
-        return Metadata.item(
+        return Metadata.constant(
                 Calibration.AXIS_UNITS,
                 ax.unit(),
                 numDimensions(),

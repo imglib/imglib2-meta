@@ -35,6 +35,7 @@ package net.imglib2.meta;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
+import net.imglib2.view.fluent.RandomAccessibleView;
 
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
@@ -89,17 +90,61 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
     }
 	// -- default utility methods -- //
 
-	/**
-	 * Describes whether all dimensions in {@code dims} are in {d<sub>1</sub>, d<sub>2</sub>, ..., d<sub>m</sub>}.
+    /**
+     * Describes the axes this metadata is attached to.
      * <p>
-     * FIXME: This API currently can answer the question ("Is this metadata attached to all of the passed dimensions?"),
-     *    but not ("Is this metadata attached to EXACTLY these dimensions?"). The latter is also (more?) useful.
+     * There is a subtle difference between "attached to" and "varying along".
+     * Axis attachment specifies that metadata pertains directly to these axes. If a slice is taken along each of the
+     * attached axes, the metadata would no longer have meaning.
      * </p>
-	 * @param dims a list of dimensional indices
-	 * @return {@code true} iff this {@link MetadataItem} pertains to all
-	 * 		dimensional indices in {@code dims}.
-	 */
-	boolean isAttachedTo(final int... dims);
+     * <p>
+     * The classic case of axis-attached metadata is axis calibration, where each axis has its own
+     * calibration values, label, and unit.
+     * </p>
+     *
+     * @return an {@code int[]}, listing the axes this metadata is attached to.
+     */
+    int[] attachedAxes();
+
+    /**
+     * Tests whether this metadata is attached to <b>exactly</b> the given axes.
+     *
+     * @param dims the axes to test for attachment.
+     * @return true if this metadata is attached to the given axes.
+     */
+    default boolean isAttachedTo(int... dims) {
+        int[] attached = attachedAxes();
+        if (attached.length != dims.length) {
+            return false;
+        }
+        outer:
+        for (int dim : dims) {
+            for (int a : attached) {
+                if (a == dim) {
+                    continue outer;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Describes the axes this metadata varies along.
+     * <p>
+     * There is a subtle difference between "attached to" and "varying along".
+     * Axis variance specifies that metadata values change along these axes. If a slice is taken along each of the
+     * varying axes, the metadata still has meaning, but is constant across the slice.
+     * </p>
+     * <p>
+     * One case of axis-varying metadata is Look Up Tables (LUTs). Each index along a channel axis may have a different
+     * LUT. If so, slicing along one index on the channel axis will result in a constant LUT across all remaining axes.
+     * That LUT still have meaning for the sliced data.
+     * </p>
+     *
+     * @return an {@code int[]}, listing the axes this metadata varies along.
+     */
+    int[] varyingAxes();
 
 	/**
 	 * Returns the value of the metadata at an <em>arbitrary</em> position.

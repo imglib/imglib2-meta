@@ -19,9 +19,6 @@ import java.util.Map;
 /**
  * An example implementation of {@link MetadataStore} that wraps metadata stored in an N5 dataset.
  * <p>
- * TODO: Probably should be an {@link net.imglib2.meta.interval.IntervaledMetadataStore}
- * </p>
- * <p>
  * This implementation is written for eager metadata retrieval. This isn't too bad since the metadata store
  * will not be edited.
  * </p>
@@ -76,7 +73,7 @@ public class N5MetadataStore implements MetadataStore {
     }
 
     private <T> MetadataItem<String> axisUnitItem(int i) {
-        return Metadata.item(
+        return Metadata.constant(
             Calibration.AXIS_UNITS,
             axisUnits(i),
             numDimensions(),
@@ -95,11 +92,11 @@ public class N5MetadataStore implements MetadataStore {
                 () -> (pos, out) -> out.set(scale.get(i) * pos.getLongPosition(0) + translate.get(i)),
                 DoubleType::new
         );
-        return Metadata.item(Calibration.AXIS_DATA, data, numDimensions(), i);
+        return Metadata.variant(Calibration.AXIS_DATA, data, numDimensions(), new int[] {i}, i);
     }
 
     private <T> MetadataItem<AxisType> axisTypeItem(int i) {
-        return Metadata.item(
+        return Metadata.constant(
             Calibration.AXIS_TYPE,
             axisType(i),
             numDimensions(),
@@ -109,7 +106,7 @@ public class N5MetadataStore implements MetadataStore {
 
     private <T> MetadataItem<String> nameItem() {
         String name = reader.getAttribute(dataset, "name", String.class);
-        return Metadata.item(General.NAME, name, numDimensions());
+        return Metadata.constant(General.NAME, name, numDimensions());
     }
 
 

@@ -93,22 +93,23 @@ public interface MetadataStore extends EuclideanSpace {
     }
 
     /**
-     * Adds metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * Adds metadata {@code data} associated with key {@code key} and axes {@code attachedAxes}.
      * <p>
      * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
      * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
      * </p>
      * @param key the identifier of the metadata item
      * @param data the metadata
-     * @param dims the axes associated with the metadata item
+     * @param varyingAxes the axes (in the data dimension) where this metadata varies.
+     * @param attachedAxes the axes associated with the metadata item
      */
-	default <T> void add(String key, RandomAccessible<T> data, int... dims) {
+	default <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
         // Implementations may override to implement metadata writes
         throw new UnsupportedOperationException(getClass() + " is Read-only!");
     }
 
     /**
-     * Adds <em>mutable</em> metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * Adds <em>mutable</em> metadata {@code data} associated with key {@code key} and axes {@code attachedAxes}.
      * <p>
      * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
      * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
@@ -117,9 +118,10 @@ public interface MetadataStore extends EuclideanSpace {
      * @param data the metadata
      * @param setter a function able to update the metadata value at a given position
      * TODO: This parameter is <b>REALLY</b> unfortunate. Very interested in better designs.
-     * @param dims the axes associated with the metadata item
+     * @param varyingAxes the axes (in the data dimension) where this metadata varies.
+     * @param attachedAxes the axes associated with the metadata item
      */
-    default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int... dims) {
+    default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
         throw new UnsupportedOperationException("This MetadataStore is read-only!");
     }
 }

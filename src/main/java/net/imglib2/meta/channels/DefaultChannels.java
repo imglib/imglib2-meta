@@ -33,7 +33,7 @@
  */
 package net.imglib2.meta.channels;
 
-import net.imglib2.*;
+import net.imglib2.Point;
 import net.imglib2.display.ColorTable;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
@@ -42,15 +42,12 @@ import net.imglib2.meta.calibration.Axes;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public class DefaultChannels implements Channels {
 
 	private static final Supplier<RuntimeException> NO_CHANNEL_AXIS_YET = //
 			() -> new RuntimeException("The channel axis has not yet been set!");
-	private final Map<Integer, ColorTable> savedLUTs = new HashMap<>();
 
 	private MetadataStore metaData;
 
@@ -66,18 +63,22 @@ public class DefaultChannels implements Channels {
 
 	@Override
 	public ColorTable lut(int c) {
-		Optional<Integer> axis = Metadata.calibration(this.metaData).indexOf(Axes.CHANNEL);
-		if (axis.isPresent()) {
-			Point point = pointCache.get();
-			for (int i = 0; i < point.numDimensions(); i++) {
-				point.setPosition(axis.get() == i ? c : 0, i);
-			}
-			return metaData.item(CHANNEL, ColorTable.class, axis.get()).getAt(point);
-		}
-		else {
-			// One LUT for the whole image
-			return metaData.item(CHANNEL, ColorTable.class).getAt(new long[metaData.numDimensions()]);
-		}
+        MetadataItem<ColorTable> item = metaData.item(CHANNEL, ColorTable.class);
+        int[] varyingAxes = item.varyingAxes();
+        if (varyingAxes.length == 1) {
+            int lutAxis = varyingAxes[0];
+            Point point = pointCache.get();
+            for (int i = 0; i < point.numDimensions(); i++) {
+                point.setPosition(lutAxis == i ? c : 0, i);
+            }
+            return item.getAt(point);
+        } else if (varyingAxes.length == 0){
+            // One global LUT
+            return item.value();
+        }
+        else {
+            throw new IllegalStateException("LUTs vary along multiple axes, cannot get by channel index alone.");
+        }
 	}
 
 	@Override
@@ -85,7 +86,7 @@ public class DefaultChannels implements Channels {
 		int axis = Metadata.calibration(this.metaData)
 				.indexOf(Axes.CHANNEL)
 				.orElseThrow(NO_CHANNEL_AXIS_YET);
-		MetadataItem<ColorTable> item = metaData.item(CHANNEL, ColorTable.class, axis).or(() -> {
+		MetadataItem<ColorTable> item = metaData.item(CHANNEL, ColorTable.class).or(() -> {
             // Create the item if it doesn't exist yet, and returnthat.
             // FIXME: This should really be a ListImg, but we don't know the number of channels (yet)
             ColorTableRAI newLut = new ColorTableRAI();
@@ -97,8 +98,9 @@ public class DefaultChannels implements Channels {
                 CHANNEL,
                 newLut,
                 (pos, table) -> newLut.setLut(pos.getIntPosition(axis), table),
-                axis);
-            return metaData.item(CHANNEL, ColorTable.class, axis);
+                new int[] {axis}
+            );
+            return metaData.item(CHANNEL, ColorTable.class);
         });
         Point point = pointCache.get();
         for (int i = 0; i < point.numDimensions(); i++) {

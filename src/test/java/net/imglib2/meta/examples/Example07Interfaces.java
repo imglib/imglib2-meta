@@ -71,8 +71,8 @@ public class Example07Interfaces {
 
         public MyMetadataStore() {
             items = new ArrayList<>();
-            items.add(Metadata.item(General.NAME, "A great name from my custom metadata", numDimensions()));
-            items.add(Metadata.item(General.DESCRIPTION, "An awesome description from my custom metadata", numDimensions()));
+            items.add(Metadata.constant(General.NAME, "A great name from my custom metadata", numDimensions()));
+            items.add(Metadata.constant(General.DESCRIPTION, "An awesome description from my custom metadata", numDimensions()));
         }
 
         @Override

@@ -77,8 +77,36 @@ public class MetadataStoreView implements MetadataStore {
     @Override
     public Collection<? extends MetadataItem<?>> items() {
         return source.items().stream() //
-                .map(this::itemView) //
+                .filter(this::shouldIncludeItem) //
+                .<MetadataItem<?>>map(this::itemView) //
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Returns true if this metadata item should be included in the view.
+     * Items attached ONLY to sliced-out axes should be excluded.
+     */
+    private boolean shouldIncludeItem(MetadataItem<?> item) {
+        int[] attachedAxes = item.attachedAxes();
+        if (attachedAxes.length == 0) {
+            // Not attached to any axes, always include
+            return true;
+        }
+        
+        // Check if at least one attached axis is still present in the view
+        for (int sourceAxis : attachedAxes) {
+            // Check if this source axis maps to any target dimension
+            for (int targetDim = 0; targetDim < transform.numTargetDimensions(); targetDim++) {
+                if (!transform.getComponentZero(targetDim) && 
+                    transform.getComponentMapping(targetDim) == sourceAxis) {
+                    // At least one attached axis is preserved
+                    return true;
+                }
+            }
+        }
+        
+        // All attached axes were sliced out
+        return false;
     }
 
 	@Override
@@ -120,7 +148,7 @@ public class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
+	public <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
         // This theoretically would work...but it could have unintended consequences
         // if the caller does not know it is a view. It's probably best to keep it read-only.
         // If it is known to be a view, it's probably feasible to add the metadata to the source directly.

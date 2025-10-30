@@ -74,43 +74,41 @@ public final class Metadata {
 	 * @param key the {@link String} key associated with the item
 	 * @param data the metadata value associated with the item. Constant across the metadata sapce.
 	 * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
-	 * @param dims the dimension indices to which this item pertains.
+	 * @param attachedAxes the dimension indices to which this item is attached.
 	 * @return a {@link MetadataItem}
 	 * @param <T> the type of {@code data}
 	 */
-	public static <T> MetadataItem<T> item(String key, T data, int numDims, int... dims) {
-		return new SimpleItem<>(key, data, numDims, dims);
+	public static <T> MetadataItem<T> constant(String key, T data, int numDims, int... attachedAxes) {
+		return new ConstantItem<>(key, data, numDims, attachedAxes);
 	}
 
     /**
      * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
-     * <p>
-     * TODO: This API could have problems for creating a SimpleItem from a RandomAccessible.
-     * One use for this is a thumbnail image.
-     * </p>
      * @param key the {@link String} key associated with the item
      * @param data the metadata value associated with the item. May vary across the metadata space.
-     * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
-     * @param dims the dimension indices to which this item pertains.
+     * @param n the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
+     * @param varyingAxes the dimension indices along which this metadata varies. 0 <= varyingAxes[i] < m.
+     * @param attachedAxes the dimension indices to which this item pertains.0 <= attachedAxes[i] < n.
      * @return a {@link MetadataItem}
      * @param <T> the type of {@code data}
      */
-	public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, int... dims) {
-		return new VaryingItem<>(key, data, numDims, dims);
+	public static <T, U extends RandomAccessible<T>> MetadataItem<T> variant(String key, U data, int n, int[] varyingAxes, int... attachedAxes) {
+		return new VaryingItem<>(key, data, n, varyingAxes, attachedAxes);
 	}
 
     /**
      * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
      *
      * @param key the {@link String} key associated with the item
-     * @param data the metadata value associated with the item. May vary across the metadata space.
-     * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
-     * @param dims the dimension indices to which this item pertains.
+     * @param data an {@code m}-dimensional metadata item.
+     * @param n the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
+     * @param varyingAxes the dimension indices along which this metadata varies. 0 <= varyingAxes[i] < m.
+     * @param attachedAxes the dimension indices to which this item pertains.0 <= attachedAxes[i] < n.
      * @return a {@link MetadataItem}
      * @param <T> the type of {@code data}
      */
-    public static <T, U extends RandomAccessible<T>> MetadataItem<T> item(String key, U data, int numDims, BiConsumer<Localizable, T> setter, int... dims) {
-        return new VaryingItem<>(key, data, setter, numDims, dims);
+    public static <T, U extends RandomAccessible<T>> MetadataItem<T> variant(String key, U data, int n, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
+        return new VaryingItem<>(key, data, setter, n, varyingAxes, attachedAxes);
     }
 
 	public static MetadataStore view(MetadataStore source, MixedTransformView<?> view) {
@@ -149,22 +147,15 @@ public final class Metadata {
         }
 
         @Override
-        public boolean isAttachedTo(int... dims) {
-            for (int d: dims) {
-                boolean found = false;
-                for (int attached: attachedAxes) {
-                    if (d == attached) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            }
-            return true;
+        public int[] attachedAxes() {
+            return attachedAxes;
         }
 
+        @Override
+        public int[] varyingAxes() {
+            // Absent metadata has no varying axes
+            return new int[0];
+        }
 
         @Override
         public RandomAccess<T> randomAccess() {
@@ -215,14 +206,14 @@ public final class Metadata {
     }
 
 
-    private static class SimpleItem<T> implements MetadataItem<T> {
+    private static class ConstantItem<T> implements MetadataItem<T> {
 		final String name;
         T data;
 
         final int numDimensions;
         final int[] attachedAxes;
 
-		public SimpleItem(final String name, final T data, final int numDimensions, final int... attachedAxes) {
+		public ConstantItem(final String name, final T data, final int numDimensions, final int... attachedAxes) {
 			this.name = name;
 			this.data = data;
             this.numDimensions = numDimensions;
@@ -290,55 +281,48 @@ public final class Metadata {
         }
 
         @Override
-        public boolean isAttachedTo(int... dims) {
-            for (int dim : dims) {
-                boolean found = false;
-                for (int attachedAx : attachedAxes) {
-                    if (dim == attachedAx) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            }
-            return true;
+        public int[] attachedAxes() {
+            return attachedAxes;
+        }
+
+        @Override
+        public int[] varyingAxes() {
+            // Simple metadata is constant, so has no varying axes
+            return new int[0];
         }
     }
 
-	private static Mixed transformFromAttachedAxes(int numDimensions, int[] attachedAxes) {
-        MixedTransform transform = new MixedTransform(numDimensions, attachedAxes.length);
-		transform.setComponentMapping(attachedAxes);
+	private static Mixed transformFromAttachedAxes(int numDimensions, int[] varyingAxes) {
+        MixedTransform transform = new MixedTransform(numDimensions, varyingAxes.length);
+		transform.setComponentMapping(varyingAxes);
 		return transform;
 	}
 
 	private static class VaryingItem<T, F extends RandomAccessible<T>> extends MixedTransformView<T> implements MetadataItem<T> {
 		final String name;
-
 		final F data;
-
         final ThreadLocal<Point> pointCache = ThreadLocal.withInitial(() -> new Point(numDimensions()));
-
         final BiConsumer<Localizable, T> setter;
+        final int[] attachedAxes;
 
-		public VaryingItem(final String name, final F data, final int numDimensions, final int... dims) {
-			this(name, data, transformFromAttachedAxes(numDimensions, dims));
+		public VaryingItem(final String name, final F data, final int numDimensions, final int[] varyingAxes, final int... attachedAxes) {
+			this(name, data, transformFromAttachedAxes(numDimensions, varyingAxes), attachedAxes);
 		}
 
-        private VaryingItem(final String name, final F data, BiConsumer<Localizable, T> setter, final int numDimensions, final int... dims) {
-            this(name, data, transformFromAttachedAxes(numDimensions, dims), setter);
+        private VaryingItem(final String name, final F data, BiConsumer<Localizable, T> setter, final int numDimensions, final int[] varyingAxes, final int... attachedAxes) {
+            this(name, data, transformFromAttachedAxes(numDimensions, varyingAxes), setter, attachedAxes);
         }
 
-		private VaryingItem(final String name, final F data, final Mixed tform) {
-            this(name, data, tform, (pos, val) -> {});
+		private VaryingItem(final String name, final F data, final Mixed tform, final int... attachedAxes) {
+            this(name, data, tform, (pos, val) -> {}, attachedAxes);
 		}
 
-        private VaryingItem(final String name, final F data, final Mixed tform, BiConsumer<Localizable, T> setter) {
+        private VaryingItem(final String name, final F data, final Mixed tform, BiConsumer<Localizable, T> setter, final int... attachedAxes) {
             super(data, tform);
             this.name = name;
             this.data = data;
             this.setter = setter;
+            this.attachedAxes = attachedAxes;
         }
 
 		@Override
@@ -391,20 +375,14 @@ public final class Metadata {
         }
 
         @Override
-        public boolean isAttachedTo(int... dims) {
-            for (int dim : dims) {
-                boolean found = false;
-                for (int j = 0; j < getTransformToSource().numTargetDimensions(); j++) {
-                    if (dim == getTransformToSource().getComponentMapping(j)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            }
-            return true;
+        public int[] attachedAxes() {
+            return attachedAxes;
+        }
+        @Override
+        public int[] varyingAxes() {
+            int[] varyingAxes = new int[getTransformToSource().numTargetDimensions()];
+            getTransformToSource().getComponentMapping(varyingAxes);
+            return varyingAxes;
         }
     }
 

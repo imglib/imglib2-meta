@@ -139,24 +139,21 @@ public class ImagePlusMetadataStore implements MetadataStore {
                 .map(LUTToColorTable::wrap) //
                 .collect(Collectors.toList());
         if (tables.isEmpty()) {
-            throw new NoSuchElementException("RGB images have no LUTs");
+            return Metadata.absent(Channels.CHANNEL, numDimensions(), dims);
         }
-        if (dims.length == 0) {
-            if (tables.size() != 1) {
-                throw new IllegalArgumentException("Color Tables must be associated with exactly one axis");
-            }
-            return Metadata.item("channel", tables.get(0), numDimensions());
+        else if (tables.size() == 1) {
+            return Metadata.constant(Channels.CHANNEL, tables.get(0), numDimensions());
         }
-        if (dims.length == 1 && axisType(dims[0]) != Axes.CHANNEL) {
-            throw new IllegalArgumentException("Axis " + dims[0] + " is not the channel axis!");
-        }
-        ListImg<ColorTable> ctable = new ListImg<>(tables, tables.size());
-        return Metadata.item(
+        else {
+            int varyingDim = 2; // Default Channel dim - see axisType
+            ListImg<ColorTable> ctable = new ListImg<>(tables, tables.size());
+            return Metadata.variant(
                 Channels.CHANNEL,
                 ctable,
                 numDimensions(),
-                dims
-        );
+                new int[] {varyingDim}
+            );
+        }
     }
 
     private <T> MetadataItem<DoubleType> handleAxisData(Class<T> ofType, int[] dims) {
@@ -176,10 +173,11 @@ public class ImagePlusMetadataStore implements MetadataStore {
                 () -> (pos, out) -> out.set(calibration(type) * pos.getDoublePosition(0)),
                 DoubleType:: new
         );
-        return Metadata.item(
+        return Metadata.variant(
             Calibration.AXIS_DATA,
             data,
             numDimensions(),
+            new int[] {d},
             d
         );
     }
@@ -196,7 +194,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
         if (type == null) {
             throw new IllegalArgumentException("Cannot determine AxisType for axis " + d);
         }
-        return Metadata.item(
+        return Metadata.constant(
                 Calibration.AXIS_UNITS,
                 units(type),
                 numDimensions(),
@@ -212,7 +210,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
             throw new IllegalArgumentException("axis_type must be associated with exactly one axis (got " + (dims == null ? 0 : dims.length) + ")");
         }
         int axisIndex = dims[0];
-        return Metadata.item(
+        return Metadata.constant(
             Calibration.AXIS_TYPE,
             axisType(axisIndex),
             numDimensions(),
@@ -224,7 +222,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
         if (isNot(ofType, String.class)) {
             throw new IllegalArgumentException("name must be of type String");
         }
-        return Metadata.item(General.NAME, imp.getTitle(), numDimensions());
+        return Metadata.constant(General.NAME, imp.getTitle(), numDimensions());
     }
 
     private static <T, U> boolean isNot(Class<T> src, Class<U> tgt) {

@@ -76,13 +76,13 @@ public class DefaultCalibration implements Calibration {
 		}
 
         @Override
-        public boolean isAttachedTo(int... dims) {
-            for (int d : dims) {
-                if (d != dim) {
-                    return false;
-                }
-            }
-            return true;
+        public int[] attachedAxes() {
+            return new int[] {dim};
+        }
+
+        @Override
+        public int[] varyingAxes() {
+            return new int[] {0};
         }
 
         @Override
@@ -144,7 +144,7 @@ public class DefaultCalibration implements Calibration {
 
 	@Override
 	public void setAxis(final Axis axis, final int d) {
-        metaData.add(AXIS_DATA, axis.data(), d);
+        metaData.add(AXIS_DATA, axis.data(), new int[] {d}, d);
 		metaData.add(AXIS_TYPE, axis.type(), d);
         metaData.add(AXIS_UNITS, axis.unit(), d);
 	}

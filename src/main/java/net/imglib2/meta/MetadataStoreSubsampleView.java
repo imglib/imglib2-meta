@@ -78,7 +78,7 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String key, RandomAccessible<T> data, int... dims) {
+	public <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
         // Assigning this data to the source would require interpolation of sorts.
         throw new UnsupportedOperationException("Subsample views on metadata are read-only");
 	}
@@ -107,9 +107,14 @@ public class MetadataStoreSubsampleView implements MetadataStore {
 		}
 
         @Override
-        public boolean isAttachedTo(int... dims) {
-            return source.isAttachedTo(dims);
+        public int[] attachedAxes() {
+            return source.attachedAxes();
         }
-	}
+
+        @Override
+        public int[] varyingAxes() {
+            return source.varyingAxes();
+        }
+    }
 }
 
