@@ -47,6 +47,11 @@ The pain points are:
     * Many common-sense metadata types (e.g. String, `ColorTable`) are not mutable.
   * Do we even need metadata mutability?
 
+**Open Questions**
+* Should `MetadataItem`s have a mechanism to get back some "source" data?
+  * For example, the source `String` behind a constant `MetadataItem<String>`, or the source `RandomAccessible` behind a non-constant one.
+* Should `MetadataStore`s have API to add a `MetadataItem`, instead of just taking the components?
+
 **Future Work**
 Where do we go from here?
 * Spec out `HasMetadataStore` interfaces for OME-NGFF metadata?
