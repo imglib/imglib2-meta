@@ -46,7 +46,7 @@ public class MetadataStoreView implements MetadataStore {
 	protected final MetadataStore source;
     protected final MixedTransform transform;
 	// We want the inverse of transform.component for slicing
-	private final int[] dim_map;
+	private final int[] inverseComponentMapping;
 
 	public MetadataStoreView(MetadataStore source, Mixed transform) {
 		if (source instanceof MetadataStoreView) {
@@ -60,17 +60,17 @@ public class MetadataStoreView implements MetadataStore {
 			this.transform.set(transform);
 		}
 
-		this.dim_map = new int[ this.transform.numSourceDimensions() ];
+		this.inverseComponentMapping = new int[ this.transform.numSourceDimensions() ];
 		for ( int d = 0; d < this.transform.numTargetDimensions(); ++d )
 		{
 			if (!this.transform.getComponentZero(d) )
 			{
 				final int e = this.transform.getComponentMapping(d);
-				this.dim_map[ e ] = d;
+				this.inverseComponentMapping[ e ] = d;
 			}
 		}
 		for ( int i = this.transform.numTargetDimensions(); i < this.transform.numSourceDimensions(); i++) {
-			this.dim_map[i] = i;
+			this.inverseComponentMapping[i] = i;
 		}
 	}
 
@@ -78,7 +78,7 @@ public class MetadataStoreView implements MetadataStore {
     public Collection<? extends MetadataItem<?>> items() {
         return source.items().stream() //
                 .filter(this::shouldIncludeItem) //
-                .<MetadataItem<?>>map(this::itemView) //
+                .map(this::itemView) //
                 .collect(Collectors.toList());
     }
     
@@ -92,19 +92,14 @@ public class MetadataStoreView implements MetadataStore {
             // Not attached to any axes, always include
             return true;
         }
-        
+
         // Check if at least one attached axis is still present in the view
         for (int sourceAxis : attachedAxes) {
-            // Check if this source axis maps to any target dimension
-            for (int targetDim = 0; targetDim < transform.numTargetDimensions(); targetDim++) {
-                if (!transform.getComponentZero(targetDim) && 
-                    transform.getComponentMapping(targetDim) == sourceAxis) {
-                    // At least one attached axis is preserved
-                    return true;
-                }
+            if (!transform.getComponentZero(sourceAxis)) {
+                return true; // This attached axis is still present
             }
         }
-        
+
         // All attached axes were sliced out
         return false;
     }
@@ -113,10 +108,10 @@ public class MetadataStoreView implements MetadataStore {
 	public <T> MetadataItem<T> item(String key, Class<T> ofType, int... dims) {
 		final int[] dd = new int[dims.length];
 		for(int i = 0; i < dd.length; i++) {
-			if (dim_map.length <= dims[i]) {
+			if (inverseComponentMapping.length <= dims[i]) {
 				throw new IllegalArgumentException("Dimensions " + Arrays.toString(dims) + " is not present in the source metadata.");
 			}
-			dd[i] = dim_map[dims[i]];
+			dd[i] = inverseComponentMapping[dims[i]];
 		}
 		return itemView(source.item(key, ofType, dd));
 	}

@@ -6,6 +6,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
+/**
+ * Tests for {@link MetadataStoreView} focusing on how slicing affects
+ * metadata items based on their attached and varying axes.
+ */
 public class MetadataItemViewTest {
 
 	@Test
@@ -29,12 +33,17 @@ public class MetadataItemViewTest {
 
 	@Test
 	public void testSliceRemovesAttachedAxis() {
+        // Create a varying metadata item attached to axis 2 in a 3D space
 		MetadataItem<String> item = Metadata.constant("z_meta", "z", 3, 2);
 
-		// Slice out axis 2
-		MetadataItemView<String> sliced = item.view().slice(2, 0);
-		// Attached axis (2) is removed in the sliced view
-		Assert.assertArrayEquals(new int[]{}, sliced.attachedAxes());
+        // Slice axis 2 - the attached axis should be removed
+        Assert.assertArrayEquals(new int[]{}, item.view().slice(2, 0).attachedAxes());
+        // Slice axis 0  - the attached axis should change (decrement)
+        Assert.assertArrayEquals(new int[]{1}, item.view().slice(0, 0).attachedAxes());
+        // Permute, then slice axis 0 - attached axis should be removed (advanced)
+        Assert.assertArrayEquals(new int[]{}, item.view().permute(2, 0).slice(0, 0).attachedAxes());
+        // Slice axis 0, then permute - attached axis should update accordingly (advanced)
+        Assert.assertArrayEquals(new int[]{0}, item.view().slice(0, 0).permute(1, 0).attachedAxes());
 	}
 
     @Test
@@ -95,12 +104,13 @@ public class MetadataItemViewTest {
 
     @Test
     public void testSliceRemovesVaryingAxis() {
-        // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        // Create a varying metadata item attached to axis 2 in a 3D space
+        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {2});
 
-        // Slice: Axis 0 (varying)
-        MetadataItemView<DoubleType> permuted = item.view().slice(0, 0);
-        Assert.assertArrayEquals(new int[]{}, permuted.varyingAxes());
+        // Slice axis 2 - the varying attached axis should be removed
+        Assert.assertArrayEquals(new int[]{}, item.view().slice(2, 0).varyingAxes());
+        // Slice axis 0  - the varying axis should change (decrement)
+        Assert.assertArrayEquals(new int[]{1}, item.view().slice(0, 0).varyingAxes());
     }
 
     @Test

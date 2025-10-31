@@ -9,6 +9,7 @@ import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.ViewTransforms;
 import net.imglib2.view.fluent.RandomAccessibleView;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class MetadataItemView<T> extends MixedTransformView<T> implements  MetadataItem<T>, RandomAccessibleView<T, MetadataItemView<T>> {
@@ -38,48 +39,29 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements  Metad
 
     @Override
     public int[] attachedAxes() {
-        // Transform source attached axes to view space
-        int[] sourceAttached = source.attachedAxes();
-
-        // Map from source dimension to target dimension using inverse mapping
-        // If a source dimension is sliced (not present in target), it should not appear in result
-        int[] targetAttached = new int[sourceAttached.length];
-        int count = 0;
-
-        for(int i = 0; i < targetAttached.length; i++) {
-            int attachedDim = sourceAttached[i];
-            if (transform.getComponentZero(attachedDim)) {
-                continue; // This target dimension is sliced out
-            }
-            targetAttached[i] = transform.getComponentMapping(attachedDim);
-            count++;
-        }
-        int[] result = new int[count];
-        System.arraycopy(targetAttached, 0, result, 0, count);
-        return result;
+        return mapAxes(source.attachedAxes());
     }
 
     @Override
     public int[] varyingAxes() {
-        // Transform source attached axes to view space
-        int[] sourceVarying = source.varyingAxes();
+        return mapAxes(source.varyingAxes());
+    }
 
+    private int[] mapAxes(int[] srcAxes) {
         // Map from source dimension to target dimension using inverse mapping
         // If a source dimension is sliced (not present in target), it should not appear in result
-        int[] targetVarying = new int[sourceVarying.length];
+        int[] targetVarying = new int[srcAxes.length];
         int count = 0;
 
         for(int i = 0; i < targetVarying.length; i++) {
-            int attachedDim = sourceVarying[i];
+            int attachedDim = srcAxes[i];
             if (transform.getComponentZero(attachedDim)) {
                 continue; // This target dimension is sliced out
             }
             targetVarying[i] = transform.getComponentMapping(attachedDim);
             count++;
         }
-        int[] result = new int[count];
-        System.arraycopy(targetVarying, 0, result, 0, count);
-        return result;
+        return Arrays.copyOf(targetVarying, count);
     }
 
     @Override
