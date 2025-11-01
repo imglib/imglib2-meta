@@ -41,15 +41,14 @@ import net.imglib2.img.list.ListImg;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.calibration.Axes;
-import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
-import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.type.numeric.real.DoubleType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -96,13 +95,11 @@ public class ImagePlusMetadataStore implements MetadataStore {
         items.add(item(General.NAME, String.class));
         int channelAxis = -1;
         for(int i = 0; i < numDimensions(); i++) {
-            MetadataItem<AxisType> axisTypeItem = item(Calibration.AXIS_TYPE, AxisType.class, i);
+            MetadataItem<Axis> axisTypeItem = item(Calibration.AXIS, Axis.class, i);
             if (axisTypeItem.value() == Axes.CHANNEL) {
                 channelAxis = i;
             }
             items.add(axisTypeItem);
-            items.add(item(Calibration.AXIS_UNITS, String.class, i));
-            items.add(item(Calibration.AXIS_DATA, DoubleType.class, i));
         }
         if (channelAxis != -1) {
             items.add(item(Channels.CHANNEL, ColorTable.class, channelAxis));
@@ -117,12 +114,8 @@ public class ImagePlusMetadataStore implements MetadataStore {
         switch (key) {
             case General.NAME:
                 return (MetadataItem<T>) handleName(ofType);
-            case Calibration.AXIS_TYPE:
+            case Calibration.AXIS:
                 return (MetadataItem<T>) handleAxisType(ofType, dims);
-            case Calibration.AXIS_DATA:
-                return (MetadataItem<T>) handleAxisData(ofType, dims);
-            case Calibration.AXIS_UNITS:
-                return (MetadataItem<T>) handleAxisUnits(ofType, dims);
             case Channels.CHANNEL:
                 return (MetadataItem<T>) handleChannel(ofType, dims);
             default:
@@ -156,65 +149,24 @@ public class ImagePlusMetadataStore implements MetadataStore {
         }
     }
 
-    private <T> MetadataItem<DoubleType> handleAxisData(Class<T> ofType, int[] dims) {
-        if (isNot(ofType, DoubleType.class)) {
-            throw new IllegalArgumentException("axis_data must be of doubles!");
-        }
-        if (dims == null || dims.length != 1) {
-            throw new IllegalArgumentException("axis_data must be associated with exactly one axis (got " + (dims == null ? 0 : dims.length) + ")");
-        }
-        int d = dims[0];
-        AxisType type = axisType(d);
-        if (type == null) {
-            throw new IllegalArgumentException("Cannot determine AxisType for axis " + d);
-        }
-        FunctionRandomAccessible<DoubleType> data = new FunctionRandomAccessible<>(
-                1,
-                () -> (pos, out) -> out.set(calibration(type) * pos.getDoublePosition(0)),
-                DoubleType:: new
-        );
-        return Metadata.variant(
-            Calibration.AXIS_DATA,
-            data,
-            numDimensions(),
-            new int[] {d},
-            d
-        );
-    }
-
-    private <T> MetadataItem<String> handleAxisUnits(Class<T> ofType, int[] dims) {
-        if (isNot(ofType, String.class)) {
-            throw new IllegalArgumentException("axis_units must be strings!");
-        }
-        if (dims == null || dims.length != 1) {
-            throw new IllegalArgumentException("axis_units must be associated with exactly one axis (got " + (dims == null ? 0 : dims.length) + ")");
-        }
-        int d = dims[0];
-        AxisType type = axisType(d);
-        if (type == null) {
-            throw new IllegalArgumentException("Cannot determine AxisType for axis " + d);
-        }
-        return Metadata.constant(
-                Calibration.AXIS_UNITS,
-                units(type),
-                numDimensions(),
-                d
-        );
-    }
-
-    private <T> MetadataItem<AxisType> handleAxisType(Class<T> ofType, int[] dims) {
-        if (isNot(ofType, AxisType.class)) {
+    private <T> MetadataItem<Axis> handleAxisType(Class<T> ofType, int[] dims) {
+        if (isNot(ofType, Axis.class)) {
             throw new IllegalArgumentException("axis_type must be of type AxisType");
         }
         if (dims == null || dims.length != 1) {
             throw new IllegalArgumentException("axis_type must be associated with exactly one axis (got " + (dims == null ? 0 : dims.length) + ")");
         }
-        int axisIndex = dims[0];
+        int idx = dims[0];
+        AxisType type = axisType(idx);
+        if (type == null) {
+            throw new IllegalArgumentException("Cannot determine AxisType for axis " + idx);
+        }
+        Axis ax = new DefaultLinearAxis(type, calibration(type), 0, units(type));
         return Metadata.constant(
-            Calibration.AXIS_TYPE,
-            axisType(axisIndex),
+            Calibration.AXIS,
+            ax,
             numDimensions(),
-            axisIndex
+            idx
         );
     }
 

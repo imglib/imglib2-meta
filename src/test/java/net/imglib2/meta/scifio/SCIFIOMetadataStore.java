@@ -13,7 +13,9 @@ import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
 import net.imglib2.position.FunctionRandomAccessible;
+import net.imglib2.transform.integer.Mixed;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.meta.calibration.Axis;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,9 +27,6 @@ import java.util.function.Supplier;
 /**
  * Wraps a SCIFIO {@link io.scif.Metadata} and {@link ImageMetadata} to provide
  * a read-only {@link MetadataStore} implementation.
- * <p>
- * TODO: Probably should be an {@link net.imglib2.meta.interval.IntervaledMetadataStore}
- * </p>
  * <p>
  * This implementation is written for lazy, read-only metadata retrieval.
  * It's good to evaluate the pros and cons of this approach.
@@ -60,13 +59,11 @@ public class SCIFIOMetadataStore implements MetadataStore{
         items.add(item(General.NAME, String.class));
         int channelAxis = -1;
         for(int i = 0; i < numDimensions(); i++) {
-            MetadataItem<AxisType> axisTypeItem = item(Calibration.AXIS_TYPE, AxisType.class, i);
+            MetadataItem<Axis> axisTypeItem = item(Calibration.AXIS, Axis.class, i);
             if (axisTypeItem.value() == Axes.CHANNEL) {
                 channelAxis = i;
             }
             items.add(axisTypeItem);
-            items.add(item(Calibration.AXIS_UNITS, String.class, i));
-            items.add(item(Calibration.AXIS_DATA, DoubleType.class, i));
         }
         if (channelAxis != -1) {
             items.add(item(Channels.CHANNEL, ColorTable.class, channelAxis));
@@ -80,12 +77,8 @@ public class SCIFIOMetadataStore implements MetadataStore{
         switch (key) {
             case General.NAME:
                 return (MetadataItem<T>) handleName(ofType);
-            case Calibration.AXIS_TYPE:
-                return (MetadataItem<T>) handleAxisType(ofType, dims);
-            case Calibration.AXIS_DATA:
-                return (MetadataItem<T>) handleAxisData(ofType, dims);
-            case Calibration.AXIS_UNITS:
-                return (MetadataItem<T>) handleAxisUnits(ofType, dims);
+            case Calibration.AXIS:
+                return (MetadataItem<T>) handleAxis(ofType, dims);
             case Channels.CHANNEL:
                 return (MetadataItem<T>) handleChannel(ofType, dims);
             default:
@@ -125,53 +118,50 @@ public class SCIFIOMetadataStore implements MetadataStore{
         return Metadata.constant(General.NAME, img.getMetadata().getDatasetName(), numDimensions());
     }
 
-    private <T> MetadataItem<AxisType> handleAxisType(Class<T> ofType, int... d) {
-        if (isNot(ofType, AxisType.class)) {
-            throw new IllegalArgumentException("axis_type must be of type AxisType");
+    private <T> MetadataItem<Axis> handleAxis(Class<T> ofType, int... d) {
+        if (isNot(ofType, Axis.class)) {
+            throw new IllegalArgumentException("axis must be of type Axis");
         }
         if (d == null || d.length != 1) {
-            throw new IllegalArgumentException("axis_type must be associated with exactly one axis (got " + (d == null ? 0 : d.length) + ")");
+            throw new IllegalArgumentException("axis must be associated with exactly one axis (got " + (d == null ? 0 : d.length) + ")");
         }
         int axisIndex = d[0];
+        net.imagej.axis.CalibratedAxis ax = img.getImageMetadata().getAxis(axisIndex);
+        Axis axis = new Axis() {
+            @Override
+            public RandomAccessible<DoubleType> data() {
+                return new FunctionRandomAccessible<>(1,
+                    () -> (pos, out) -> out.set(ax.calibratedValue(pos.getIntPosition(0))),
+                    DoubleType::new
+                );
+            }
+
+            @Override
+            public String unit() {
+                return ax.unit();
+            }
+
+            @Override
+            public AxisType type() {
+                return metaAxis(axisIndex);
+            }
+
+            @Override
+            public Axis view(long[] steps, int... srcAxes) {
+                throw new UnsupportedOperationException("TODO");
+            }
+
+            @Override
+            public Axis view(Mixed transform, int... srcAxes) {
+                throw new UnsupportedOperationException("TODO");
+            }
+        };
+
         return Metadata.constant(
-            Calibration.AXIS_TYPE,
-            metaAxis(axisIndex),
+            Calibration.AXIS,
+            axis,
             numDimensions(),
             axisIndex
-        );
-    }
-
-    private <T> MetadataItem<DoubleType> handleAxisData(Class<T> ofType, int... d) {
-        if (isNot(ofType, DoubleType.class)) {
-            throw new IllegalArgumentException("axis_data must be of doubles!");
-        }
-        if (d == null || d.length != 1) {
-            throw new IllegalArgumentException("axis_data must be associated with exactly one axis (got " + (d == null ? 0 : d.length) + ")");
-        }
-        int axisIndex = d[0];
-        net.imagej.axis.CalibratedAxis ax = img.getImageMetadata().getAxis(axisIndex);
-        FunctionRandomAccessible<DoubleType> data = new FunctionRandomAccessible<>(
-            1,
-            () -> (pos, out) -> out.set(ax.calibratedValue(pos.getIntPosition(0))),
-            DoubleType::new
-        );
-        return Metadata.variant(Calibration.AXIS_DATA, data, numDimensions(), d);
-    }
-
-    private <T> MetadataItem<String> handleAxisUnits(Class<T> ofType, int... d) {
-        if (isNot(ofType, String.class)) {
-            throw new IllegalArgumentException("axis_units must be strings!");
-        }
-        if (d == null || d.length != 1) {
-            throw new IllegalArgumentException("axis_units must be associated with exactly one axis (got " + (d == null ? 0 : d.length) + ")");
-        }
-        int axisIndex = d[0];
-        net.imagej.axis.CalibratedAxis ax = img.getImageMetadata().getAxis(axisIndex);
-        return Metadata.constant(
-                Calibration.AXIS_UNITS,
-                ax.unit(),
-                numDimensions(),
-                d
         );
     }
 

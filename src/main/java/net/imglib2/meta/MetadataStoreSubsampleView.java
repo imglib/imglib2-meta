@@ -115,6 +115,27 @@ public class MetadataStoreSubsampleView implements MetadataStore {
         public int[] varyingAxes() {
             return source.varyingAxes();
         }
+
+        @Override
+        public T valueOr(T defaultValue) {
+            T srcValueOr = source.valueOr(defaultValue);
+            if (srcValueOr == defaultValue) {
+                return srcValueOr;
+            }
+            if (srcValueOr instanceof Subsampleable) {
+                return ((Subsampleable<T>) srcValueOr).view(steps, source.attachedAxes());
+            }
+            return srcValueOr;
+        }
+
+        @Override
+        public T value() {
+            T srcValue = source.value();
+            if (srcValue instanceof Subsampleable) {
+                return ((Subsampleable<T>) srcValue).view(steps, source.attachedAxes());
+            }
+            return srcValue;
+        }
     }
 }
 

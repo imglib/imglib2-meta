@@ -3,12 +3,8 @@ package net.imglib2.meta.n5;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.calibration.Axes;
-import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.general.General;
-import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.type.numeric.real.DoubleType;
 import org.janelia.saalfeldlab.n5.N5Reader;
 
 import java.util.ArrayList;
@@ -44,9 +40,7 @@ public class N5MetadataStore implements MetadataStore {
     private void generateMetadataItems() {
         items.add(nameItem());
         for(int i = 0; i < numDimensions(); i++) {
-            items.add(axisTypeItem(i));
-            items.add(axisUnitItem(i));
-            items.add(axisDataItem(i));
+            items.add(axisItem(i));
         }
     }
 
@@ -72,47 +66,27 @@ public class N5MetadataStore implements MetadataStore {
                 .findFirst().orElseGet(() -> Metadata.absent(key, numDimensions(), dims));
     }
 
-    private <T> MetadataItem<String> axisUnitItem(int i) {
-        return Metadata.constant(
-            Calibration.AXIS_UNITS,
-            axisUnits(i),
-            numDimensions(),
-            i
-        );
-    }
-
     @SuppressWarnings("unchecked")
-    private <T> MetadataItem<DoubleType> axisDataItem(int i) {
+    private MetadataItem<Axis> axisItem(int i) {
         Map<String, Object> axisMap = (Map<String, Object>) reader.getAttribute(dataset, "transform", Map.class);
         List<Double> scale = (List<Double>) axisMap.get("scale");
         List<Double> translate = (List<Double>) axisMap.get("translate");
+        AxisType at = axisType(i);
+        String units = axisUnits(i);
 
-        FunctionRandomAccessible<DoubleType> data = new FunctionRandomAccessible<>(
-                1,
-                () -> (pos, out) -> out.set(scale.get(i) * pos.getLongPosition(0) + translate.get(i)),
-                DoubleType::new
-        );
-        return Metadata.variant(Calibration.AXIS_DATA, data, numDimensions(), new int[] {i}, i);
-    }
-
-    private <T> MetadataItem<AxisType> axisTypeItem(int i) {
         return Metadata.constant(
-            Calibration.AXIS_TYPE,
-            axisType(i),
+            Calibration.AXIS,
+            new DefaultLinearAxis(at, scale.get(i), translate.get(i), units),
             numDimensions(),
             i
         );
     }
 
-    private <T> MetadataItem<String> nameItem() {
+    private MetadataItem<String> nameItem() {
         String name = reader.getAttribute(dataset, "name", String.class);
         return Metadata.constant(General.NAME, name, numDimensions());
     }
 
-
-    private static <T, U> boolean isNot(Class<T> src, Class<U> tgt) {
-        return src != null && !src.isAssignableFrom(tgt);
-    }
 
     @SuppressWarnings("unchecked")
     private AxisType axisType(int axisIndex) {

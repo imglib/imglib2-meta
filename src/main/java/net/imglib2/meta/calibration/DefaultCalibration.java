@@ -33,14 +33,7 @@
  */
 package net.imglib2.meta.calibration;
 
-import net.imglib2.Interval;
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessible;
-import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.type.numeric.real.DoubleType;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -48,57 +41,7 @@ import java.util.Optional;
 public class DefaultCalibration implements Calibration {
 	private MetadataStore metaData;
 
-	private static class UnknownData implements MetadataItem<DoubleType> {
-
-        private final int dim;
-
-		public UnknownData(int dim) {
-            this.dim = dim;
-		}
-
-		@Override
-		public RandomAccess<DoubleType> randomAccess() {
-			return new FunctionRandomAccessible<>(
-				1,
-				(loc, out) -> out.set(getAt(loc)),
-				DoubleType::new
-			).randomAccess();
-		}
-
-		@Override
-		public RandomAccess<DoubleType> randomAccess(Interval interval) {
-			return randomAccess();
-		}
-
-		@Override
-		public String name() {
-			return AXIS_DATA;
-		}
-
-        @Override
-        public int[] attachedAxes() {
-            return new int[] {dim};
-        }
-
-        @Override
-        public int[] varyingAxes() {
-            return new int[] {0};
-        }
-
-        @Override
-		public DoubleType getAt(Localizable pos) {
-			throw new IllegalArgumentException("Cannot query positions on unknown axes!");
-		}
-
-        @Override
-        public int numDimensions() {
-            return 0;
-        }
-    }
-
-
-
-	@Override
+    @Override
 	public void setStore(MetadataStore store) {
 		this.metaData = store;
 	}
@@ -108,45 +51,15 @@ public class DefaultCalibration implements Calibration {
 		if (d >= metaData.numDimensions()) {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
-		MetadataItem<DoubleType> data = metaData //
-            .item(AXIS_DATA, DoubleType.class, d) //
-            .or(() -> new UnknownData(d));
-		// Construct a
-		ThreadLocal<long[]> cs = ThreadLocal.withInitial(() -> new long[metaData.numDimensions()]);
-		return new Axis() {
-			@Override
-			public double calibrated(double raw) {
-				long[] c = cs.get();
-				c[d] = (long) raw;
-				return data.getAt(c).get();
-			}
-			@Override
-			public RandomAccessible<DoubleType> data() {
-				return new FunctionRandomAccessible<>(
-						1,
-						(pos, out) -> out.set(calibrated(pos.getDoublePosition(0))),
-						DoubleType::new
-				);
-			}
-
-            @Override
-            public String unit() {
-                return metaData.item(AXIS_UNITS, String.class, d).value();
-            }
-
-			@Override
-			public AxisType type() {
-                return metaData.item(AXIS_TYPE, AxisType.class, d).valueOr(Axes.unknown());
-			}
-		};
+		return metaData.item(AXIS, Axis.class, d) //
+            .valueOr(new DefaultLinearAxis(Axes.unknown(), 1, 0));
 	}
 
 
 	@Override
 	public void setAxis(final Axis axis, final int d) {
+        metaData.add(AXIS, axis, d);
         metaData.add(AXIS_DATA, axis.data(), new int[] {d}, d);
-		metaData.add(AXIS_TYPE, axis.type(), d);
-        metaData.add(AXIS_UNITS, axis.unit(), d);
 	}
 
 	@Override

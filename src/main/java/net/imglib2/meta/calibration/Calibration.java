@@ -39,9 +39,8 @@ import java.util.Optional;
 
 public interface Calibration extends HasMetadataStore {
 
-	String AXIS_TYPE = "axis_type";
+	String AXIS = "axis";
     String AXIS_DATA = "axis_data";
-    String AXIS_UNITS = "axis_unit";
 
 	Axis axis(int d);
 	void setAxis(Axis axis, int d);

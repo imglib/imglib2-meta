@@ -73,7 +73,23 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements  Metad
 
     @Override
     public T valueOr(T defaultValue) {
-        return source.valueOr(defaultValue);
+        T srcValueOr = source.valueOr(defaultValue);
+        if (srcValueOr == defaultValue) {
+            return srcValueOr;
+        }
+        if (srcValueOr instanceof Transformable) {
+            return ((Transformable<T>) srcValueOr).view(transform, source.attachedAxes());
+        }
+        return srcValueOr;
+    }
+
+    @Override
+    public T value() {
+        T srcValue = source.value();
+        if (srcValue instanceof Transformable) {
+            return ((Transformable<T>) srcValue).view(transform, source.attachedAxes());
+        }
+        return srcValue;
     }
 
     @Override
