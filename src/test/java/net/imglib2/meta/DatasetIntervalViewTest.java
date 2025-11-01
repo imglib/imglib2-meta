@@ -171,11 +171,11 @@ public class DatasetIntervalViewTest {
         // Translate
         DatasetInterval<DoubleType> translated = calibratedDataset().view().translate(-1, 0, 0, 0, 0);
         Calibration calView = translated.store().info(Calibration.class);
-        Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
+        Assert.assertEquals(new DoubleType(1.0), calView.axis(0).calibrated(0));
         // Translate & permute
         translated = calibratedDataset().view().translate(-1, 0, 0, 0, 0).permute(0, 2);
         calView = translated.store().info(Calibration.class);
-        Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
+        Assert.assertEquals(new DoubleType(1.0), calView.axis(2).calibrated(0));
     }
 
     @Test
@@ -183,11 +183,11 @@ public class DatasetIntervalViewTest {
         // Invert Axis
         DatasetInterval<DoubleType> inverted = calibratedDataset().view().invertAxis(1);
         Calibration calView = inverted.store().info(Calibration.class);
-        Assert.assertEquals(-1.0, calView.axis(1).calibrated(1), 1e-6);
+        Assert.assertEquals(new DoubleType(-1.0), calView.axis(1).calibrated(1));
         // Translate & permute
         inverted = calibratedDataset().view().invertAxis(1).permute(1, 2);
         calView = inverted.store().info(Calibration.class);
-        Assert.assertEquals(-1.0, calView.axis(2).calibrated(1), 1e-6);
+        Assert.assertEquals(new DoubleType(-1.0), calView.axis(2).calibrated(1));
     }
 
     @Test
@@ -195,18 +195,18 @@ public class DatasetIntervalViewTest {
         // Translate
         DatasetInterval<DoubleType> translated = calibratedDataset().view().translateInverse(1, 0, 0, 0, 0);
         Calibration calView = translated.store().info(Calibration.class);
-        Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
+        Assert.assertEquals(new DoubleType(1.0), calView.axis(0).calibrated(0));
         // Translate & permute
         translated = calibratedDataset().view().translateInverse(1, 0, 0, 0, 0).permute(0, 2);
         calView = translated.store().info(Calibration.class);
-        Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
+        Assert.assertEquals(new DoubleType(1.0), calView.axis(2).calibrated(0));
     }
 
     @Test
     public void testFluentSubsampling() {
         DatasetInterval<DoubleType> translated = calibratedDataset().view().subsample(2, 1, 1, 1, 1);
         Calibration calView = translated.store().info(Calibration.class);
-        Assert.assertEquals(2.0, calView.axis(0).calibrated(1), 1e-6);
+        Assert.assertEquals(new DoubleType(2.0), calView.axis(0).calibrated(1));
     }
 
     @Test

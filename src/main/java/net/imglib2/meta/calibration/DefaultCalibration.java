@@ -47,17 +47,27 @@ public class DefaultCalibration implements Calibration {
 	}
 
 	@Override
-	public Axis axis(final int d) {
+	public <F, T extends Axis<F>> T axis(final int d, final Class<T> type) {
 		if (d >= metaData.numDimensions()) {
 			throw new NoSuchElementException("Metadata is only " + metaData.numDimensions() + "-dimensional!");
 		}
-		return metaData.item(AXIS, Axis.class, d) //
-            .valueOr(new DefaultLinearAxis(Axes.unknown(), 1, 0));
+		return metaData.item(AXIS, type, d).valueOr(() -> defaultAxis(type));
 	}
+
+    @SuppressWarnings("unchecked")
+    private <T, F extends Axis<T>> F defaultAxis(final Class<F> axisType) {
+        if (axisType.isAssignableFrom(DefaultLinearAxis.class)) {
+            return (F) new DefaultLinearAxis(Axes.unknown(), 1, 0);
+        }
+        if (axisType.isAssignableFrom(DefaultEnumeratedAxis.class)) {
+            return (F) new DefaultEnumeratedAxis<>(Axes.unknown(), "");
+        }
+        throw new UnsupportedOperationException("Do not know how to make an unknown axis of type " + axisType);
+    }
 
 
 	@Override
-	public void setAxis(final Axis axis, final int d) {
+	public void setAxis(final Axis<?> axis, final int d) {
         metaData.add(AXIS, axis, d);
         metaData.add(AXIS_DATA, axis.data(), new int[] {d}, d);
 	}

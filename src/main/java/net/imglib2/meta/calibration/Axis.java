@@ -33,19 +33,53 @@
  */
 package net.imglib2.meta.calibration;
 
+import net.imglib2.Interval;
+import net.imglib2.Point;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.meta.Subsampleable;
 import net.imglib2.meta.Transformable;
-import net.imglib2.type.numeric.real.DoubleType;
 
-public interface Axis extends Transformable<Axis>, Subsampleable<Axis> {
+public interface Axis<T> extends Transformable<Axis<T>>, Subsampleable<Axis<T>> {
 
-    // FIXME: This interface only allows for double values. String values might also make sense (e.g. for Channel axis).
-    default double calibrated(final double raw){
-        return data().getAt((int) raw).get();
+    T calibrated(final int raw);
+
+    default RandomAccessible<T> data() {
+        return new RandomAccessible<T>() {
+            @Override
+            public RandomAccess<T> randomAccess() {
+                return new RandomAccessImpl();
+            }
+
+            @Override
+            public RandomAccess<T> randomAccess(Interval interval) {
+                return randomAccess();
+            }
+
+            @Override
+            public int numDimensions() {
+                return 1;
+            }
+
+            @Override
+            public T getType() {
+                return calibrated(0);
+            }
+
+            class RandomAccessImpl extends Point implements RandomAccess<T> {
+
+                @Override
+                public T get() {
+                    return calibrated(getIntPosition(0));
+                }
+
+                @Override
+                public RandomAccess<T> copy() {
+                    return new RandomAccessImpl();
+                }
+            }
+        };
     }
-
-    RandomAccessible<DoubleType> data();
 
     String unit();
 

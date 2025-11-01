@@ -173,6 +173,25 @@ public interface MetadataItem<T> extends RandomAccessible<T> {
     }
 
     /**
+     * Returns the value of the metadata at an <em>arbitrary</em> position.
+     * If this metadata is absent, obtains a default from {@code defaultSupplier}.
+     * Convenient for constant metadata.
+     * <p>
+     * This version is useful as it avoids creating the default item unless it is needed.
+     * </p>
+     *
+     * @param defaultSupplier supplies a default value if this metadata is absent.
+     * @return the value of the metadata at an arbitrary position.
+     */
+    default T valueOr(Supplier<T> defaultSupplier) {
+        try {
+            return value();
+        } catch (NoSuchElementException e) {
+            return defaultSupplier.get();
+        }
+    }
+
+    /**
      * Returns {@code this}, unless this {@link MetadataItem} is absent (in which case {@code defaultItem} is returned).
      *
      * @param defaultItem the {@link MetadataItem} to return if this {@link MetadataItem} is absent.

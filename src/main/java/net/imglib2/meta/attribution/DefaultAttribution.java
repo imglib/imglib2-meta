@@ -35,8 +35,6 @@ package net.imglib2.meta.attribution;
 
 import net.imglib2.meta.MetadataStore;
 
-import java.util.NoSuchElementException;
-
 public class DefaultAttribution implements Attribution {
 	private MetadataStore metaData;
 
@@ -47,11 +45,11 @@ public class DefaultAttribution implements Attribution {
 
 	@Override
 	public String author() {
-        return metaData.item(AUTHOR, String.class).valueOr(null);
+        return metaData.item(AUTHOR, String.class).valueOr(() -> null);
 	}
 
 	@Override
 	public String citation() {
-        return metaData.item(CITATION, String.class).valueOr(null);
+        return metaData.item(CITATION, String.class).valueOr(() -> null);
 	}
 }

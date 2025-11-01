@@ -42,8 +42,11 @@ public interface Calibration extends HasMetadataStore {
 	String AXIS = "axis";
     String AXIS_DATA = "axis_data";
 
-	Axis axis(int d);
-	void setAxis(Axis axis, int d);
+	default Axis<?> axis(int d) {
+        return axis(d, Axis.class);
+    }
+    <T, A extends Axis<T>> A axis(int d, Class<A> type);
+	void setAxis(Axis<?> axis, int d);
 
 	/**
 	 * Retrieves the position of the dimension associated with an axis type.

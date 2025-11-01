@@ -61,8 +61,8 @@ public class DefaultLinearAxis implements RealAxis {
     }
 
     @Override
-    public double calibrated(final double raw) {
-        return func.apply(raw);
+    public DoubleType calibrated(final double raw) {
+        return data().getAt(raw);
     }
 
     @Override
@@ -85,12 +85,12 @@ public class DefaultLinearAxis implements RealAxis {
     }
 
     @Override
-    public Axis view(long[] steps, int... srcAxes) {
+    public DefaultLinearAxis view(long[] steps, int... srcAxes) {
         return new DefaultLinearAxis(type, scale * steps[srcAxes[0]], offset, unit);
     }
 
     @Override
-    public Axis view(Mixed transform, int... srcAxes) {
+    public DefaultLinearAxis view(Mixed transform, int... srcAxes) {
         return new DefaultLinearAxis( //
             type, //
             scale * (transform.getComponentInversion(srcAxes[0]) ? -1 : 1), //

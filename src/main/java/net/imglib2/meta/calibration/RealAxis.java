@@ -8,7 +8,14 @@ import net.imglib2.type.numeric.real.DoubleType;
  *
  * @author Gabriel Selzer
  */
-public interface RealAxis extends Axis{
+public interface RealAxis extends Axis<DoubleType>{
+
+    DoubleType calibrated(double raw);
+
+    @Override
+    default DoubleType calibrated(int raw) {
+        return calibrated((double) raw);
+    }
 
     RealRandomAccessible<DoubleType> data();
 }

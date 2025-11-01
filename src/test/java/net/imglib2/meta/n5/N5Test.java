@@ -1,11 +1,10 @@
 package net.imglib2.meta.n5;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.meta.Dataset;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.RealAxis;
 import net.imglib2.meta.general.General;
 import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -55,14 +54,14 @@ public class N5Test {
         List<Double> scale =  (List<Double>) axisMap.get("scale");
         List<String> units =  (List<String>) axisMap.get("units");
         for(int i = 0; i < data.numDimensions(); i++) {
-            Axis metaAxis = c.axis(i);
+            RealAxis metaAxis = c.axis(i, RealAxis.class);
             assertEquals( //
                     axes.get(i).toUpperCase(),
                     metaAxis.type().toString() //
             );
             assertEquals( //
                     scale.get(i) * 1.0 + translate.get(i), //
-                    metaAxis.calibrated(1.0), //
+                    metaAxis.calibrated(1.0).get(), //
                     1e-6 //
             );
             assertEquals(units.get(i), metaAxis.unit());

@@ -150,11 +150,11 @@ public class DatasetViewTest {
 		// Translate
 		Dataset<DoubleType> translated = dataset().view().translate(-1, 0, 0, 0, 0);
 		Calibration calView = translated.store().info(Calibration.class);
-		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
+		Assert.assertEquals(new DoubleType(1.0), calView.axis(0).calibrated(0));
 		// Translate & permute
 		translated = dataset().view().translate(-1, 0, 0, 0, 0).permute(0, 2);
 		calView = translated.store().info(Calibration.class);
-		Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
+		Assert.assertEquals(new DoubleType(1.0), calView.axis(2).calibrated(0));
 	}
 
 	@Test
@@ -162,11 +162,11 @@ public class DatasetViewTest {
 		// Invert Axis
 		Dataset<DoubleType> inverted = dataset().view().invertAxis(1);
 		Calibration calView = inverted.store().info(Calibration.class);
-		Assert.assertEquals(-1.0, calView.axis(1).calibrated(1), 1e-6);
+		Assert.assertEquals(new DoubleType(-1.0), calView.axis(1).calibrated(1));
 		// Translate & permute
 		inverted = dataset().view().invertAxis(1).permute(1, 2);
 		calView = inverted.store().info(Calibration.class);
-		Assert.assertEquals(-1.0, calView.axis(2).calibrated(1), 1e-6);
+		Assert.assertEquals(new DoubleType(-1.0), calView.axis(2).calibrated(1));
 	}
 
 	@Test
@@ -174,18 +174,18 @@ public class DatasetViewTest {
 		// Translate
 		Dataset<DoubleType> translated = dataset().view().translateInverse(1, 0, 0, 0, 0);
 		Calibration calView = translated.store().info(Calibration.class);
-		Assert.assertEquals(1.0, calView.axis(0).calibrated(0), 1e-6);
+		Assert.assertEquals(new DoubleType(1.0), calView.axis(0).calibrated(0));
 		// Translate & permute
 		translated = dataset().view().translateInverse(1, 0, 0, 0, 0).permute(0, 2);
 		calView = translated.store().info(Calibration.class);
-		Assert.assertEquals(1.0, calView.axis(2).calibrated(0), 1e-6);
+		Assert.assertEquals(new DoubleType(1.0), calView.axis(2).calibrated(0));
 	}
 
 	@Test
 	public void testFluentSubsampling() {
 		Dataset<DoubleType> translated = dataset().view().subsample(2, 1, 1, 1, 1);
 		Calibration calView = translated.store().info(Calibration.class);
-		Assert.assertEquals(2.0, calView.axis(0).calibrated(1), 1e-6);
+		Assert.assertEquals(new DoubleType(2.0), calView.axis(0).calibrated(1));
 	}
 
 	@Test

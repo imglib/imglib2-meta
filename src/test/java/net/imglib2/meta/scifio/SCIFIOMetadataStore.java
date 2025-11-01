@@ -7,15 +7,13 @@ import net.imglib2.display.ColorTable;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.calibration.Axes;
-import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.*;
+import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
-import net.imglib2.position.FunctionRandomAccessible;
+import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.meta.calibration.Axis;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,7 +116,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
         return Metadata.constant(General.NAME, img.getMetadata().getDatasetName(), numDimensions());
     }
 
-    private <T> MetadataItem<Axis> handleAxis(Class<T> ofType, int... d) {
+    private <T> MetadataItem<Axis<?>> handleAxis(Class<T> ofType, int... d) {
         if (isNot(ofType, Axis.class)) {
             throw new IllegalArgumentException("axis must be of type Axis");
         }
@@ -127,11 +125,16 @@ public class SCIFIOMetadataStore implements MetadataStore{
         }
         int axisIndex = d[0];
         net.imagej.axis.CalibratedAxis ax = img.getImageMetadata().getAxis(axisIndex);
-        Axis axis = new Axis() {
+        RealAxis axis = new RealAxis() {
             @Override
-            public RandomAccessible<DoubleType> data() {
-                return new FunctionRandomAccessible<>(1,
-                    () -> (pos, out) -> out.set(ax.calibratedValue(pos.getIntPosition(0))),
+            public DoubleType calibrated(double raw) {
+                return data().getAt(raw);
+            }
+
+            @Override
+            public RealRandomAccessible<DoubleType> data() {
+                return new FunctionRealRandomAccessible<>(1,
+                    () -> (pos, out) -> out.set(ax.calibratedValue(pos.getDoublePosition(0))),
                     DoubleType::new
                 );
             }
@@ -147,12 +150,12 @@ public class SCIFIOMetadataStore implements MetadataStore{
             }
 
             @Override
-            public Axis view(long[] steps, int... srcAxes) {
+            public RealAxis view(long[] steps, int... srcAxes) {
                 throw new UnsupportedOperationException("TODO");
             }
 
             @Override
-            public Axis view(Mixed transform, int... srcAxes) {
+            public RealAxis view(Mixed transform, int... srcAxes) {
                 throw new UnsupportedOperationException("TODO");
             }
         };

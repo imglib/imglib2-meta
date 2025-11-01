@@ -1,21 +1,16 @@
 package net.imglib2.meta.scifio;
 
-import io.scif.img.ImgUtilityService;
 import io.scif.img.SCIFIOImgPlus;
-import io.scif.img.converters.PlaneConverterService;
 import io.scif.services.DatasetIOService;
-import io.scif.services.InitializeService;
 import net.imagej.Dataset;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
+import net.imglib2.meta.calibration.RealAxis;
 import net.imglib2.meta.general.General;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.scijava.Context;
-import org.scijava.app.StatusService;
-import org.scijava.io.handle.DataHandleService;
 import org.scijava.io.location.FileLocation;
 
 import java.io.IOException;
@@ -58,14 +53,14 @@ public class SCIFIOTest {
         Calibration c = Metadata.calibration(store);
         for(int i = 0; i < img.numDimensions(); i++) {
             net.imagej.axis.CalibratedAxis ijAxis = img.axis(i);
-            Axis metaAxis = c.axis(i);
+            RealAxis metaAxis = c.axis(i, RealAxis.class);
             assertEquals( //
                 ijAxis.type().toString(), //
                 metaAxis.type().toString() //
             );
             assertEquals( //
                 ijAxis.calibratedValue(1.0), //
-                metaAxis.calibrated(1.0), //
+                metaAxis.calibrated(1.0).get(), //
                 1e-6 //
             );
             assertEquals(ijAxis.unit(), metaAxis.unit());

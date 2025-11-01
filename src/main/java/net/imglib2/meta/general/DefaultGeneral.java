@@ -40,12 +40,12 @@ public class DefaultGeneral implements General{
 
     @Override
     public String name() {
-        return metaData.item("name", String.class).valueOr(null);
+        return metaData.item("name", String.class).valueOr(() -> null);
     }
 
     @Override
     public String description() {
-        return metaData.item("description", String.class).valueOr(null);
+        return metaData.item("description", String.class).valueOr(() -> null);
     }
 
     @Override
