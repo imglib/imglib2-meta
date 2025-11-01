@@ -78,18 +78,18 @@ public interface MetadataStore extends EuclideanSpace {
     }
 
 	/**
-     * Adds metadata {@code data} associated with key {@code key} and axes {@code dims}.
+     * Adds metadata {@code data} associated with key {@code key} and axes {@code attachedAxes}.
      * <p>
      * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
      * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
      * </p>
      * @param key the identifier of the metadata item
      * @param data the metadata
-     * @param dims the axes associated with the metadata item
+     * @param attachedAxes the axes associated with the metadata item
      */
-	default <T> void add(String key, T data, int... dims) {
-        // Implementations may override to implement metadata writes
-        throw new UnsupportedOperationException(getClass() + " is Read-only!");
+	default <T> void add(String key, T data, int... attachedAxes) {
+        // Implementations may override to customize metadata writes
+        add(Metadata.constant(key, data, numDimensions(), attachedAxes));
     }
 
     /**
@@ -104,8 +104,8 @@ public interface MetadataStore extends EuclideanSpace {
      * @param attachedAxes the axes associated with the metadata item
      */
 	default <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
-        // Implementations may override to implement metadata writes
-        throw new UnsupportedOperationException(getClass() + " is Read-only!");
+        // Implementations may override to customize metadata writes
+        add(Metadata.variant(key, data, numDimensions(), varyingAxes, attachedAxes));
     }
 
     /**
@@ -122,6 +122,20 @@ public interface MetadataStore extends EuclideanSpace {
      * @param attachedAxes the axes associated with the metadata item
      */
     default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
-        throw new UnsupportedOperationException("This MetadataStore is read-only!");
+        add(Metadata.variant(key, data, numDimensions(), setter, varyingAxes, attachedAxes));
+    }
+
+    /**
+     * Adds metadata {@code data} associated with key {@code key} and axes {@code attachedAxes}.
+     * <p>
+     * Some {@link MetadataStore}s are <b>read-only</b> and do not support adding new items. Calling this method on
+     * such a {@link MetadataStore} should throw an {@link UnsupportedOperationException}.
+     * </p>
+     * @param item the {@link MetadataItem} to add
+     */
+    @SuppressWarnings("unused")
+    default <T> void add(MetadataItem<T> item) {
+        // Implementations may override to implement metadata writes
+        throw new UnsupportedOperationException(getClass() + " is Read-only!");
     }
 }

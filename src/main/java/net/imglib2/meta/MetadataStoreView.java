@@ -33,7 +33,6 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.RandomAccessible;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 
@@ -124,29 +123,10 @@ public class MetadataStoreView implements MetadataStore {
 	}
 
 	@Override
-	public <T> void add(String key, T data, int... dims) {
+	public <T> void add(MetadataItem<T> item) {
         // This theoretically would work...but it could have unintended consequences
         // if the caller does not know it is a view. It's probably best to keep it read-only.
-        // If it is known to be a view, it's probably feasible to add the metadata to the source directly.
-        throw new UnsupportedOperationException("Views on metadata are read-only");
-        // TODO: But if we did want to implement it, it would look something like this:
-//        int[] targetDims = new int[dims.length];
-//        for (int i = 0; i < targetDims.length; i++) {
-//            if (dims[i] < 0 || dims[i] >= transform.numTargetDimensions()) {
-//                throw new IllegalArgumentException("Dimension " + dims[i] + " out of bounds [0," + transform.numTargetDimensions() + ")");
-//            }
-//            else {
-//                targetDims[i] = transform.getComponentMapping(dims[i]);
-//            }
-//        }
-//        source.add(key, data, targetDims);
-	}
-
-	@Override
-	public <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
-        // This theoretically would work...but it could have unintended consequences
-        // if the caller does not know it is a view. It's probably best to keep it read-only.
-        // If it is known to be a view, it's probably feasible to add the metadata to the source directly.
+        // Even if it is known to be a view, it's probably feasible to add the metadata to the source directly.
         throw new UnsupportedOperationException("Views on metadata are read-only");
 	}
 

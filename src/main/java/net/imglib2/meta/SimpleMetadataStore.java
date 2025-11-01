@@ -33,13 +33,9 @@
  */
 package net.imglib2.meta;
 
-import net.imglib2.Localizable;
-import net.imglib2.RandomAccessible;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 public class SimpleMetadataStore implements MetadataStore {
 
@@ -68,18 +64,8 @@ public class SimpleMetadataStore implements MetadataStore {
 	}
 
     @Override
-	public <T> void add(String key, T data, int... dims) {
-		items.add(Metadata.constant(key, data, numDims, dims));
-	}
-
-	@Override
-	public <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
-		items.add(Metadata.variant(key, data, numDims, varyingAxes, attachedAxes));
-	}
-
-    @Override
-    public <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
-        items.add(Metadata.variant(key, data, numDims, setter, varyingAxes, attachedAxes));
+    public <T> void add(MetadataItem<T> item) {
+        items.add(item);
     }
 
 	@Override
