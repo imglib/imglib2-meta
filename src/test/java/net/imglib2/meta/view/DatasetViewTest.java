@@ -31,14 +31,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
+import net.imglib2.meta.*;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.fluent.RandomAccessibleIntervalView;
 import org.junit.Assert;

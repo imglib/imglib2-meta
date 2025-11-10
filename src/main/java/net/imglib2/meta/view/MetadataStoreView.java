@@ -31,8 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
+import net.imglib2.meta.HasMetadataStore;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 

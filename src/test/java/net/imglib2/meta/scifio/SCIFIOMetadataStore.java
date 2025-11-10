@@ -147,12 +147,12 @@ public class SCIFIOMetadataStore implements MetadataStore{
             }
 
             @Override
-            public Axis view(long[] steps, int... srcAxes) {
+            public Axis transform(long[] steps, int... srcAxes) {
                 throw new UnsupportedOperationException("TODO");
             }
 
             @Override
-            public Axis view(Mixed transform, int... srcAxes) {
+            public Axis transform(Mixed transform, int... srcAxes) {
                 throw new UnsupportedOperationException("TODO");
             }
         };

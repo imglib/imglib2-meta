@@ -40,7 +40,6 @@ import net.imglib2.loops.LoopBuilder;
 import net.imglib2.meta.calibration.*;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
-import net.imglib2.meta.interval.DatasetInterval;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.junit.Test;
 

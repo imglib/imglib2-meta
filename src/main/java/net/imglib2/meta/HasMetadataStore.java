@@ -33,6 +33,13 @@
  */
 package net.imglib2.meta;
 
+/**
+ * Base interface for convenience metadata classes.
+ * 
+ * @author Gabriel Selzer
+ * @author Curtis Rueden
+ * @see MetadataStore#info(Class) 
+ */
 public interface HasMetadataStore {
 	void setStore(MetadataStore metaData);
 }

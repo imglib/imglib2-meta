@@ -1,8 +1,9 @@
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
 import net.imglib2.Localizable;
 import net.imglib2.Point;
 import net.imglib2.RandomAccessible;
+import net.imglib2.meta.MetadataItem;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.MixedTransformView;
@@ -12,7 +13,7 @@ import net.imglib2.view.fluent.RandomAccessibleView;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-public class MetadataItemView<T> extends MixedTransformView<T> implements  MetadataItem<T>, RandomAccessibleView<T, MetadataItemView<T>> {
+public class MetadataItemView<T> extends MixedTransformView<T> implements MetadataItem<T>, RandomAccessibleView<T, MetadataItemView<T>> {
     private final MetadataItem<T> source;
     private final MixedTransform transform;
 
@@ -77,8 +78,8 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements  Metad
         if (srcValueOr == defaultValue) {
             return srcValueOr;
         }
-        if (srcValueOr instanceof Transformable) {
-            return ((Transformable<T>) srcValueOr).view(transform, source.attachedAxes());
+        if (srcValueOr instanceof Viewable) {
+            return ((Viewable<T>) srcValueOr).transform(transform, source.attachedAxes());
         }
         return srcValueOr;
     }
@@ -86,8 +87,8 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements  Metad
     @Override
     public T value() {
         T srcValue = source.value();
-        if (srcValue instanceof Transformable) {
-            return ((Transformable<T>) srcValue).view(transform, source.attachedAxes());
+        if (srcValue instanceof Viewable) {
+            return ((Viewable<T>) srcValue).transform(transform, source.attachedAxes());
         }
         return srcValue;
     }

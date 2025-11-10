@@ -34,11 +34,10 @@
 package net.imglib2.meta.calibration;
 
 import net.imglib2.RandomAccessible;
-import net.imglib2.meta.Subsampleable;
-import net.imglib2.meta.Transformable;
+import net.imglib2.meta.view.Viewable;
 import net.imglib2.type.numeric.real.DoubleType;
 
-public interface Axis extends Transformable<Axis>, Subsampleable<Axis> {
+public interface Axis extends Viewable<Axis> {
 
     // FIXME: This interface only allows for double values. String values might also make sense (e.g. for Channel axis).
     default double calibrated(final double raw){

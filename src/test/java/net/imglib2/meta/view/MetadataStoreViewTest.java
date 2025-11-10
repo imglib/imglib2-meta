@@ -1,5 +1,9 @@
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
+import net.imglib2.meta.SimpleMetadataStore;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.ViewTransforms;
 import org.junit.Assert;

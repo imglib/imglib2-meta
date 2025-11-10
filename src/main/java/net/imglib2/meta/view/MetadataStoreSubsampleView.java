@@ -31,8 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
+import net.imglib2.meta.HasMetadataStore;
+import net.imglib2.meta.MetadataItem;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.view.SubsampleView;
 
 import java.util.Collection;
@@ -116,8 +119,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
             if (srcValueOr == defaultValue) {
                 return srcValueOr;
             }
-            if (srcValueOr instanceof Subsampleable) {
-                return ((Subsampleable<T>) srcValueOr).view(steps, source.attachedAxes());
+            if (srcValueOr instanceof Viewable) {
+                return ((Viewable<T>) srcValueOr).transform(steps, source.attachedAxes());
             }
             return srcValueOr;
         }
@@ -125,8 +128,8 @@ public class MetadataStoreSubsampleView implements MetadataStore {
         @Override
         public T value() {
             T srcValue = source.value();
-            if (srcValue instanceof Subsampleable) {
-                return ((Subsampleable<T>) srcValue).view(steps, source.attachedAxes());
+            if (srcValue instanceof Viewable) {
+                return ((Viewable<T>) srcValue).transform(steps, source.attachedAxes());
             }
             return srcValue;
         }

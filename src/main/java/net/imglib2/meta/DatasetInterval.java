@@ -31,13 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.meta.interval;
+package net.imglib2.meta;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.meta.Dataset;
-import net.imglib2.meta.MetadataStore;
-import net.imglib2.meta.SimpleMetadataStore;
+import net.imglib2.meta.view.DatasetIntervalView;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 

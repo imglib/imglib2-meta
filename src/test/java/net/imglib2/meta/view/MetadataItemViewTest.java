@@ -1,6 +1,8 @@
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.meta.Metadata;
+import net.imglib2.meta.MetadataItem;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.junit.Assert;
 import org.junit.Test;

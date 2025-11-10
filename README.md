@@ -17,6 +17,12 @@ The main metadata stand-in throughout the Fiji ecosystem is the `Dataset` class 
 * It cannot operate within a type-safe environment. This hinders use within ImgLib2-algorithm, SciJava Ops, etc.
 * It requires the dependency of imagej-common.
 
+**Build**
+
+Currently, this project depends upon a few snapshots, which you'll need to obtain before building this project:
+* `imglib2`, based on the [`raiview-generics`](https://github.com/imglib/imglib2/tree/raiview-generics) branch
+* `imglib2-imagej`, based on the [`main`](https://github.com/imglib/imglib2-imagej) branch. *Used as a test dependency*.
+
 **Current Status**
 
 The current design is centered around a few interfaces:
@@ -33,24 +39,13 @@ The current design is centered around a few interfaces:
   * Viewable using the fluent views API. e.g. `Dataset new = old.permute(3, 2)` should be painless.
 
 The pain points are:
-* `RealRandomAccessible` does not implement `RandomAccessible`
-  * This makes it difficult to make one `Dataset` class that can wrangle both `RA` and `RRA`.
-  * See [imglib/imglib2#378](https://github.com/imglib/imglib2/pull/378)
 * `RandomAccessibleView` and its subclasses have difficult typing.
   * This makes it difficult to subclass `Dataset`, if we want a `DatasetInterval` or a `RealDataset`
-  * The `V` type parameter of `RandomAccessibleView` is never something I'd want a user to have to type.
-    * This type is present for the `RandomAccessibleView.use` method, which allows subinterfaces to get a specialized version for free (e.g `Dataset.use(Function<? super Dataset, U)`). Without that type variable this type of thing is basically impossible.
-    * We could make a `DatasetView` interface that extends `RandomAccessibleView` but removes the `V` type parameter, and have `Dataset.view()` return one of those instead of returning itself.
   * See [imglib/imglib2#379](https://github.com/imglib/imglib2/pull/379)
 * Creating mutable `MetadataItem`s are tedious.
   * `RandomAccessibleInterval`s are tricky to mutate - they rely on element mutability.
     * Many common-sense metadata types (e.g. String, `ColorTable`) are not mutable.
   * Do we even need metadata mutability?
-
-**Open Questions**
-* Should `MetadataItem`s have a mechanism to get back some "source" data?
-  * For example, the source `String` behind a constant `MetadataItem<String>`, or the source `RandomAccessible` behind a non-constant one.
-* Should `MetadataStore`s have API to add a `MetadataItem`, instead of just taking the components?
 
 **Future Work**
 Where do we go from here?

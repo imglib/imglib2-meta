@@ -2,11 +2,14 @@ package net.imglib2.meta.examples;
 
 import net.imglib2.*;
 import net.imglib2.meta.Dataset;
-import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.DatasetInterval;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Intervals;
+
+import java.util.Arrays;
 
 /**
  * This example introduces the fundamental concept of a Dataset, and how it's just a {@link RandomAccessible}.
@@ -49,6 +52,8 @@ public class Example01Datasets {
          */
         RandomAccessibleInterval<DoubleType> someInterval = someData.view().interval(new FinalInterval(10, 10));
         DatasetInterval<DoubleType> datasetInterval = DatasetInterval.wrap(someInterval);
+        DoubleType resultFromDatasetInterval = localMeanAround(datasetInterval, p);
+        System.out.println("Mean at (1,1) from intervaled dataset:  " + resultFromDatasetInterval.getRealDouble());
     }
 
     private static <T extends RealType<T>> T localMeanAround(RandomAccessible<T> rai, Point point) {

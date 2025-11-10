@@ -1,13 +1,12 @@
 package net.imglib2.meta.n5;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.meta.Dataset;
 import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.calibration.Axis;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.general.General;
-import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.DatasetInterval;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.janelia.saalfeldlab.n5.N5Reader;
 import org.janelia.saalfeldlab.n5.imglib2.N5Utils;

@@ -31,7 +31,7 @@ public class Example03VaryingMetadata {
             (loc, out) -> out.set(loc.getLongPosition(0) * 5.4),
             DoubleType::new
         );
-        store.add("axis_data", axisData, 0);
+        store.add("axis_data", axisData, new int[] {0}, 0);
         return store;
     }
 

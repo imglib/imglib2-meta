@@ -36,6 +36,7 @@ package net.imglib2.meta;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
+import net.imglib2.meta.view.DatasetView;
 import net.imglib2.transform.integer.MixedTransform;
 
 /**

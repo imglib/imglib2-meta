@@ -35,7 +35,7 @@ package net.imglib2.meta;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
-import net.imglib2.view.fluent.RandomAccessibleView;
+import net.imglib2.meta.view.MetadataItemView;
 
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;

@@ -7,7 +7,7 @@ import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.general.General;
-import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.DatasetInterval;
 import net.imglib2.meta.n5.N5MetadataStore;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.integer.UnsignedShortType;

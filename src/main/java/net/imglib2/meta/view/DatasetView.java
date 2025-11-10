@@ -1,11 +1,12 @@
-package net.imglib2.meta;
+package net.imglib2.meta.view;
 
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.meta.interval.DatasetIntervalView;
+import net.imglib2.meta.Dataset;
+import net.imglib2.meta.MetadataStore;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.util.Util;
 import net.imglib2.view.MixedTransformView;

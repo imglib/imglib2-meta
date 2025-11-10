@@ -9,7 +9,7 @@ import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultLinearAxis;
 import net.imglib2.meta.channels.Channels;
-import net.imglib2.meta.interval.DatasetInterval;
+import net.imglib2.meta.DatasetInterval;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 

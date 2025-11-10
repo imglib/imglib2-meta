@@ -38,6 +38,7 @@ import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
+import net.imglib2.meta.view.MetadataStoreView;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.ConstantUtils;
