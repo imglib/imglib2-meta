@@ -34,15 +34,30 @@
 package net.imglib2.meta;
 
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.meta.view.DatasetIntervalView;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.view.RandomAccessibleIntervalCursor;
 
+/**
+ * A coupled {@link RandomAccessibleInterval} and associated {@link MetadataStore}.
+ *
+ * @param <T> the type of samples in the {@link RandomAccessibleInterval}
+ * @author Gabriel Selzer
+ */
 public interface DatasetInterval<T> extends Dataset<T>, RandomAccessibleInterval<T> {
 	RandomAccessibleInterval<T> data();
 	MetadataStore store();
 
+    /**
+     * Creates a new {@link Dataset} from a {@link RandomAccessible} and a {@link MetadataStore}.
+     *
+     * @param delegate the coupled {@link RandomAccessible}
+     * @param store the coupled {@link MetadataStore}
+     * @return a {@link Dataset} wrapping {@code delegate} and {@code store}
+     * @param <T> the type of samples in {@code delegate}
+     */
 	static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
 		return new DatasetInterval<T>() {
 			@Override
@@ -57,16 +72,23 @@ public interface DatasetInterval<T> extends Dataset<T>, RandomAccessibleInterval
 		};
 	}
 
+    /**
+     * Creates a new {@link DatasetInterval} from a {@link RandomAccessibleInterval}. An empty {@link MetadataStore} is created.
+     *
+     * @param delegate the coupled {@link RandomAccessibleInterval}
+     * @return a {@link DatasetInterval} wrapping {@code delegate}
+     * @param <T> the type of samples in {@code delegate}
+     */
     static <T> DatasetInterval<T> wrap(RandomAccessibleInterval<T> delegate) {
         return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
     }
 
 	/** RandomAccessibleInterval Overrides */
 
-
     @Override
     default DatasetIntervalView<T, ?> view() {
-        return DatasetIntervalView.wrap(this, new MixedTransform(numDimensions(), numDimensions()), this);
+        // Overridden so that we can preserve the metadata!
+        return DatasetIntervalView.wrap(this, this, new MixedTransform(numDimensions(), numDimensions()));
     }
 
 	@Override

@@ -35,9 +35,29 @@ package net.imglib2.meta.attribution;
 
 import net.imglib2.meta.HasMetadataStore;
 
+/**
+ * Metadata describing the source of a dataset
+ *
+ * @author Curtis Rueden
+ * @author Gabriel Selzer
+ */
 public interface Attribution extends HasMetadataStore {
+    /** canonical imglib2-meta key for data author */
     String AUTHOR = "author";
+    /** canonical imglib2-meta key for data citation */
     String CITATION = "citation";
+
+    /**
+     * The author of the dataset
+     *
+     * @return the author of the dataset
+     */
 	String author();
+
+    /**
+     * A citation for the dataset
+     *
+     * @return a citation for the dataset
+     */
 	String citation();
 }

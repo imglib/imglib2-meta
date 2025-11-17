@@ -1,6 +1,5 @@
 package net.imglib2.meta.view;
 
-import net.imglib2.meta.Metadata;
 import net.imglib2.meta.MetadataItem;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.meta.SimpleMetadataStore;
@@ -31,7 +30,7 @@ public class MetadataStoreViewTest {
         store.add(key, 1.0, 0);
 
         // Slice along dimension 0
-        MetadataStore sliced = Metadata.view(store, ViewTransforms.hyperSlice(3, 0, 0));
+        MetadataStore sliced = new MetadataStoreView(store, ViewTransforms.hyperSlice(3, 0, 0));
         // key should be filtered out (attached only to sliced axis)
         boolean hasZCal = sliced.items().stream()
                 .anyMatch(item -> key.equals(item.name()));
@@ -43,8 +42,8 @@ public class MetadataStoreViewTest {
         // that in the (permute-then-slice) view the first dimension (index 0) should be the axis of attachment.
         MixedTransform permutation = new MixedTransform(3, 3);
         permutation.set(ViewTransforms.permute(3, 0, 1));
-        sliced = Metadata.view(store, permutation);
-        sliced = Metadata.view(sliced, ViewTransforms.hyperSlice(3, 0, 0));
+        sliced = new MetadataStoreView(store, permutation);
+        sliced = new MetadataStoreView(sliced, ViewTransforms.hyperSlice(3, 0, 0));
         // key should NOT be filtered out
         Optional<? extends MetadataItem<?>> permutedItem = sliced.items().stream().filter(item -> key.equals(item.name())).findFirst();
         Assert.assertTrue("key should be removed when Z axis is sliced", permutedItem.isPresent());
@@ -53,8 +52,8 @@ public class MetadataStoreViewTest {
         // If we permute 0 and 2, the metadata should instead be attached to the first index.
         permutation = new MixedTransform(3, 3);
         permutation.set(ViewTransforms.permute(3, 0, 2));
-        sliced = Metadata.view(store, permutation);
-        sliced = Metadata.view(sliced, ViewTransforms.hyperSlice(3, 0, 0));
+        sliced = new MetadataStoreView(store, permutation);
+        sliced = new MetadataStoreView(sliced, ViewTransforms.hyperSlice(3, 0, 0));
         // key should NOT be filtered out
         permutedItem = sliced.items().stream().filter(item -> key.equals(item.name())).findFirst();
         Assert.assertTrue("key should be removed when Z axis is sliced", permutedItem.isPresent());

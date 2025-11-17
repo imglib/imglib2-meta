@@ -38,7 +38,6 @@ import net.imglib2.meta.attribution.Attribution;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.channels.Channels;
 import net.imglib2.meta.general.General;
-import net.imglib2.meta.view.MetadataStoreView;
 import net.imglib2.transform.integer.Mixed;
 import net.imglib2.transform.integer.MixedTransform;
 import net.imglib2.util.ConstantUtils;
@@ -49,8 +48,17 @@ import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+/**
+ * Utility class for working with {@link MetadataStore} and {@link MetadataItem}.
+ *
+ * @author Gabriel Selzer
+ * @author Curtis Rueden
+ */
 public final class Metadata {
 
+    /*
+     * Prevent instantiation of utility class.
+     */
 	private Metadata() { }
 
 	public static Attribution attribution(MetadataStore store) {
@@ -70,13 +78,16 @@ public final class Metadata {
 	}
 
 	/**
-	 * Creates a {@link MetadataItem}.
+	 * Creates a {@link MetadataItem} that is constant across the metadata space.
+     * <p>
+     * In other words, {@code data} will be returned at all queried positions.
+     * </p>
 	 *
 	 * @param key the {@link String} key associated with the item
 	 * @param data the metadata value associated with the item. Constant across the metadata sapce.
 	 * @param numDims the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
 	 * @param attachedAxes the dimension indices to which this item is attached.
-	 * @return a {@link MetadataItem}
+	 * @return a {@link MetadataItem} wrapping {@code data}
 	 * @param <T> the type of {@code data}
 	 */
 	public static <T> MetadataItem<T> constant(String key, T data, int numDims, int... attachedAxes) {
@@ -84,45 +95,82 @@ public final class Metadata {
 	}
 
     /**
-     * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
-     * @param key the {@link String} key associated with the item
-     * @param data the metadata value associated with the item. May vary across the metadata space.
-     * @param n the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
-     * @param varyingAxes the dimension indices along which this metadata varies. 0 <= varyingAxes[i] < m.
-     * @param attachedAxes the dimension indices to which this item pertains.0 <= attachedAxes[i] < n.
-     * @return a {@link MetadataItem}
-     * @param <T> the type of {@code data}
+     * Creates an {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible},
+     * where the metadata varies along specific axes of the dataset ({@code n} &ge; {@code m}).
+     * <p>
+     * This method handles metadata that changes along some dimensions but needs to be accessible from the full
+     * n-dimensional space of the dataset. The {@code varyingAxes} parameter maps which dataset axes should be
+     * used to index into the m-dimensional metadata.
+     * </p>
+     * <p>
+     * <b>Example:</b> Consider an XYC image (3D) where you want to store a different color lookup table (LUT)
+     * for each channel. The LUTs themselves are 1-dimensional (one per channel), but the dataset is 3-dimensional.
+     * </p>
+     * <pre>
+     * // data: 1D RandomAccessible of LUTs (one for each of 3 channels)
+     * // varyingAxes: [2] means "use the C axis (index 2) to look up LUTs"
+     * // attachedAxes: 2 means "this metadata pertains to the C axis"
+     * MetadataItem&lt;ColorTable&gt; luts = Metadata.varying("luts", data, 3, new int[]{2}, 2);
+     * 
+     * // When accessing luts at position (x=10, y=20, c=1):
+     * // The system ignores x and y, and uses c=1 to get data[1]
+     * </pre>
+     *
+     * @param key the {@link String} key identifying this metadata
+     * @param data an {@code m}-dimensional {@link RandomAccessible} containing the metadata values
+     * @param n the dimensionality of the dataset (and returned {@link MetadataItem})
+     * @param varyingAxes indices of dataset axes that map to {@code data}'s dimensions (length = {@code m})
+     * @param attachedAxes indices of dataset axes this metadata pertains to (0 &le; attachedAxes[i] &lt; {@code n})
+     * @param <T> the type of metadata values
+     * @param <U> the type of the data {@link RandomAccessible}
+     * @return an {@code n}-dimensional {@link MetadataItem} that varies along the specified axes
      */
-	public static <T, U extends RandomAccessible<T>> MetadataItem<T> variant(String key, U data, int n, int[] varyingAxes, int... attachedAxes) {
+	public static <T, U extends RandomAccessible<T>> MetadataItem<T> varying(String key, U data, int n, int[] varyingAxes, int... attachedAxes) {
 		return new VaryingItem<>(key, data, n, varyingAxes, attachedAxes);
 	}
 
     /**
-     * Creates a {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}. {@code n}&geq;{@code m}. Associated with.
+     * Creates an {@code n}-dimensional {@link MetadataItem} from an {@code m}-dimensional {@link RandomAccessible}
+     * with support for updating metadata values ({@code n} &ge; {@code m}).
+     * <p>
+     * This is an advanced version of {@link #varying(String, RandomAccessible, int, int[], int...)} that allows
+     * callers to provide a custom setter function for modifying metadata values. Most users should use the simpler
+     * version unless they need to update metadata after creation.
+     * </p>
      *
-     * @param key the {@link String} key associated with the item
-     * @param data an {@code m}-dimensional metadata item.
-     * @param n the number of dimensions in which this item lives; or, the number of dimensions of the dataset this {@link MetadataItem} attaches to.
-     * @param varyingAxes the dimension indices along which this metadata varies. 0 <= varyingAxes[i] < m.
-     * @param attachedAxes the dimension indices to which this item pertains.0 <= attachedAxes[i] < n.
-     * @return a {@link MetadataItem}
-     * @param <T> the type of {@code data}
+     * @param key the {@link String} key identifying this metadata
+     * @param data an {@code m}-dimensional {@link RandomAccessible} containing the metadata values
+     * @param n the dimensionality of the dataset (and returned {@link MetadataItem})
+     * @param setter a {@link BiConsumer} that updates values in {@code data} at specific positions
+     * @param varyingAxes indices of dataset axes that map to {@code data}'s dimensions (length = {@code m})
+     * @param attachedAxes indices of dataset axes this metadata pertains to (0 &le; attachedAxes[i] &lt; {@code n})
+     * @param <T> the type of metadata values
+     * @param <U> the type of the data {@link RandomAccessible}
+     * @return an {@code n}-dimensional {@link MetadataItem} that varies along the specified axes
+     * @see #varying(String, RandomAccessible, int, int[], int...)
      */
-    public static <T, U extends RandomAccessible<T>> MetadataItem<T> variant(String key, U data, int n, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
+    public static <T, U extends RandomAccessible<T>> MetadataItem<T> varying(String key, U data, int n, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
         return new VaryingItem<>(key, data, setter, n, varyingAxes, attachedAxes);
     }
 
-	public static MetadataStore view(MetadataStore source, MixedTransformView<?> view) {
-		return view(source, view.getTransformToSource());
-	}
-
-	public static MetadataStore view(MetadataStore source, MixedTransform transform) {
-		return new MetadataStoreView(source, transform);
-	}
-
+    /**
+     * Creates a {@link MetadataItem} to return in the absence of the requested {@link MetadataItem}.
+     * <p>
+     * To signify that no metadata exists for the given key and axes, the returned {@link MetadataItem}'s
+     * {@code get()} methods will throw a {@link NoSuchElementException} when called, and their {@code or()}
+     * methods will return the provided default value.
+     * </p>
+     * @param name the {@link String} key requested
+     * @param numDimensions the number of dimensions in which this item lives
+     * @param attachedAxes the attached axes requested
+     * @return an {@code n}-dimensional {@link MetadataItem} that varies along the specified axes
+     * @param <T> the type of metadata values
+     */
     public static <T> MetadataItem<T> absent(String name, int numDimensions, int... attachedAxes) {
         return new AbsentMetadataItem<>(name, numDimensions, attachedAxes);
     }
+
+    // -- Internal classes -- //
 
     private static class AbsentMetadataItem<T> implements MetadataItem<T> {
 

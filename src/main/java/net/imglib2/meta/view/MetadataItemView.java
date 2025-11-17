@@ -79,7 +79,7 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements Metada
             return srcValueOr;
         }
         if (srcValueOr instanceof Viewable) {
-            return ((Viewable<T>) srcValueOr).transform(transform, source.attachedAxes());
+            return ((Viewable<T>) srcValueOr).transform(getAttachedAxesTransform());
         }
         return srcValueOr;
     }
@@ -88,9 +88,27 @@ public class MetadataItemView<T> extends MixedTransformView<T> implements Metada
     public T value() {
         T srcValue = source.value();
         if (srcValue instanceof Viewable) {
-            return ((Viewable<T>) srcValue).transform(transform, source.attachedAxes());
+            return ((Viewable<T>) srcValue).transform(getAttachedAxesTransform());
         }
         return srcValue;
+    }
+
+    /**
+     * Extracts the transform relevant to the attached axes of this metadata item.
+     * @return
+     */
+    private Mixed getAttachedAxesTransform() {
+        int[] attachedAxes = source.attachedAxes();
+        MixedTransform attachedTransform = new MixedTransform(attachedAxes.length, attachedAxes.length);
+        long[] translation = new long[attachedAxes.length];
+        boolean[] inversion = new boolean[attachedAxes.length];
+        for (int i = 0; i < attachedAxes.length; i++) {
+            translation[i] = transform.getTranslation(attachedAxes[i]);
+            inversion[i] = transform.getComponentInversion(attachedAxes[i]);
+        }
+        attachedTransform.setTranslation(translation);
+        attachedTransform.setComponentInversion(inversion);
+        return attachedTransform;
     }
 
     @Override

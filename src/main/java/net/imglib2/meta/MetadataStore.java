@@ -41,6 +41,12 @@ import java.util.Collection;
 import java.util.ServiceLoader;
 import java.util.function.BiConsumer;
 
+/**
+ * A collection of {@link MetadataItem}s in an {@code n}-dimensional space.
+ *
+ * @author Gabriel Selzer
+ * @author Curtis Rueden
+ */
 public interface MetadataStore extends EuclideanSpace {
 
     /**
@@ -105,7 +111,7 @@ public interface MetadataStore extends EuclideanSpace {
      */
 	default <T> void add(String key, RandomAccessible<T> data, int[] varyingAxes, int... attachedAxes) {
         // Implementations may override to customize metadata writes
-        add(Metadata.variant(key, data, numDimensions(), varyingAxes, attachedAxes));
+        add(Metadata.varying(key, data, numDimensions(), varyingAxes, attachedAxes));
     }
 
     /**
@@ -122,7 +128,7 @@ public interface MetadataStore extends EuclideanSpace {
      * @param attachedAxes the axes associated with the metadata item
      */
     default <T> void add(String key, RandomAccessible<T> data, BiConsumer<Localizable, T> setter, int[] varyingAxes, int... attachedAxes) {
-        add(Metadata.variant(key, data, numDimensions(), setter, varyingAxes, attachedAxes));
+        add(Metadata.varying(key, data, numDimensions(), setter, varyingAxes, attachedAxes));
     }
 
     /**

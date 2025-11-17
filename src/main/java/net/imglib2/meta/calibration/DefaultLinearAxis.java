@@ -85,16 +85,16 @@ public class DefaultLinearAxis implements Axis {
     }
 
     @Override
-    public Axis transform(long[] steps, int... srcAxes) {
-        return new DefaultLinearAxis(type, scale * steps[srcAxes[0]], offset, unit);
+    public Axis transform(long[] steps) {
+        return new DefaultLinearAxis(type, scale * steps[0], offset, unit);
     }
 
     @Override
-    public Axis transform(Mixed transform, int... srcAxes) {
+    public Axis transform(Mixed transform) {
         return new DefaultLinearAxis( //
             type, //
-            scale * (transform.getComponentInversion(srcAxes[0]) ? -1 : 1), //
-            offset + transform.getTranslation(srcAxes[0]), //
+            scale * (transform.getComponentInversion(0) ? -1 : 1), //
+            offset + transform.getTranslation(0), //
             unit //
         );
     }

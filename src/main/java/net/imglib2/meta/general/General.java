@@ -35,9 +35,30 @@ package net.imglib2.meta.general;
 
 import net.imglib2.meta.HasMetadataStore;
 
+/**
+ * Metadata describing general dataset information
+ *
+ * @author Curtis Rueden
+ * @author Gabriel Selzer
+ */
 public interface General extends HasMetadataStore {
+    /** canonical imglib2-meta key for image name */
     String NAME = "name";
+
+    /** canonical imglib2-meta key for image description */
     String DESCRIPTION = "description";
+
+    /**
+     * Retrieves the name of the image.
+     *
+     * @return the name of the image
+     */
     String name();
+
+    /**
+     * Retrieves the description of the image.
+     *
+     * @return the description of the image
+     */
     String description();
 }

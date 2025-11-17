@@ -140,7 +140,7 @@ public class ImagePlusMetadataStore implements MetadataStore {
         else {
             int varyingDim = 2; // Default Channel dim - see axisType
             ListImg<ColorTable> ctable = new ListImg<>(tables, tables.size());
-            return Metadata.variant(
+            return Metadata.varying(
                 Channels.CHANNEL,
                 ctable,
                 numDimensions(),

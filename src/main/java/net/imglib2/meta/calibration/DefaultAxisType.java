@@ -41,6 +41,7 @@ import java.io.Serializable;
  * 
  * @see Axes
  * @author Mark Hiner
+ * @author Gabriel Selzer
  */
 public class DefaultAxisType implements AxisType, Serializable,
 	Comparable<AxisType>
@@ -74,8 +75,6 @@ public class DefaultAxisType implements AxisType, Serializable,
 	public String getLabel() {
 		return label;
 	}
-
-	// -- Deprecated AxisType methods --
 
 	@Override
 	public boolean isXY() {

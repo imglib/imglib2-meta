@@ -36,6 +36,7 @@ package net.imglib2.meta.view;
 import net.imglib2.*;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.meta.Dataset;
 import net.imglib2.meta.DatasetInterval;
 import net.imglib2.meta.MetadataStore;
 import net.imglib2.transform.integer.Mixed;
@@ -47,6 +48,13 @@ import net.imglib2.view.fluent.RandomAccessibleIntervalView;
 
 import java.util.function.Supplier;
 
+/**
+ * A view on a {@link DatasetInterval}.
+ *
+ * @author Gabriel Selzer
+ * @param <T> the type of samples in the {@link RandomAccessibleInterval}
+ * @param <V> the concrete subtype of {@link DatasetIntervalView}
+ */
 public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> extends DatasetView<T, V>, RandomAccessibleIntervalView<T, V>, DatasetInterval<T> {
 	RandomAccessibleInterval<T> data();
 	MetadataStore store();
@@ -56,6 +64,14 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 		return data();
 	}
 
+    /**
+     * Creates a new {@link DatasetIntervalView} from a {@link RandomAccessibleInterval} and a {@link MetadataStore}.
+     *
+     * @param delegate the coupled {@link RandomAccessibleInterval}
+     * @param store the coupled {@link MetadataStore}
+     * @return a {@link Dataset} wrapping {@code delegate} and {@code store}
+     * @param <T> the type of pixels contained within {@code delegate}
+     */
 	static <T, V extends DatasetIntervalView<T, V>> DatasetIntervalView<T, ?> wrap(RandomAccessibleInterval<T> delegate, MetadataStore store) {
 		return new DatasetIntervalView<T, V>() {
 			@Override
@@ -70,36 +86,43 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 		};
 	}
 
-	static <T> DatasetIntervalView<T, ?> wrap(DatasetInterval<T> dataset, Mixed tform, Interval interval) {
+    /**
+     * Creates a new {@link DatasetView} viewing an existing {@link Dataset} through a {@link Mixed} transform.
+     *
+     * @param <T> the type of pixels contained within {@code delegate}
+     * @param dataset an existing {@link Dataset}
+     * @param tform a {@link Mixed} describing a data transformation
+     * @return a {@link Dataset} viewing {@code dataset} through the transform {@code tform}
+     */
+	static <T> DatasetIntervalView<T, ?> wrap(Dataset<T> dataset, Interval interval, Mixed tform) {
 		return wrap(
 			new IntervalView<>(new MixedTransformView<>(dataset.data(), tform), interval),
             new MetadataStoreView(dataset.store(), tform)
 		);
 	}
 
+    @Override
 	default DatasetIntervalView<T, ?> interval(Interval interval) {
 		return wrap(
 				this,
-				new MixedTransform(numDimensions(), numDimensions()),
-				interval
-		);
+                interval, new MixedTransform(numDimensions(), numDimensions())
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> slice(int d, long pos) {
 		return wrap(
 				this,
-				ViewTransforms.hyperSlice(numDimensions(), d, pos),
-				Intervals.hyperSlice(this, d)
-		);
+                Intervals.hyperSlice(this, d), ViewTransforms.hyperSlice(numDimensions(), d, pos)
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> addDimension() {
 		return wrap( //
 				this, //
-				ViewTransforms.addDimension(numDimensions()), //
-				Intervals.addDimension(this, 0, 1) //
+                Intervals.addDimension(this, 0, 1), ViewTransforms.addDimension(numDimensions()) //
+                //
 		);
 	}
 
@@ -107,18 +130,16 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 	default DatasetIntervalView<T, ?> translate(long... translation) {
 		return wrap(
 				this,
-				ViewTransforms.translate(translation),
-				Intervals.translate(this, translation)
-		);
+                Intervals.translate(this, translation), ViewTransforms.translate(translation)
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> translateInverse(long... translation) {
 		return wrap(
 				this,
-				ViewTransforms.translateInverse(translation),
-				Intervals.translateInverse(this, translation)
-		);
+                Intervals.translateInverse(this, translation), ViewTransforms.translateInverse(translation)
+        );
 	}
 
 	@Override
@@ -136,36 +157,32 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 	default DatasetIntervalView<T, ?> rotate(int fromAxis, int toAxis) {
 		return wrap(
 				this,
-				ViewTransforms.rotate(numDimensions(), fromAxis, toAxis),
-				Intervals.rotate(this, fromAxis, toAxis)
-		);
+                Intervals.rotate(this, fromAxis, toAxis), ViewTransforms.rotate(numDimensions(), fromAxis, toAxis)
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> permute(int fromAxis, int toAxis) {
 		return wrap(
 				this,
-				ViewTransforms.permute(numDimensions(), fromAxis, toAxis),
-				Intervals.permuteAxes(this, fromAxis, toAxis)
-		);
+                Intervals.permuteAxes(this, fromAxis, toAxis), ViewTransforms.permute(numDimensions(), fromAxis, toAxis)
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> moveAxis(int fromAxis, int toAxis) {
 		return wrap(
 				this,
-				ViewTransforms.moveAxis(numDimensions(), fromAxis, toAxis),
-				Intervals.moveAxis(this, fromAxis, toAxis)
-		);
+                Intervals.moveAxis(this, fromAxis, toAxis), ViewTransforms.moveAxis(numDimensions(), fromAxis, toAxis)
+        );
 	}
 
 	@Override
 	default DatasetIntervalView<T, ?> invertAxis(int axis) {
 		return wrap(
 				this,
-				ViewTransforms.invertAxis(numDimensions(), axis),
-				Intervals.invertAxis(this, axis)
-		);
+                Intervals.invertAxis(this, axis), ViewTransforms.invertAxis(numDimensions(), axis)
+        );
 	}
 
 	@Override
@@ -185,21 +202,20 @@ public interface DatasetIntervalView<T, V extends DatasetIntervalView<T, V>> ext
 	@Override
 	default RandomAccessibleIntervalView< T, ? > zeroMin()
 	{
-		return wrap(this, ViewTransforms.zeroMin(this), Intervals.zeroMin(this));
+		return wrap(this, Intervals.zeroMin(this), ViewTransforms.zeroMin(this));
 	}
 
-	// FIXME: Dataset wildcard bound
 	@Override
 	default <U> DatasetIntervalView<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
 		return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
 	}
 
-	// FIXME: Dataset wildcard bound
 	@Override
 	default <U> DatasetIntervalView<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
 		return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
 	}
 
+    @Override
 	default DatasetIntervalView<T, V> view() {
 		return this;
 	}

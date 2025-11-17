@@ -37,12 +37,32 @@ import net.imglib2.meta.HasMetadataStore;
 
 import java.util.Optional;
 
+/**
+ * Metadata describing dataset axis calibration
+ *
+ * @author Curtis Rueden
+ * @author Gabriel Selzer
+ */
 public interface Calibration extends HasMetadataStore {
-
+    /** canonical imglib2-meta key for axis items */
 	String AXIS = "axis";
+    /** canonical imglib2-meta key for axis data */
     String AXIS_DATA = "axis_data";
 
+    /**
+     * Retrieves the axis associated with a given dimension.
+     *
+     * @param d a dimension
+     * @return the axis associated with dimension {@code d}
+     */
 	Axis axis(int d);
+
+    /**
+     * Sets the axis associated with a given dimension.
+     *
+     * @param axis the {@link Axis} to set
+     * @param d the dimension associated with {@code axis}
+     */
 	void setAxis(Axis axis, int d);
 
 	/**

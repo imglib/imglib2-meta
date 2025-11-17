@@ -87,7 +87,7 @@ public class MetadataItemViewTest {
     @Test
     public void testPermuteVaryingAxes() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Permute: swap X and Y
         MetadataItemView<DoubleType> permuted = item.view().permute(0, 1);
@@ -97,7 +97,7 @@ public class MetadataItemViewTest {
     @Test
     public void testRotateVaryingAxes() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Rotate: X and Y (X -> Y, Y -> -X)
         MetadataItemView<DoubleType> permuted = item.view().rotate(0, 1);
@@ -107,7 +107,7 @@ public class MetadataItemViewTest {
     @Test
     public void testSliceRemovesVaryingAxis() {
         // Create a varying metadata item attached to axis 2 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {2});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {2});
 
         // Slice axis 2 - the varying attached axis should be removed
         Assert.assertArrayEquals(new int[]{}, item.view().slice(2, 0).varyingAxes());
@@ -118,7 +118,7 @@ public class MetadataItemViewTest {
     @Test
     public void testAddDimensionVaryingAxis() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Add a new dimension - varying axes should remain unchanged
         MetadataItemView<DoubleType> sliced = item.view().addDimension();
@@ -128,7 +128,7 @@ public class MetadataItemViewTest {
     @Test
     public void testInvertVaryingAxis() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Invert the varying axis - should remain unchanged
         MetadataItemView<DoubleType> sliced = item.view().invertAxis(2);
@@ -138,7 +138,7 @@ public class MetadataItemViewTest {
     @Test
     public void testTranslateVaryingAxis() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Translate the varying axis - should remain unchanged
         MetadataItemView<DoubleType> sliced = item.view().translate(1, 2, 3);
@@ -148,7 +148,7 @@ public class MetadataItemViewTest {
     @Test
     public void testTranslateInverseVaryingAxis() {
         // Create a varying metadata item attached to axis 0 in a 3D space
-        MetadataItem<DoubleType> item = Metadata.variant("test", ArrayImgs.doubles(10), 3, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("test", ArrayImgs.doubles(10), 3, new int[] {0});
 
         // Translate the varying axis - should remain unchanged
         MetadataItemView<DoubleType> sliced = item.view().translateInverse(1, 2, 3);

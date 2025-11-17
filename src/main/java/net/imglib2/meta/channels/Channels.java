@@ -36,11 +36,45 @@ package net.imglib2.meta.channels;
 import net.imglib2.display.ColorTable;
 import net.imglib2.meta.HasMetadataStore;
 
+/**
+ * Metadata describing channel information.
+ *
+ * @author Curtis Rueden
+ * @author Gabriel Selzer
+ */
 public interface Channels extends HasMetadataStore {
+    /** canonical imglib2-meta key for {@link ColorTable} items */
 	String CHANNEL = "channel";
+    /** canonical imglib2-meta key for (A)RGB indication */
 	String RGB_KEY = "is_rgb";
+
+    /**
+     * Retrieves the lookup table associated with a given channel.
+     *
+     * @param c an index along the channel dimension
+     * @return the {@link ColorTable} associated with channel {@code c}
+     */
 	ColorTable lut(int c);
+
+    /**
+     * Sets the lookup table associated with a given channel.
+     *
+     * @param c an index along the channel dimension
+     * @param lut the {@link ColorTable} to set for channel {@code c}
+     */
 	void setLut(int c, ColorTable lut);
+
+    /**
+     * Describes whether this image is to be interpreted as RGB(A).
+     *
+     * @return {@code true} iff the image is RGB(A)
+     */
 	boolean isRGB();
+
+    /**
+     * Prescribes whether this image is to be interpreted as RGB(A).
+     *
+     * @param isRGB {@code true} iff the image is RGB(A)
+     */
 	void setRGB(boolean isRGB);
 }

@@ -18,10 +18,17 @@ import net.imglib2.view.fluent.RealRandomAccessibleView;
 
 import java.util.function.Supplier;
 
+/**
+ * A view on a {@link Dataset}.
+ *
+ * @author Gabriel Selzer
+ * @param <T> the type of samples in the {@link RandomAccessible}
+ * @param <V> the concrete subtype of {@link DatasetView}
+ */
 public interface DatasetView<T, V extends DatasetView<T, V>> extends RandomAccessibleView<T, V>, Dataset<T> {
 
     /**
-     * Creates a new {@link Dataset} from a {@link RandomAccessible} and a {@link MetadataStore}.
+     * Creates a new {@link DatasetView} from a {@link RandomAccessible} and a {@link MetadataStore}.
      *
      * @param delegate the coupled {@link RandomAccessible}
      * @param store the coupled {@link MetadataStore}
@@ -49,7 +56,7 @@ public interface DatasetView<T, V extends DatasetView<T, V>> extends RandomAcces
     }
 
     /**
-     * Creates a new {@link Dataset} viewing an existing {@link Dataset} through a {@link Mixed} transform.
+     * Creates a new {@link DatasetView} viewing an existing {@link Dataset} through a {@link Mixed} transform.
      *
      * @param dataset an existing {@link Dataset}
      * @param tform a {@link Mixed} describing a data transformation
@@ -126,34 +133,37 @@ public interface DatasetView<T, V extends DatasetView<T, V>> extends RandomAcces
         return RandomAccessibleView.super.interpolate(interpolation);
     }
 
-    // FIXME: Dataset wildcard bound
     @Override
     default <U> DatasetView<U, ?> convert(Supplier<U> targetSupplier, Converter<? super T, ? super U> converter) {
         return wrap(Converters.convert2(this.delegate(), converter, targetSupplier), store());
     }
 
-    // FIXME: Dataset wildcard bound
     @Override
     default <U> DatasetView<U, ?> convert(Supplier<U> targetSupplier, Supplier<Converter<? super T, ? super U>> converterSupplier) {
         return wrap(Converters.convert2(this.delegate(), converterSupplier, targetSupplier), store());
     }
 
+    @Override
     default DatasetView<T, ?> view() {
         return this;
     }
 
+    @Override
     default T getType() {
         return this.data().getType();
     }
 
+    @Override
     default int numDimensions() {
         return this.data().numDimensions();
     }
 
+    @Override
     default RandomAccess<T> randomAccess() {
         return this.data().randomAccess();
     }
 
+    @Override
     default RandomAccess<T> randomAccess(Interval interval) {
         return this.data().randomAccess(interval);
     }

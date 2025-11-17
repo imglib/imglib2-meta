@@ -120,7 +120,7 @@ public class MetadataStoreSubsampleView implements MetadataStore {
                 return srcValueOr;
             }
             if (srcValueOr instanceof Viewable) {
-                return ((Viewable<T>) srcValueOr).transform(steps, source.attachedAxes());
+                return ((Viewable<T>) srcValueOr).transform(steps);
             }
             return srcValueOr;
         }
@@ -129,7 +129,7 @@ public class MetadataStoreSubsampleView implements MetadataStore {
         public T value() {
             T srcValue = source.value();
             if (srcValue instanceof Viewable) {
-                return ((Viewable<T>) srcValue).transform(steps, source.attachedAxes());
+                return ((Viewable<T>) srcValue).transform(steps);
             }
             return srcValue;
         }

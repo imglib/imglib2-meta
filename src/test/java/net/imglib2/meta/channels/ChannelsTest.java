@@ -41,6 +41,7 @@ import net.imglib2.meta.SimpleMetadataStore;
 import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultLinearAxis;
+import net.imglib2.meta.view.MetadataStoreView;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
@@ -107,7 +108,7 @@ public class ChannelsTest {
 
         // Permute the channel axis and ensure the channels also change
         MixedTransformView<DoubleType> v = Views.invertAxis(image, 2);
-        MetadataStore storeView = Metadata.view(store, v);
+        MetadataStore storeView = new MetadataStoreView(store, v.getTransformToSource());
         Channels channelsView = Metadata.channels(storeView);
 
         assertEquals(ColorTables.RED, channelsView.lut(0));

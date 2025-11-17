@@ -42,7 +42,7 @@ import net.imglib2.transform.integer.MixedTransform;
 /**
  * A coupled {@link RandomAccessible} and associated {@link MetadataStore}.
  *
- * @param <T> the type of pixels contained within the {@link RandomAccessible}
+ * @param <T> the type of samples in the {@link RandomAccessible}
  * @author Gabriel Selzer
  * @author Curtis Rueden
  * @author Edward Evans
@@ -56,7 +56,7 @@ public interface Dataset<T> extends RandomAccessible<T> {
      *
      * @param delegate the coupled {@link RandomAccessible}
      * @return a {@link Dataset} wrapping {@code delegate}
-     * @param <T> the type of pixels contained within {@code delegate}
+     * @param <T> the type of samples in {@code delegate}
      */
     static <T> Dataset<T> wrap(RandomAccessible<T> delegate) {
         return wrap(delegate, new SimpleMetadataStore(delegate.numDimensions()));
@@ -68,7 +68,7 @@ public interface Dataset<T> extends RandomAccessible<T> {
 	 * @param delegate the coupled {@link RandomAccessible}
 	 * @param store the coupled {@link MetadataStore}
 	 * @return a {@link Dataset} wrapping {@code delegate} and {@code store}
-	 * @param <T> the type of pixels contained within {@code delegate}
+     * @param <T> the type of samples in {@code delegate}
 	 */
 	static <T> Dataset<T> wrap(RandomAccessible<T> delegate, MetadataStore store) {
 		return new Dataset<T>() {
@@ -84,7 +84,11 @@ public interface Dataset<T> extends RandomAccessible<T> {
 		};
 	}
 
+    // -- RandomAccessible overrides -- //
+
+    @Override
 	default DatasetView<T, ?> view() {
+        // Overridden so that we can preserve the metadata!
 		return DatasetView.wrap(this, new MixedTransform(numDimensions(), numDimensions()));
 	}
 

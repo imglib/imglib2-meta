@@ -40,6 +40,7 @@ import net.imglib2.meta.calibration.Axes;
 import net.imglib2.meta.calibration.AxisType;
 import net.imglib2.meta.calibration.Calibration;
 import net.imglib2.meta.calibration.DefaultLinearAxis;
+import net.imglib2.meta.view.MetadataStoreView;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.MixedTransformView;
 import net.imglib2.view.Views;
@@ -105,7 +106,7 @@ public class SimpleMetadataStoreTest {
         assertEquals("blue", lutItem.getAt(0, 0, 0, 2, 0));
 
         // Test viewing metadata based on a View of the data
-        MetadataStore storeView = Metadata.view(store, v);
+        MetadataStore storeView = new MetadataStoreView(store, v.getTransformToSource());
         lutItem = storeView.item("lut");
         assertArrayEquals(new int[] {2}, lutItem.varyingAxes());
         assertEquals("red", lutItem.getAt(0, 0, 0, 0, 0));

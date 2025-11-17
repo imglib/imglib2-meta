@@ -102,7 +102,7 @@ public class SCIFIOMetadataStore implements MetadataStore{
             pos -> img.getColorTable(pos.getIntPosition(0))
         );
         BiConsumer<Localizable, ColorTable> setter = (pos, table) -> img.setColorTable(table, pos.getIntPosition(dims[0]));
-        return Metadata.variant(
+        return Metadata.varying(
             Channels.CHANNEL,
             imgView,
             numDimensions(),
@@ -147,12 +147,12 @@ public class SCIFIOMetadataStore implements MetadataStore{
             }
 
             @Override
-            public Axis transform(long[] steps, int... srcAxes) {
+            public Axis transform(long[] steps) {
                 throw new UnsupportedOperationException("TODO");
             }
 
             @Override
-            public Axis transform(Mixed transform, int... srcAxes) {
+            public Axis transform(Mixed transform) {
                 throw new UnsupportedOperationException("TODO");
             }
         };

@@ -52,7 +52,7 @@ public class MetadataTest {
             (loc, out) -> out.set(loc.getLongPosition(0)),
             DoubleType::new
         );
-        MetadataItem<DoubleType> item = Metadata.variant("testKey", data, 2, new int[] {0});
+        MetadataItem<DoubleType> item = Metadata.varying("testKey", data, 2, new int[] {0});
         assertEquals("testKey", item.name());
         assertArrayEquals(new int[] {0}, item.varyingAxes());
 
@@ -65,7 +65,7 @@ public class MetadataTest {
             assert item.getAt(0, i).equals(data.getAt(0));
         }
 
-        item = Metadata.variant("testKey", data, 2, new int[] {1});
+        item = Metadata.varying("testKey", data, 2, new int[] {1});
         assertEquals("testKey", item.name());
         assertArrayEquals(new int[] {1}, item.varyingAxes());
 

@@ -43,6 +43,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ * A view on a {@link MetadataStore} transformed by a {@link Mixed} transform.
+ *
+ * @author Gabriel Selzer
+ */
 public class MetadataStoreView implements MetadataStore {
 
 	protected final MetadataStore source;
@@ -50,6 +55,15 @@ public class MetadataStoreView implements MetadataStore {
 	// We want the inverse of transform.component for slicing
 	private final int[] inverseComponentMapping;
 
+    /**
+     * Creates a view on the given source {@link MetadataStore} transformed by the given Mixed transform.
+     * <p>
+     * If the source MetadataStore is itself a MetadataStoreView, this constructor
+     * will combine the two transforms into a single transform for efficiency.
+     * </p>
+     * @param source the source {@link MetadataStore}
+     * @param transform the {@link Mixed} transform defining the view
+     */
 	public MetadataStoreView(MetadataStore source, Mixed transform) {
 		if (source instanceof MetadataStoreView) {
 			MetadataStoreView msv = (MetadataStoreView) source;

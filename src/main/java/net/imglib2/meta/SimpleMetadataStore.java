@@ -37,6 +37,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * A simple implementation of {@link MetadataStore} that keeps metadata items
+ * in a list.
+ *
+ * @author Curtis Rueden
+ * @author Gabriel Selzer
+ */
 public class SimpleMetadataStore implements MetadataStore {
 
 	private final List<MetadataItem<?>> items;
