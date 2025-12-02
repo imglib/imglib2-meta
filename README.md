@@ -21,7 +21,6 @@ The main metadata stand-in throughout the Fiji ecosystem is the `Dataset` class 
 
 Currently, this project depends upon a few snapshots, which you'll need to obtain before building this project:
 * `imglib2`, based on the [`raiview-generics`](https://github.com/imglib/imglib2/tree/raiview-generics) branch
-* `imglib2-imagej`, based on the [`main`](https://github.com/imglib/imglib2-imagej) branch. *Used as a test dependency*.
 
 **Current Status**
 
